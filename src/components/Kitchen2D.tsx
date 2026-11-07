@@ -5,7 +5,7 @@ import { FLOOR_W, FLOOR_H, DOOR, CHANNEL_COLOR } from "@/sim/layout";
 const S = 64; // px per meter (viewBox units)
 const STATION_FILL: Record<StationId, string> = { grill: "#3a2320", fryer: "#3b2a12", cold: "#182a3a", pack: "#242836", counter: "#2e2416" };
 const STATION_STROKE: Record<StationId, string> = { grill: "#b0463a", fryer: "#d08a2a", cold: "#4a8fd6", pack: "#6b7388", counter: "#c99a3c" };
-const STATION_SIZE: Record<StationId, [number, number]> = { grill: [2.4, 1.1], fryer: [2.2, 1.1], cold: [2.2, 1.1], pack: [3.2, 1.0], counter: [3.6, 0.9] };
+const STATION_SIZE: Record<StationId, [number, number]> = { grill: [2.6, 1.1], fryer: [2.6, 1.1], cold: [2.6, 1.1], pack: [3.2, 1.0], counter: [3.6, 0.9] };
 
 export interface Kitchen2DProps {
   snapshot: Snapshot | null;
@@ -64,7 +64,7 @@ export default function Kitchen2D({ snapshot, stations, highlightStation, classN
             <rect x={x} y={y} width={w * S} height={h * S} rx={8} fill={STATION_FILL[st.id]} stroke={STATION_STROKE[st.id]} strokeWidth={2} />
             <text x={x + 12} y={y + 24} fill="#eef0f5" fontSize={16} fontWeight={700}>{st.name}</text>
             {ss && st.id !== "pack" && st.id !== "counter" && (
-              <text x={x + 12} y={y + 46} fill="#a9b0c2" fontSize={12} className="num">{ss.busy % 1 ? ss.busy.toFixed(1) : ss.busy}/{ss.capacity} in use{ss.queue > 0 ? ` · ${ss.queue} waiting` : ""}</text>
+              <text x={x + 12} y={y + 46} fill="#a9b0c2" fontSize={12} className="num">{ss.busy % 1 ? ss.busy.toFixed(1) : ss.busy}/{ss.capacity} busy{ss.queue > 0 ? ` · ${ss.queue} queued` : ""}</text>
             )}
             {ss && (st.id === "pack" || st.id === "counter") && (
               <text x={x + 12} y={y + 46} fill="#a9b0c2" fontSize={12} className="num">{st.id === "pack" ? `${ss.busy} packing${ss.queue > 0 ? ` · ${ss.queue} waiting` : ""}` : "walk-in & phone pickup"}</text>

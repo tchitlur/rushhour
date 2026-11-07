@@ -78,6 +78,7 @@ function makeSnapshot(time: number, stations: Station[]): Snapshot {
     dashers,
     live: {
       ordersPlaced: 120,
+      dashersGaveUp: 0,
       ordersHanded: 80,
       inKitchen: 40,
       dashersWaiting: 5,

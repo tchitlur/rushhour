@@ -220,7 +220,7 @@ export function interventionTitle(iv: Intervention, sc?: Scenario): string {
     case "move_station": {
       const pack = sc?.stations.find(s => s.id === "pack");
       const nearPack = pack && Math.hypot(pack.x - iv.x, pack.y - iv.y) <= 3;
-      return nearPack ? `Move ${STATION_LABEL[iv.station]} next to Pack` : `Move ${STATION_LABEL[iv.station]} to (${trim(iv.x)}, ${trim(iv.y)})`;
+      return nearPack && iv.station !== "pack" ? `Move ${STATION_LABEL[iv.station]} next to Pack` : `Move ${STATION_LABEL[iv.station]} to (${trim(iv.x)}, ${trim(iv.y)})`;
     }
   }
 }

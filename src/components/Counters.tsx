@@ -8,6 +8,7 @@ export interface CounterSpec { key: keyof LiveCounters; label: string; fmt: (x: 
 export const COUNTERS: CounterSpec[] = [
   { key: "avgDasherWait", label: "Avg Dasher wait", fmt: fmtMin, bad: x => x > 3.4 },
   { key: "dashersWaiting", label: "Dashers at door", fmt: x => `${Math.round(x)}`, bad: x => x >= 3 },
+  { key: "dashersGaveUp", label: "Dashers gave up", fmt: x => `${Math.round(x)}`, bad: x => x >= 1 },
   { key: "coldOrders", label: "Cold orders", fmt: x => `${Math.round(x)}`, bad: x => x >= 5 },
   { key: "lateOrders", label: "Late orders", fmt: x => `${Math.round(x)}`, bad: x => x >= 10 },
   { key: "dollarsAtRisk", label: "Dollars at risk", fmt: fmtMoney, bad: x => x >= 150 },

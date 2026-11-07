@@ -26,7 +26,7 @@ export function summarize(results: NightMetrics[], seeds: number[]): MonteCarloS
 const avg = (xs: number[]) => xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
 
 export function meanMetrics(ms: NightMetrics[]): NightMetrics {
-  const keys: (keyof NightMetrics)[] = ["avgTicket", "p90Ticket", "avgDasherWait", "totalDasherWait", "coldOrders", "lateOrders", "lostOrders", "orders", "revenue", "laborCost", "dollarsAtRisk"];
+  const keys: (keyof NightMetrics)[] = ["dashersGaveUp", "avgTicket", "p90Ticket", "avgDasherWait", "totalDasherWait", "coldOrders", "lateOrders", "lostOrders", "orders", "revenue", "laborCost", "dollarsAtRisk"];
   const out = {} as Record<string, unknown>;
   for (const k of keys) out[k] = avg(ms.map(m => m[k] as number));
   const nb = ms[0].bins.length;

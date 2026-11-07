@@ -9,6 +9,11 @@ import { HANDS_ON, PACK_MIN, WALK_SPEED, TARGET_TICKET_MIN } from "./scenario";
 import { dasherSlot, IDLE_SPOT } from "./layout";
 
 export const DT = 0.5; // minutes per tick
+/** A Dasher who has waited this long unassigns; the order is re-offered and the next Dasher arrives REASSIGN_GAP minutes later. */
+export const UNASSIGN_AFTER_MIN = 12;
+/** After this many unassignments DoorDash keeps the next Dasher on the order (they are paid to wait). */
+export const MAX_REASSIGNMENTS = 1;
+export const REASSIGN_GAP_MIN = 8;
 
 interface Task {
   order: Order;
@@ -274,13 +279,22 @@ export function simulateNight(sc: Scenario, opts: SimOptions): NightResult {
       }
     }
 
+    // --- Dasher unassignment: a Dasher who waited too long for food that is still not ready gives up
+    for (const o of orders) {
+      if (o.dasherArrivesAt == null || o.status === "handed" || o.status === "lost" || o.status === "ready") continue;
+      if ((o.reassignments ?? 0) < MAX_REASSIGNMENTS && t - o.dasherArrivesAt >= UNASSIGN_AFTER_MIN) {
+        o.dasherWaitAccrued = (o.dasherWaitAccrued ?? 0) + (t - o.dasherArrivesAt);
+        o.reassignments = (o.reassignments ?? 0) + 1;
+        o.dasherArrivesAt = t + REASSIGN_GAP_MIN;
+      }
+    }
     // --- handoffs
     for (const o of orders) {
       if (o.status !== "ready") continue;
       const isDelivery = DELIVERY.has(o.channel);
       if (isDelivery && o.dasherArrivesAt! > t) continue; // waiting for dasher
       o.handedAt = t; o.status = "handed";
-      if (isDelivery) o.dasherWait = Math.max(0, (o.readyAt ?? t) - o.dasherArrivesAt!);
+      if (isDelivery) o.dasherWait = (o.dasherWaitAccrued ?? 0) + Math.max(0, (o.readyAt ?? t) - o.dasherArrivesAt!);
       // cold?
       for (const it of o.items) {
         const m = menuById.get(it.itemId)!;
@@ -359,6 +373,7 @@ function computeMetrics(sc: Scenario, orders: Order[], bins: BinMetrics[], lostO
     }
   }
   return {
+    dashersGaveUp: orders.reduce((a, o) => a + (o.reassignments ?? 0), 0),
     avgTicket, p90Ticket, avgDasherWait, totalDasherWait, coldOrders, lateOrders, lostOrders,
     orders: handed.length, revenue, laborCost: laborCost + waste, dollarsAtRisk, bins, bottleneck: best,
   };
@@ -409,7 +424,7 @@ function buildSnapshot(
           tokens.push({ orderId: o.id, itemIdx: ii, channel: o.channel, warmth: 0, x: sp.x - 0.6 + (k % 4) * 0.4, y: sp.y + 0.55, stage: "cooking" });
         } else {
           const k = perStationQ.get(stId) ?? 0; perStationQ.set(stId, k + 1);
-          tokens.push({ orderId: o.id, itemIdx: ii, channel: o.channel, warmth: 0, x: sp.x - 1.1 + (k % 5) * 0.3, y: sp.y + 1.0 + Math.floor(k / 5) * 0.3, stage: "queue" });
+          tokens.push({ orderId: o.id, itemIdx: ii, channel: o.channel, warmth: 0, x: sp.x - 1.2 + (k % 9) * 0.3, y: sp.y + 1.0 + Math.floor(k / 9) * 0.3, stage: "queue" });
         }
       }
     }
@@ -423,6 +438,7 @@ function buildSnapshot(
   const deliv = handed.filter(o => o.dasherWait != null);
   const live: LiveCounters = {
     ordersPlaced: orders.length,
+    dashersGaveUp: orders.reduce((a, o) => a + (o.reassignments ?? 0), 0),
     ordersHanded: handed.length,
     inKitchen: orders.length - handed.length,
     dashersWaiting: dashers.length,

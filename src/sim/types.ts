@@ -100,8 +100,10 @@ export interface Order {
   late: boolean;
   revenue: number;
   foodCost: number;
-  dasherArrivesAt?: number; // delivery only
-  dasherWait?: number;      // minutes waited past arrival
+  dasherArrivesAt?: number; // delivery only (current / next Dasher)
+  dasherWait?: number;      // minutes waited past arrival (all Dashers)
+  dasherWaitAccrued?: number; // wait by Dashers who gave up and unassigned
+  reassignments?: number;   // how many Dashers unassigned after waiting too long
   isBig?: boolean;
 }
 
@@ -156,6 +158,7 @@ export interface Snapshot {
 
 export interface LiveCounters {
   ordersPlaced: number;
+  dashersGaveUp: number;   // Dashers who unassigned after waiting too long
   ordersHanded: number;
   inKitchen: number;
   dashersWaiting: number;
@@ -180,6 +183,7 @@ export interface BinMetrics {
 }
 
 export interface NightMetrics {
+  dashersGaveUp: number;
   avgTicket: number;
   p90Ticket: number;
   avgDasherWait: number;
