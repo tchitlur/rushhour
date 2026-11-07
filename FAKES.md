@@ -14,7 +14,7 @@ Nothing here invents real-world facts. Events and weather are real and sourced. 
 | **Weather "rain" what-if** | The real Nov 13 forecast is fog with a chance of light snow, not rain. Rain exists only as a clearly labeled what-if toggle. | "We don't fake weather. Rain is a toggle you can turn on." |
 | **Event explanations** | The one-liners under each event card come from the LLM given only the structured fields; if it doesn't answer within 6 s a template sentence is used instead. | "Explanations are generated from the card's fields; the numbers never come from the model." |
 | **Lost conversion from longer quotes** | Modeled as 0.6% fewer delivery orders per extra quoted minute × $22 × 65% margin in the window (`src/plan/cost.ts`). Not from real data. | "A documented assumption that penalizes over-quoting." |
-| **3D labels need the network** | The 3D view loads a font from a CDN for labels. If offline, labels can go blank; the 2D view (default) has no such dependency. | Use 2D if the venue Wi-Fi is bad. |
+| **3D label font is bundled** | Since the polish pass the 3D label font ships in `public/fonts` (no CDN). 2D remains the default and needs nothing extra. | Both views work offline. |
 
 ## V2 shortcuts (any restaurant, customizer, broader Ask, any date)
 
