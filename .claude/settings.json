@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Edit",
+      "Write",
+      "Read",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Agent",
+      "Skill",
+      "mcp__github__*",
+      "mcp__claude-code-remote__*"
+    ],
+    "defaultMode": "bypassPermissions"
+  }
+}
