@@ -6,13 +6,18 @@ import Kitchen2D from "@/components/Kitchen2D";
 import Counters from "@/components/Counters";
 import Timeline from "@/components/Timeline";
 import TonightPanel from "@/components/TonightPanel";
+import RehearsePanel from "@/components/RehearsePanel";
+import OutputsPanel from "@/components/OutputsPanel";
+import WhyPanel from "@/components/WhyPanel";
+import AskPanel from "@/components/AskPanel";
+import RaceView from "@/components/RaceView";
 import { SERVICE_START } from "@/sim/types";
 
 const Kitchen3D = dynamic(() => import("@/components/Kitchen3D"), { ssr: false, loading: () => <div className="h-full w-full flex items-center justify-center text-fg-3 text-sm">Loading 3D kitchen…</div> });
 
 export default function App() {
   const s = useApp();
-  const { tab, setTab, view, setView, night, tIdx, loadTonight, advance, playing, highlightStation } = s;
+  const { tab, setTab, view, setView, night, tIdx, loadTonight, advance, playing, highlightStation, askNight, viewportSource } = s;
   const [intro, setIntro] = useState(true);
 
   useEffect(() => { void loadTonight(); }, [loadTonight]);
@@ -47,6 +52,7 @@ export default function App() {
         case " ": e.preventDefault(); st.setTab("Rehearse"); break;
         case "s": st.setTab("Race"); break;
         case "a": st.setTab("Ask"); setTimeout(() => document.getElementById("ask-input")?.focus(), 50); break;
+        case "c": st.setTab("Ask"); break;
         case "2": st.setView("2d"); break;
         case "3": st.setView("3d"); break;
         case "d": st.setDemoMode(!st.demoMode); break;
@@ -57,7 +63,8 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const snap = useMemo(() => snapshotAt(night, tIdx), [night, tIdx]);
+  const shownNight = viewportSource === "ask" && askNight ? askNight : night;
+  const snap = useMemo(() => snapshotAt(shownNight, tIdx), [shownNight, tIdx]);
   const t = snap?.t ?? SERVICE_START;
 
   return (
@@ -93,17 +100,20 @@ export default function App() {
         </aside>
         <section className="panel relative overflow-hidden flex flex-col">
           <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
-            <span className="chip">{s.tonight.label}</span>
+            {tab !== "Race" && <span className={`chip ${viewportSource === "ask" ? "!text-accent !border-accent/40" : ""}`}>{viewportSource === "ask" ? `What-if: ${s.askResult?.patch.summary ?? ""}` : s.tonight.label}</span>}
             {s.loadingNight && <span className="chip">Simulating tonight…</span>}
             {playing && <span className="chip !border-accent/40 text-accent">● LIVE {s.speed}×</span>}
           </div>
           <div className="flex-1 min-h-0 p-3">
-            {view === "3d" ? <Kitchen3D snapshot={snap} stations={s.tonight.stations} highlightStation={highlightStation} className="w-full h-full" /> : <Kitchen2D snapshot={snap} stations={s.tonight.stations} highlightStation={highlightStation} />}
+            {tab === "Race" ? <RaceView /> : view === "3d" ? <Kitchen3D snapshot={snap} stations={s.tonight.stations} highlightStation={highlightStation} className="w-full h-full" /> : <Kitchen2D snapshot={snap} stations={s.tonight.stations} highlightStation={highlightStation} />}
           </div>
         </section>
-        <aside className="panel p-4 overflow-y-auto scroll-thin">
-          <div className="panel-title">{tab === "Tonight" || tab === "Watch" ? "Live" : tab}</div>
-          <div className="mt-3"><Counters live={snap?.live ?? null} compact /></div>
+        <aside className="panel p-4 overflow-y-auto scroll-thin flex flex-col gap-5">
+          {(tab === "Tonight" || tab === "Watch") && (<div><div className="panel-title">Live · tonight as planned</div><div className="mt-3"><Counters live={snap?.live ?? null} compact /></div></div>)}
+          {tab === "Rehearse" && <><RehearsePanel /><OutputsPanel /></>}
+          {tab === "Why" && <WhyPanel />}
+          {tab === "Ask" && <AskPanel />}
+          {tab === "Race" && <><RehearsePanel /></>}
         </aside>
       </main>
       <footer className="h-24 shrink-0 border-t border-line bg-bg-2 px-4 py-2 no-print">

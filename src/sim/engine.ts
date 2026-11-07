@@ -33,6 +33,11 @@ interface WorkerState {
 
 const DELIVERY = new Set<Channel>(["doordash", "ubereats"]);
 
+/** Remaining cook time for an item from a given routing stage onward (each stage takes prepMin). */
+function totalPrep(m: MenuItem, fromStage: number): number {
+  return Math.max(0, m.stations.length - fromStage) * m.prepMin;
+}
+
 export interface SimOptions {
   seed: number;
   snapshots?: boolean;
@@ -110,7 +115,7 @@ export function simulateNight(sc: Scenario, opts: SimOptions): NightResult {
     const o: Order = {
       id: nextOrderId++, channel, placedAt: t, promisedAt, items, status: "queued", cold: false, late: false, revenue, foodCost, isBig,
     };
-    if (isDelivery) o.dasherArrivesAt = t + q + rng.normal(0, 2.0);
+    if (isDelivery) o.dasherArrivesAt = t + q + rng.normal(0, 1.5);
     // Pre-batched stock: consume prepped units => skip cooking for those items
     for (const it of items) {
       const stock = prepStock.get(it.itemId);
@@ -188,9 +193,13 @@ export function simulateNight(sc: Scenario, opts: SimOptions): NightResult {
     for (const p of inProgress) busyAtStation.set(p.station, (busyAtStation.get(p.station) ?? 0) + (p.item ? p.baskets : 0));
     for (const o of orders) {
       if (o.status === "handed" || o.status === "lost" || o.status === "ready") continue;
-      // Fire-to-quote: delivery orders wait in the ticket rail until the quoted time is near.
+      // Fire-to-quote: delivery orders wait in the ticket rail until the quoted time is near,
+      // based on this order's own expected cook time (longest item + packing + slack).
       if (o.status === "queued" && o.dasherArrivesAt != null && !o.isBig) {
-        const fireAt = o.placedAt + Math.max(0, (o.promisedAt - o.placedAt) - TARGET_TICKET_MIN);
+        let longest = 0;
+        for (const it of o.items) if (it.stationIdx < 98) longest = Math.max(longest, totalPrep(menuById.get(it.itemId)!, 0));
+        const expected = Math.min(TARGET_TICKET_MIN, longest + PACK_MIN + 2.5);
+        const fireAt = o.placedAt + Math.max(0, (o.promisedAt - o.placedAt) - expected);
         if (t < fireAt) continue;
       }
       let allDone = true;
@@ -202,12 +211,15 @@ export function simulateNight(sc: Scenario, opts: SimOptions): NightResult {
         // Fire long items first: hold a short item until the order's longer items are cooking and close to done.
         // Under stress (a station jammed), cooks lose that discipline and fire what is in front of them => food goes cold.
         let hold = false;
+        const myRemaining = totalPrep(m, it.stationIdx);
         for (const other of o.items) {
           if (other === it || other.stationIdx >= 98) continue;
           const om = menuById.get(other.itemId)!;
           const prog = inProgress.find(p => p.item === other);
-          if (prog) { if (prog.doneAt - t > m.prepMin + 1.5 && om.prepMin > m.prepMin + 1.5) { hold = true; break; } }
-          else if (om.prepMin > m.prepMin + 1.5) {
+          if (prog) {
+            const otherRemaining = (prog.doneAt - t) + totalPrep(om, other.stationIdx + 1);
+            if (otherRemaining > myRemaining + 1.5) { hold = true; break; }
+          } else if (totalPrep(om, other.stationIdx) > myRemaining + 1.5) {
             const otherStation = om.stations[other.stationIdx];
             const jammed = (lastQueue.get(otherStation) ?? 0) >= 1.5 * stationCapacityAt(otherStation, t);
             if (!jammed) { hold = true; break; }

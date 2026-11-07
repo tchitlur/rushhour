@@ -9,6 +9,13 @@ import { lerpSnapshot } from "@/sim/interpolate";
 import type { TonightData } from "@/lib/intake-types";
 import { buildTonightScenario, computeDemand, type DemandBreakdown } from "@/lib/demand";
 import { CACHED_TONIGHT } from "@/data/cache";
+import type { Plan } from "@/plan/types";
+import { runPlanner, explainCards, togglePlan, evaluator } from "@/plan/run";
+import type { Attribution, AskResult } from "@/plan/types";
+import { attribute } from "@/plan/shapley";
+import { tonightFactors } from "@/lib/demand";
+import { runAsk } from "@/plan/ask";
+import { applyPatch } from "@/plan/apply";
 
 export type Tab = "Tonight" | "Watch" | "Why" | "Rehearse" | "Race" | "Ask";
 export const TABS: Tab[] = ["Tonight", "Watch", "Why", "Rehearse", "Race", "Ask"];
@@ -51,6 +58,27 @@ interface AppState {
   // monte carlo
   tonightMC: MonteCarloSummary | null;
   normalMC: MonteCarloSummary | null;
+  // planner
+  plan: Plan | null;
+  planLoading: boolean;
+  planStatus: string;
+  planSource: "llm" | "rules" | "llm+rules" | null;
+  planExplanations: Record<string, string>;
+  runRehearse: () => Promise<void>;
+  togglePlanCard: (id: string) => Promise<void>;
+  // why (attribution)
+  attribution: Attribution | null;
+  whyLoading: boolean;
+  whyMetric: "dasherWait" | "dollarsAtRisk";
+  runWhy: (metric: "dasherWait" | "dollarsAtRisk") => Promise<void>;
+  // ask
+  askResult: AskResult | null;
+  askLoading: boolean;
+  askStatus: string;
+  askNight: NightResult | null;
+  viewportSource: "tonight" | "ask";
+  runAsk: (q: string) => Promise<void>;
+  playAskNight: () => Promise<void>;
   highlightStation: StationId | null;
   toast: { text: string; kind: "ok" | "bad" | "info"; id: number } | null;
 
@@ -138,6 +166,75 @@ export const useApp = create<AppState>((set, get) => ({
   loadingNight: false,
   tonightMC: null,
   normalMC: null,
+  plan: null,
+  planLoading: false,
+  planStatus: "",
+  planSource: null,
+  planExplanations: {},
+  runRehearse: async () => {
+    const base = get().tonight;
+    if (get().planLoading) return;
+    set({ planLoading: true, planStatus: "Starting…", plan: null, planExplanations: {} });
+    try {
+      const { plan, proposalSource } = await runPlanner(base, { onStatus: (m) => set({ planStatus: m }), useLLM: true });
+      if (get().tonight !== base) return;
+      set({ plan, planSource: proposalSource, planLoading: false, planStatus: "" });
+      void get().setPlanScenario(plan.scenario);
+      const lines = await explainCards(plan.cards);
+      if (get().plan === plan && Object.keys(lines).length) set({ planExplanations: lines });
+    } catch (e) {
+      console.error(e);
+      set({ planLoading: false, planStatus: "Planner failed; try again." });
+    }
+  },
+  togglePlanCard: async (id) => {
+    const plan = get().plan;
+    if (!plan) return;
+    const enabled = plan.cards.filter(c => c.enabled && c.id !== id).map(c => c.id);
+    const card = plan.cards.find(c => c.id === id);
+    if (card && !card.enabled && card.accepted) enabled.push(id);
+    set({ planStatus: "Re-testing the plan…" });
+    const next = await togglePlan(plan, enabled, 300);
+    if (get().plan !== plan) return;
+    set({ plan: next, planStatus: "" });
+    void get().setPlanScenario(next.scenario);
+  },
+  attribution: null,
+  whyLoading: false,
+  whyMetric: "dasherWait",
+  runWhy: async (metric) => {
+    const { tonightData, jakeOut, rainWhatIf, tonight } = get();
+    if (!tonightData) return;
+    set({ whyLoading: true, whyMetric: metric });
+    try {
+      const { base, factors } = tonightFactors(tonightData, { jakeOut, rainWhatIf });
+      const attribution = await attribute(base, factors, metric, evaluator, 60);
+      if (get().tonight !== tonight) return;
+      set({ attribution, whyLoading: false });
+    } catch (e) { console.error(e); set({ whyLoading: false }); }
+  },
+  askResult: null,
+  askLoading: false,
+  askStatus: "",
+  askNight: null,
+  viewportSource: "tonight",
+  runAsk: async (q) => {
+    const base = get().tonight;
+    set({ askLoading: true, askStatus: "Starting…", askResult: null, askNight: null, viewportSource: "tonight" });
+    try {
+      const r = await runAsk(q, base, { onStatus: (m) => set({ askStatus: m }) });
+      if (get().tonight !== base) return;
+      set({ askResult: r, askLoading: false, askStatus: "" });
+    } catch (e) { console.error(e); set({ askLoading: false, askStatus: "Couldn't run that experiment." }); }
+  },
+  playAskNight: async () => {
+    const { askResult, tonight, seed } = get();
+    if (!askResult) return;
+    if (get().viewportSource === "ask") { set({ viewportSource: "tonight", tIdx: 0, playing: false }); return; }
+    const sc = applyPatch(tonight, askResult.patch);
+    const askNight = await sim.runNight(sc, seed);
+    set({ askNight, viewportSource: "ask", tIdx: 0, playing: true, tab: "Watch" });
+  },
   highlightStation: null,
   toast: null,
 
@@ -145,7 +242,7 @@ export const useApp = create<AppState>((set, get) => ({
   setView: (view) => set({ view }),
   toggleHotkeys: () => set(s => ({ showHotkeys: !s.showHotkeys })),
   setDemoMode: (demoMode) => set({ demoMode }),
-  setTonight: (tonight) => { set({ tonight, night: null, planNight: null, tonightMC: null, tIdx: 0, playing: false }); void get().loadNight(); },
+  setTonight: (tonight) => { set({ tonight, night: null, planNight: null, tonightMC: null, tIdx: 0, playing: false, plan: null, planScenario: null, attribution: null, askResult: null, askNight: null, viewportSource: "tonight" }); void get().loadNight(); },
   setPlanScenario: async (planScenario) => {
     set({ planScenario, planNight: null });
     if (planScenario) {
