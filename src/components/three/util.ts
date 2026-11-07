@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { FLOOR_W, FLOOR_H, CHANNEL_COLOR } from "@/sim/layout";
 import type { Channel, StationId } from "@/sim/types";
+import { PALETTE as UI, KITCHEN_3D } from "@/lib/palette";
 
 /** Floor meters (x right, y toward the front wall) -> world (x, z). */
 export function toWorldX(x: number): number {
@@ -10,20 +11,32 @@ export function toWorldZ(y: number): number {
   return y - FLOOR_H / 2;
 }
 
+/** Light, warm-neutral scene palette (derived from the shared tokens). */
 export const PALETTE = {
-  floor: "#141821",
-  grid: "#2b3246",
-  wall: "#252b3b",
-  wallTop: "#2f3648",
-  accent: "#ff7a1a",
-  accent2: "#ffb86b",
-  ok: "#3ddc84",
-  warn: "#ffc84a",
-  bad: "#ff4d5e",
-  fg: "#eef0f5",
-  fg2: "#a9b0c2",
-  fg3: "#6b7388",
-  ice: "#d6ecff",
+  floor: KITCHEN_3D.floorTile,
+  grout: KITCHEN_3D.floorGrout,
+  wall: KITCHEN_3D.wall,
+  wallTop: "#D5D8DD",
+  accent: UI.plan,
+  ok: UI.good,
+  warn: UI.warn,
+  bad: UI.bad,
+  ink: UI.ink,
+  fg: UI.ink,
+  fg2: UI.text2,
+  fg3: UI.muted,
+  ice: "#AEB8C6",
+  outline: "#FFFFFF",
+  steel: KITCHEN_3D.steel,
+  steelDark: KITCHEN_3D.steelDark,
+  grate: KITCHEN_3D.grillGrate,
+  fridge: KITCHEN_3D.fridge,
+  wood: KITCHEN_3D.wood,
+  passShelf: KITCHEN_3D.passShelf,
+  heatLamp: KITCHEN_3D.heatLamp,
+  loadNeutral: KITCHEN_3D.loadNeutral,
+  loadWarn: KITCHEN_3D.loadWarn,
+  loadBad: KITCHEN_3D.loadBad,
 };
 
 export interface StationStyle {
@@ -35,12 +48,19 @@ export interface StationStyle {
 }
 
 export const STATION_STYLE: Record<StationId, StationStyle> = {
-  grill: { color: "#4a1f22", top: "#2b2b2f", w: 2.2, d: 1.0, h: 0.9 },
-  fryer: { color: "#8a5a1e", top: "#c99a4a", w: 1.6, d: 1.0, h: 0.9 },
-  cold: { color: "#2d4a66", top: "#6f93b3", w: 2.0, d: 1.0, h: 0.9 },
-  pack: { color: "#3a3f4d", top: "#9aa3b5", w: 3.0, d: 1.2, h: 0.9 },
-  counter: { color: "#6b4a2b", top: "#a9794a", w: 3.2, d: 0.8, h: 1.0 },
+  grill: { color: KITCHEN_3D.steel, top: KITCHEN_3D.grillGrate, w: 2.2, d: 1.0, h: 0.9 },
+  fryer: { color: KITCHEN_3D.steel, top: KITCHEN_3D.steelDark, w: 1.6, d: 1.0, h: 0.9 },
+  cold: { color: KITCHEN_3D.fridge, top: "#E4EAF0", w: 2.0, d: 1.0, h: 0.8 },
+  pack: { color: KITCHEN_3D.steel, top: KITCHEN_3D.passShelf, w: 3.0, d: 1.2, h: 0.9 },
+  counter: { color: "#E9E4DB", top: KITCHEN_3D.wood, w: 3.2, d: 0.8, h: 1.0 },
 };
+
+/** True when two station footprints (centers in floor meters) overlap. */
+export function footprintsOverlap(a: StationId, ax: number, ay: number, b: StationId, bx: number, by: number): boolean {
+  const sa = STATION_STYLE[a];
+  const sb = STATION_STYLE[b];
+  return Math.abs(ax - bx) < (sa.w + sb.w) / 2 - 0.01 && Math.abs(ay - by) < (sa.d + sb.d) / 2 - 0.01;
+}
 
 export const CHANNEL_THREE_COLOR: Record<Channel, THREE.Color> = {
   doordash: new THREE.Color(CHANNEL_COLOR.doordash),
@@ -49,15 +69,15 @@ export const CHANNEL_THREE_COLOR: Record<Channel, THREE.Color> = {
   counter: new THREE.Color(CHANNEL_COLOR.counter),
 };
 
-const OK = new THREE.Color(PALETTE.ok);
-const WARN = new THREE.Color(PALETTE.warn);
-const BAD = new THREE.Color(PALETTE.bad);
+const NEUTRAL = new THREE.Color(PALETTE.loadNeutral);
+const WARN = new THREE.Color(PALETTE.loadWarn);
+const BAD = new THREE.Color(PALETTE.loadBad);
 
-/** Green -> amber -> red as load goes 0 -> 0.6 -> 1. Writes into `out`. */
+/** Neutral below 0.7, amber to 1.0, bad above. Writes into `out`. */
 export function loadColor(load: number, out: THREE.Color): THREE.Color {
-  const l = Math.max(0, Math.min(1.2, load));
-  if (l < 0.6) return out.copy(OK).lerp(WARN, l / 0.6);
-  return out.copy(WARN).lerp(BAD, Math.min(1, (l - 0.6) / 0.4));
+  if (load >= 1.0) return out.copy(BAD);
+  if (load >= 0.7) return out.copy(WARN);
+  return out.copy(NEUTRAL);
 }
 
 /** Small deterministic hash -> [0,1). */
@@ -66,4 +86,9 @@ export function hash01(n: number, salt = 0): number {
   h = Math.imul(h ^ (h >>> 13), 1274126177);
   h ^= h >>> 16;
   return (h >>> 0) / 4294967296;
+}
+
+/** Frame-rate independent exponential approach. */
+export function damp(cur: number, target: number, lambda: number, dt: number): number {
+  return THREE.MathUtils.damp(cur, target, lambda, dt);
 }

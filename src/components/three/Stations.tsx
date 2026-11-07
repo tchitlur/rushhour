@@ -1,182 +1,290 @@
 "use client";
-import { useMemo, useRef } from "react";
+import { useRef, useState } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import type { Station, StationId, StationSnapshot } from "@/sim/types";
 import Label from "./Label";
-import { PALETTE, STATION_STYLE, loadColor, toWorldX, toWorldZ } from "./util";
+import { PALETTE, STATION_STYLE, damp, loadColor, toWorldX, toWorldZ } from "./util";
 
 const _c = new THREE.Color();
-const BAR_MAX_H = 1.6;
+const WHITE = new THREE.Color("#ffffff");
+const ACCENT = new THREE.Color(PALETTE.accent);
+const BAD = new THREE.Color(PALETTE.bad);
 
 interface StationProps {
   station: Station;
   snap: StationSnapshot | undefined;
   highlighted: boolean;
   dragging: boolean;
+  /** While dragging: the snapped target cell and whether it is a valid drop. */
+  dragTarget?: { x: number; y: number; valid: boolean } | null;
   onPointerDown?: (e: ThreeEvent<PointerEvent>, id: StationId) => void;
 }
 
-function LoadBar({ load, saturated, queue, x, z }: { load: number; saturated: boolean; queue: number; x: number; z: number }) {
-  const barRef = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.MeshStandardMaterial>(null);
-  const target = Math.max(0.03, Math.min(1.25, load)) * BAR_MAX_H;
-
-  useFrame((state) => {
-    const bar = barRef.current;
-    const mat = matRef.current;
-    if (!bar || !mat) return;
-    // Smooth the bar height toward target to avoid flicker.
-    const cur = bar.scale.y;
-    const next = cur + (target - cur) * 0.2;
-    bar.scale.y = next;
-    bar.position.y = next / 2;
+/** Slim horizontal load bar floating above the station. */
+function LoadBar({ load, w, y }: { load: number; w: number; y: number }) {
+  const fill = useRef<THREE.Mesh>(null);
+  const mat = useRef<THREE.MeshStandardMaterial>(null);
+  const width = Math.min(w, 1.8);
+  const target = Math.max(0.02, Math.min(1, load));
+  useFrame((_, dt) => {
+    const f = fill.current;
+    const m = mat.current;
+    if (!f || !m) return;
+    const next = damp(f.scale.x, target, 10, dt);
+    f.scale.x = next;
+    f.position.x = (-width / 2) * (1 - next);
     loadColor(load, _c);
-    mat.color.copy(_c);
-    if (saturated) {
-      const pulse = 0.5 + 0.5 * Math.sin(state.clock.elapsedTime * 7);
-      mat.emissive.copy(_c);
-      mat.emissiveIntensity = 0.35 + pulse * 0.9;
-    } else {
-      mat.emissive.copy(_c);
-      mat.emissiveIntensity = 0.18;
-    }
+    m.color.copy(_c);
+    m.emissive.copy(_c);
+    m.emissiveIntensity = load >= 1 ? 0.45 : 0;
   });
-
   return (
-    <group position={[x, 0, z]}>
-      {/* track */}
-      <mesh position-y={BAR_MAX_H * 1.25 / 2}>
-        <boxGeometry args={[0.1, BAR_MAX_H * 1.25, 0.1]} />
-        <meshStandardMaterial color="#2a3142" roughness={1} />
+    <group position-y={y}>
+      <mesh>
+        <boxGeometry args={[width, 0.07, 0.12]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
       </mesh>
-      {/* base plate */}
-      <mesh position-y={0.02}>
-        <cylinderGeometry args={[0.3, 0.3, 0.04, 20]} />
-        <meshStandardMaterial color="#2a3142" roughness={1} />
+      <mesh ref={fill} scale={[0.02, 1, 1]} position-x={-width / 2}>
+        <boxGeometry args={[width, 0.08, 0.14]} />
+        <meshStandardMaterial ref={mat} color={PALETTE.loadNeutral} roughness={0.7} />
       </mesh>
-      {/* fill: unit-height box scaled in y */}
-      <mesh ref={barRef} position-y={0.02} scale={[1, 0.04, 1]} castShadow>
-        <boxGeometry args={[0.22, 1, 0.22]} />
-        <meshStandardMaterial ref={matRef} color={PALETTE.ok} roughness={0.5} />
-      </mesh>
-      {/* 100% tick */}
-      <mesh position-y={BAR_MAX_H}>
-        <boxGeometry args={[0.34, 0.025, 0.34]} />
-        <meshBasicMaterial color={PALETTE.fg2} />
-      </mesh>
-      {queue > 0 && (
-        <Label position={[0, BAR_MAX_H * 1.25 + 0.35, 0]} size={0.24} color={saturated ? PALETTE.bad : PALETTE.warn}>
-          {`${queue} waiting`}
-        </Label>
-      )}
     </group>
   );
 }
 
-function HighlightRing({ w, d }: { w: number; d: number }) {
-  const ref = useRef<THREE.Mesh>(null);
-  const mat = useRef<THREE.MeshBasicMaterial>(null);
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    const s = 1 + 0.04 * Math.sin(t * 4);
-    if (ref.current) ref.current.scale.set(s, s, 1);
-    if (mat.current) mat.current.opacity = 0.55 + 0.35 * Math.sin(t * 4);
+function FryerBaskets({ busy, h }: { busy: number; h: number }) {
+  const left = useRef<THREE.Group>(null);
+  const right = useRef<THREE.Group>(null);
+  useFrame((_, dt) => {
+    const l = left.current;
+    const r = right.current;
+    if (!l || !r) return;
+    l.position.y = damp(l.position.y, busy >= 1 ? h - 0.08 : h + 0.22, 6, dt);
+    r.position.y = damp(r.position.y, busy >= 2 ? h - 0.08 : h + 0.22, 6, dt);
   });
+  const basket = (
+    <>
+      <mesh castShadow>
+        <boxGeometry args={[0.5, 0.18, 0.6]} />
+        <meshStandardMaterial color={PALETTE.steelDark} roughness={0.4} metalness={0.6} />
+      </mesh>
+      {/* handle */}
+      <mesh position={[0, 0.06, 0.45]} rotation-x={0.3}>
+        <boxGeometry args={[0.08, 0.04, 0.4]} />
+        <meshStandardMaterial color={PALETTE.ink} roughness={0.8} />
+      </mesh>
+    </>
+  );
   return (
-    <mesh ref={ref} rotation-x={-Math.PI / 2} position-y={0.02}>
-      <ringGeometry args={[Math.max(w, d) / 2 + 0.25, Math.max(w, d) / 2 + 0.38, 48]} />
-      <meshBasicMaterial ref={mat} color={PALETTE.accent} transparent opacity={0.8} side={THREE.DoubleSide} />
-    </mesh>
+    <>
+      {/* oil vats */}
+      <mesh position={[-0.37, h + 0.01, 0]}>
+        <boxGeometry args={[0.62, 0.04, 0.72]} />
+        <meshStandardMaterial color="#C9A24A" roughness={0.25} metalness={0.3} />
+      </mesh>
+      <mesh position={[0.37, h + 0.01, 0]}>
+        <boxGeometry args={[0.62, 0.04, 0.72]} />
+        <meshStandardMaterial color="#C9A24A" roughness={0.25} metalness={0.3} />
+      </mesh>
+      <group ref={left} position={[-0.37, h + 0.22, 0]}>{basket}</group>
+      <group ref={right} position={[0.37, h + 0.22, 0]}>{basket}</group>
+    </>
   );
 }
 
-export function StationBox({ station, snap, highlighted, dragging, onPointerDown }: StationProps) {
+function GrillGrate({ w, d, h }: { w: number; d: number; h: number }) {
+  const bars = Math.floor((w - 0.5) / 0.12);
+  return (
+    <group position-y={h + 0.04}>
+      <mesh>
+        <boxGeometry args={[w - 0.4, 0.06, d - 0.3]} />
+        <meshStandardMaterial color="#5A5E64" roughness={0.6} metalness={0.3} />
+      </mesh>
+      {Array.from({ length: bars }, (_, i) => (
+        <mesh key={i} position={[-(w - 0.5) / 2 + 0.06 + i * 0.12, 0.045, 0]}>
+          <boxGeometry args={[0.035, 0.03, d - 0.4]} />
+          <meshStandardMaterial color={PALETTE.grate} roughness={0.5} metalness={0.5} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function PassShelf({ w, h }: { w: number; h: number }) {
+  return (
+    <group>
+      {/* uprights */}
+      {[-1, 1].map((s) => (
+        <mesh key={s} position={[(s * (w - 0.3)) / 2, h + 0.45, -0.35]} castShadow>
+          <boxGeometry args={[0.06, 0.9, 0.06]} />
+          <meshStandardMaterial color={PALETTE.steelDark} roughness={0.4} metalness={0.6} />
+        </mesh>
+      ))}
+      {/* upper shelf */}
+      <mesh position={[0, h + 0.5, -0.35]} castShadow>
+        <boxGeometry args={[w - 0.2, 0.04, 0.4]} />
+        <meshStandardMaterial color={PALETTE.steel} roughness={0.35} metalness={0.6} />
+      </mesh>
+      {/* heat lamp bar */}
+      <mesh position={[0, h + 0.85, -0.3]} castShadow>
+        <boxGeometry args={[w - 0.4, 0.08, 0.14]} />
+        <meshStandardMaterial color={PALETTE.steelDark} roughness={0.4} metalness={0.6} />
+      </mesh>
+      <mesh position={[0, h + 0.8, -0.3]}>
+        <boxGeometry args={[w - 0.5, 0.02, 0.1]} />
+        <meshStandardMaterial color={PALETTE.heatLamp} emissive={PALETTE.heatLamp} emissiveIntensity={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+export function StationBox({ station, snap, highlighted, dragging, dragTarget, onPointerDown }: StationProps) {
   const st = STATION_STYLE[station.id];
-  const x = toWorldX(station.x);
-  const z = toWorldZ(station.y);
   const load = snap?.load ?? 0;
-  const saturated = snap?.saturated ?? false;
   const queue = snap?.queue ?? 0;
   const busy = snap?.busy ?? 0;
+  const [hover, setHover] = useState(false);
 
+  const group = useRef<THREE.Group>(null);
   const bodyMat = useRef<THREE.MeshStandardMaterial>(null);
-  useFrame((state) => {
+  const initialised = useRef(false);
+
+  // Target world position: follows the drag, then settles on drop.
+  const tx = toWorldX(station.x);
+  const tz = toWorldZ(station.y);
+  const ty = dragging ? 0.18 : 0;
+
+  useFrame((_, dt) => {
+    const g = group.current;
+    if (!g) return;
+    if (!initialised.current) {
+      g.position.set(tx, ty, tz);
+      initialised.current = true;
+    } else {
+      g.position.x = damp(g.position.x, tx, dragging ? 30 : 12, dt);
+      g.position.z = damp(g.position.z, tz, dragging ? 30 : 12, dt);
+      g.position.y = damp(g.position.y, ty, 12, dt);
+    }
     const m = bodyMat.current;
     if (!m) return;
-    if (highlighted) {
-      m.emissive.set(PALETTE.accent);
-      m.emissiveIntensity = 0.12 + 0.12 * Math.sin(state.clock.elapsedTime * 4);
-    } else if (dragging) {
-      m.emissive.set(PALETTE.accent2);
-      m.emissiveIntensity = 0.2;
-    } else if (m.emissiveIntensity !== 0) {
-      m.emissiveIntensity = 0;
-    }
+    const invalid = dragging && dragTarget && !dragTarget.valid;
+    const tint = invalid ? BAD : highlighted || dragging || hover ? ACCENT : WHITE;
+    const amount = invalid ? 0.7 : highlighted || dragging ? 0.25 : hover ? 0.12 : 0;
+    _c.copy(WHITE).lerp(tint, amount);
+    m.emissive.copy(tint);
+    m.emissiveIntensity = damp(m.emissiveIntensity, amount, 14, dt);
   });
 
-  const subtitle = useMemo(() => {
-    if (!snap) return "";
-    if (station.capacity >= 99) return busy > 0 ? `${busy} in hand` : "";
-    return `${busy}/${station.capacity} busy`;
-  }, [snap, busy, station.capacity]);
+  const showDetail = hover || highlighted;
+  const detail =
+    snap && showDetail
+      ? station.capacity >= 99
+        ? `${busy} in hand${queue ? ` · ${queue} waiting` : ""}`
+        : `${busy}/${station.capacity} busy${queue ? ` · ${queue} waiting` : ""}`
+      : "";
 
   return (
-    <group position={[x, 0, z]}>
-      {highlighted && <HighlightRing w={st.w} d={st.d} />}
-      {/* body */}
-      <mesh
-        position-y={st.h / 2}
-        castShadow
-        receiveShadow
-        onPointerDown={onPointerDown ? (e) => onPointerDown(e, station.id) : undefined}
-        onPointerOver={onPointerDown ? () => (document.body.style.cursor = "grab") : undefined}
-        onPointerOut={onPointerDown ? () => (document.body.style.cursor = "auto") : undefined}
-      >
-        <boxGeometry args={[st.w, st.h, st.d]} />
-        <meshStandardMaterial ref={bodyMat} color={st.color} roughness={0.75} metalness={0.15} />
-      </mesh>
-      {/* top slab */}
-      <mesh position-y={st.h + 0.03} castShadow receiveShadow>
-        <boxGeometry args={[st.w + 0.08, 0.06, st.d + 0.08]} />
-        <meshStandardMaterial color={st.top} roughness={0.35} metalness={0.5} />
-      </mesh>
-      {/* grill grate / fryer baskets flavour */}
-      {station.id === "grill" && (
-        <mesh position-y={st.h + 0.07}>
-          <boxGeometry args={[st.w - 0.5, 0.02, st.d - 0.4]} />
-          <meshStandardMaterial color="#ff5a1a" emissive="#ff3b00" emissiveIntensity={0.9} />
-        </mesh>
-      )}
-      {station.id === "fryer" && (
-        <>
-          <mesh position={[-0.35, st.h + 0.1, 0]}>
-            <boxGeometry args={[0.55, 0.1, 0.6]} />
-            <meshStandardMaterial color="#ffc86b" emissive="#ff9a2a" emissiveIntensity={0.45} />
+    <>
+      {dragging && dragTarget && (
+        <group position={[toWorldX(dragTarget.x), 0.012, toWorldZ(dragTarget.y)]}>
+          {/* ghost footprint on the target cell */}
+          <mesh rotation-x={-Math.PI / 2}>
+            <planeGeometry args={[st.w, st.d]} />
+            <meshBasicMaterial color={dragTarget.valid ? PALETTE.accent : PALETTE.bad} transparent opacity={0.22} />
           </mesh>
-          <mesh position={[0.35, st.h + 0.1, 0]}>
-            <boxGeometry args={[0.55, 0.1, 0.6]} />
-            <meshStandardMaterial color="#ffc86b" emissive="#ff9a2a" emissiveIntensity={0.45} />
+          <mesh rotation-x={-Math.PI / 2} position-y={0.002}>
+            <ringGeometry args={[Math.min(st.w, st.d) / 2 - 0.06, Math.min(st.w, st.d) / 2, 4]} />
+            <meshBasicMaterial color={dragTarget.valid ? PALETTE.accent : PALETTE.bad} transparent opacity={0.5} />
           </mesh>
-        </>
+        </group>
       )}
-      {station.id === "cold" && (
-        <mesh position-y={st.h + 0.07}>
-          <boxGeometry args={[st.w - 0.4, 0.02, st.d - 0.4]} />
-          <meshStandardMaterial color="#9fd3ff" emissive="#5ab0ff" emissiveIntensity={0.5} />
+      <group ref={group}>
+        {highlighted && (
+          <mesh rotation-x={-Math.PI / 2} position-y={0.012}>
+            <ringGeometry args={[Math.max(st.w, st.d) / 2 + 0.18, Math.max(st.w, st.d) / 2 + 0.26, 48]} />
+            <meshBasicMaterial color={PALETTE.accent} transparent opacity={0.6} side={THREE.DoubleSide} />
+          </mesh>
+        )}
+        {/* body */}
+        <RoundedBox
+          args={[st.w, st.h, st.d]}
+          radius={0.04}
+          smoothness={3}
+          position-y={st.h / 2}
+          castShadow
+          receiveShadow
+          onPointerDown={onPointerDown ? (e) => onPointerDown(e, station.id) : undefined}
+          onPointerOver={
+            onPointerDown
+              ? (e) => {
+                  e.stopPropagation();
+                  setHover(true);
+                  document.body.style.cursor = "grab";
+                }
+              : () => setHover(true)
+          }
+          onPointerOut={
+            onPointerDown
+              ? () => {
+                  setHover(false);
+                  if (!dragging) document.body.style.cursor = "auto";
+                }
+              : () => setHover(false)
+          }
+        >
+          <meshStandardMaterial
+            ref={bodyMat}
+            color={st.color}
+            roughness={station.id === "cold" || station.id === "counter" ? 0.75 : 0.35}
+            metalness={station.id === "cold" || station.id === "counter" ? 0.05 : 0.6}
+          />
+        </RoundedBox>
+        {/* top slab */}
+        <mesh position-y={st.h + 0.02} castShadow receiveShadow>
+          <boxGeometry args={[st.w + 0.06, 0.05, st.d + 0.06]} />
+          <meshStandardMaterial
+            color={st.top}
+            roughness={station.id === "counter" ? 0.7 : 0.35}
+            metalness={station.id === "counter" || station.id === "cold" ? 0.05 : 0.55}
+          />
         </mesh>
-      )}
-      {/* label */}
-      <Label position={[0, st.h + 1.25, 0]} size={0.36}>
-        {station.name}
-      </Label>
-      {subtitle && (
-        <Label position={[0, st.h + 0.92, 0]} size={0.21} color={PALETTE.fg2}>
-          {subtitle}
+        {/* kick plate */}
+        <mesh position-y={0.06}>
+          <boxGeometry args={[st.w - 0.1, 0.12, st.d - 0.1]} />
+          <meshStandardMaterial color={PALETTE.ink} roughness={0.9} />
+        </mesh>
+        {station.id === "grill" && <GrillGrate w={st.w} d={st.d} h={st.h} />}
+        {station.id === "fryer" && <FryerBaskets busy={busy} h={st.h} />}
+        {station.id === "cold" && (
+          <>
+            {/* fridge doors */}
+            {[-0.5, 0.5].map((dx) => (
+              <mesh key={dx} position={[dx, st.h * 0.45, st.d / 2 + 0.005]}>
+                <boxGeometry args={[0.86, st.h * 0.7, 0.02]} />
+                <meshStandardMaterial color="#DEE6EE" roughness={0.5} metalness={0.2} />
+              </mesh>
+            ))}
+            {[-0.5, 0.5].map((dx) => (
+              <mesh key={`h${dx}`} position={[dx, st.h * 0.6, st.d / 2 + 0.03]}>
+                <boxGeometry args={[0.5, 0.04, 0.04]} />
+                <meshStandardMaterial color={PALETTE.steelDark} roughness={0.4} metalness={0.6} />
+              </mesh>
+            ))}
+          </>
+        )}
+        {station.id === "pack" && <PassShelf w={st.w} h={st.h} />}
+        <LoadBar load={load} w={st.w} y={st.h + (station.id === "pack" ? 1.2 : 0.75)} />
+        <Label position={[0, st.h + (station.id === "pack" ? 1.55 : 1.1), 0]} size={0.32}>
+          {station.name}
         </Label>
-      )}
-      {/* load bar beside the station */}
-      <LoadBar load={load} saturated={saturated} queue={queue} x={st.w / 2 + 0.45} z={0} />
-    </group>
+        {detail && (
+          <Label position={[0, st.h + (station.id === "pack" ? 1.95 : 1.5), 0]} size={0.2} color={PALETTE.fg2}>
+            {detail}
+          </Label>
+        )}
+      </group>
+    </>
   );
 }

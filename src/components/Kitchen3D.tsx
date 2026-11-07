@@ -1,17 +1,18 @@
 "use client";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, OrthographicCamera } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import type { Snapshot, Station, StationId } from "@/sim/types";
 import { FLOOR_W, FLOOR_H } from "@/sim/layout";
+import { PALETTE as UI } from "@/lib/palette";
 import Floor from "./three/Floor";
 import { StationBox } from "./three/Stations";
 import Workers from "./three/Workers";
 import Tokens from "./three/Tokens";
 import Dashers from "./three/Dashers";
-import { STATION_STYLE } from "./three/util";
+import { STATION_STYLE, footprintsOverlap, toWorldX, toWorldZ } from "./three/util";
 
 export interface Kitchen3DProps {
   /** Already interpolated by the caller; just display it. Positions in meters. */
@@ -33,22 +34,32 @@ export function Kitchen3DFallback({ className }: { className?: string }) {
   );
 }
 
-// Camera orbit: slightly from the front-right, looking down at ~55 degrees.
+// Isometric-ish orbit: from the front-right, looking down at ~50 degrees.
 const CAM_DIST = 40;
-const CAM_AZIMUTH = 0.34;
-const CAM_POLAR = 0.92;
-const CAM_POS: [number, number, number] = [
+const CAM_AZIMUTH = 0.62;
+const CAM_POLAR = 0.88;
+const CAM_POS = new THREE.Vector3(
   CAM_DIST * Math.sin(CAM_POLAR) * Math.sin(CAM_AZIMUTH),
   CAM_DIST * Math.cos(CAM_POLAR),
   CAM_DIST * Math.sin(CAM_POLAR) * Math.cos(CAM_AZIMUTH),
-];
+);
+const HOME_TARGET = new THREE.Vector3(0.2, 0.3, 0.6);
+const _target = new THREE.Vector3();
+const _delta = new THREE.Vector3();
 
-/** Fits the orthographic zoom so the whole floor fits the viewport; re-fits on resize. */
-function CameraRig({ dragging }: { dragging: boolean }) {
+interface RigProps {
+  dragging: boolean;
+  focus: { x: number; z: number } | null;
+  resetKey: number;
+}
+
+/** Fits the orthographic zoom so the whole floor fits the viewport; re-fits on resize; eases the target. */
+function CameraRig({ dragging, focus, resetKey }: RigProps) {
   const size = useThree((s) => s.size);
   const camRef = useRef<THREE.OrthographicCamera>(null);
   const controls = useRef<OrbitControlsImpl>(null);
-  const fitZoom = useMemo(() => Math.max(20, Math.min(size.width / 14.2, size.height / 9.6)), [size.width, size.height]);
+  // Diagonal footprint of a 12x8 floor seen from the corner plus label headroom.
+  const fitZoom = useMemo(() => Math.max(16, Math.min(size.width / 19, size.height / 12.5)), [size.width, size.height]);
 
   useEffect(() => {
     const cam = camRef.current;
@@ -57,9 +68,37 @@ function CameraRig({ dragging }: { dragging: boolean }) {
     cam.updateProjectionMatrix();
   }, [fitZoom]);
 
+  useEffect(() => {
+    const cam = camRef.current;
+    const c = controls.current;
+    if (!cam || !c) return;
+    cam.position.copy(CAM_POS);
+    cam.zoom = fitZoom;
+    cam.updateProjectionMatrix();
+    c.target.copy(HOME_TARGET);
+    c.update();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetKey]);
+
+  useFrame((_, dt) => {
+    const c = controls.current;
+    if (!c) return;
+    if (focus) _target.set(HOME_TARGET.x + (focus.x - HOME_TARGET.x) * 0.45, 0.4, HOME_TARGET.z + (focus.z - HOME_TARGET.z) * 0.45);
+    else _target.copy(HOME_TARGET);
+    _delta.subVectors(_target, c.target);
+    if (_delta.lengthSq() > 1e-6) {
+      const k = 1 - Math.exp(-dt * 4);
+      // Move camera and target together so the view pans instead of re-orbiting.
+      _delta.multiplyScalar(k);
+      c.target.add(_delta);
+      c.object.position.add(_delta);
+    }
+    c.update();
+  });
+
   return (
     <>
-      <OrthographicCamera ref={camRef} makeDefault position={CAM_POS} near={-50} far={200} zoom={fitZoom} />
+      <OrthographicCamera ref={camRef} makeDefault position={CAM_POS} near={-60} far={200} zoom={fitZoom} />
       <OrbitControls
         ref={controls}
         makeDefault
@@ -67,15 +106,15 @@ function CameraRig({ dragging }: { dragging: boolean }) {
         enablePan={false}
         enableDamping
         dampingFactor={0.12}
-        minPolarAngle={0.6}
-        maxPolarAngle={1.2}
-        minAzimuthAngle={-0.9}
-        maxAzimuthAngle={0.9}
-        minZoom={fitZoom * 0.7}
+        minPolarAngle={0.7}
+        maxPolarAngle={1.15}
+        minAzimuthAngle={-0.3}
+        maxAzimuthAngle={1.3}
+        minZoom={fitZoom * 0.75}
         maxZoom={fitZoom * 3}
-        target={[0, 0.4, -0.5]}
+        target={HOME_TARGET}
         zoomSpeed={0.6}
-        rotateSpeed={0.6}
+        rotateSpeed={0.5}
       />
     </>
   );
@@ -84,29 +123,26 @@ function CameraRig({ dragging }: { dragging: boolean }) {
 function Lights() {
   return (
     <>
-      <hemisphereLight args={["#7d8fc4", "#3a2816", 1.1]} />
-      <ambientLight intensity={0.35} color="#b9c4ff" />
-      {/* warm key light with shadows */}
+      <hemisphereLight args={["#F2F4F8", "#B8B2A8", 0.9]} />
       <directionalLight
-        position={[5, 11, 6]}
-        intensity={3.2}
-        color="#ffcf9e"
+        position={[6, 12, 7]}
+        intensity={2.2}
+        color="#FFF6EA"
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
-        shadow-camera-left={-9}
-        shadow-camera-right={9}
+        shadow-camera-left={-8}
+        shadow-camera-right={8}
         shadow-camera-top={7}
         shadow-camera-bottom={-7}
-        shadow-camera-near={1}
-        shadow-camera-far={40}
-        shadow-bias={-0.0006}
-        shadow-normalBias={0.02}
+        shadow-camera-near={2}
+        shadow-camera-far={34}
+        shadow-bias={-0.00015}
+        shadow-normalBias={0.03}
+        shadow-radius={3}
       />
-      {/* cool fill */}
-      <directionalLight position={[-8, 6, -5]} intensity={0.9} color="#6f8cff" />
-      {/* door spill */}
-      <pointLight position={[4.5, 1.6, 3.4]} intensity={10} distance={7} decay={2} color="#ff9a3a" />
+      {/* soft cool fill from the open side, no shadows */}
+      <directionalLight position={[-6, 5, -3]} intensity={0.35} color="#DDE6F5" />
     </>
   );
 }
@@ -116,9 +152,20 @@ interface SceneProps extends Kitchen3DProps {
   setDragging: (id: StationId | null) => void;
 }
 
+interface DragState {
+  id: StationId;
+  x: number;
+  y: number;
+  valid: boolean;
+  ox: number;
+  oy: number;
+  origX: number;
+  origY: number;
+}
+
 function Scene({ snapshot, stations, highlightStation, onMoveStation, dragging, setDragging }: SceneProps) {
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-  const dragRef = useRef<{ id: StationId; x: number; y: number; ox: number; oy: number } | null>(null);
+  const [drag, setDrag] = useState<DragState | null>(null);
+  const dragRef = useRef<DragState | null>(null);
 
   const snapById = useMemo(() => {
     const m = new Map<StationId, Snapshot["stations"][number]>();
@@ -126,11 +173,11 @@ function Scene({ snapshot, stations, highlightStation, onMoveStation, dragging, 
     return m;
   }, [snapshot]);
 
-  // Stations rendered with the drag position substituted while dragging.
+  // While dragging, the station follows the target cell (it snaps back if the drop is invalid).
   const displayStations = useMemo(() => {
-    if (!dragging || !dragPos) return stations;
-    return stations.map((s) => (s.id === dragging ? { ...s, x: dragPos.x, y: dragPos.y } : s));
-  }, [stations, dragging, dragPos]);
+    if (!dragging || !drag) return stations;
+    return stations.map((s) => (s.id === dragging ? { ...s, x: drag.x, y: drag.y } : s));
+  }, [stations, dragging, drag]);
 
   const snapToFloor = useCallback((id: StationId, px: number, pz: number) => {
     const st = STATION_STYLE[id];
@@ -141,6 +188,11 @@ function Scene({ snapshot, stations, highlightStation, onMoveStation, dragging, 
     return { x, y };
   }, []);
 
+  const isValid = useCallback(
+    (id: StationId, x: number, y: number) => !stations.some((o) => o.id !== id && footprintsOverlap(id, x, y, o.id, o.x, o.y)),
+    [stations],
+  );
+
   const onStationDown = useCallback(
     (e: ThreeEvent<PointerEvent>, id: StationId) => {
       if (!onMoveStation) return;
@@ -148,9 +200,19 @@ function Scene({ snapshot, stations, highlightStation, onMoveStation, dragging, 
       const s = stations.find((st) => st.id === id);
       if (!s) return;
       // Keep the grab offset so the station doesn't jump under the pointer.
-      dragRef.current = { id, x: s.x, y: s.y, ox: s.x - (e.point.x + FLOOR_W / 2), oy: s.y - (e.point.z + FLOOR_H / 2) };
+      const d: DragState = {
+        id,
+        x: s.x,
+        y: s.y,
+        valid: true,
+        ox: s.x - (e.point.x + FLOOR_W / 2),
+        oy: s.y - (e.point.z + FLOOR_H / 2),
+        origX: s.x,
+        origY: s.y,
+      };
+      dragRef.current = d;
       setDragging(id);
-      setDragPos({ x: s.x, y: s.y });
+      setDrag(d);
       document.body.style.cursor = "grabbing";
     },
     [onMoveStation, stations, setDragging],
@@ -162,21 +224,22 @@ function Scene({ snapshot, stations, highlightStation, onMoveStation, dragging, 
       if (!d) return;
       const p = snapToFloor(d.id, e.point.x + d.ox, e.point.z + d.oy);
       if (p.x !== d.x || p.y !== d.y) {
-        d.x = p.x;
-        d.y = p.y;
-        setDragPos(p);
+        const next = { ...d, x: p.x, y: p.y, valid: isValid(d.id, p.x, p.y) };
+        dragRef.current = next;
+        setDrag(next);
       }
     },
-    [snapToFloor],
+    [snapToFloor, isValid],
   );
 
   const endDrag = useCallback(() => {
     const d = dragRef.current;
     if (!d) return;
     dragRef.current = null;
-    onMoveStation?.(d.id, d.x, d.y);
+    const moved = d.x !== d.origX || d.y !== d.origY;
+    if (d.valid && moved) onMoveStation?.(d.id, d.x, d.y);
     setDragging(null);
-    setDragPos(null);
+    setDrag(null);
     document.body.style.cursor = "auto";
   }, [onMoveStation, setDragging]);
 
@@ -189,13 +252,12 @@ function Scene({ snapshot, stations, highlightStation, onMoveStation, dragging, 
 
   return (
     <>
-      <color attach="background" args={["#0b0d12"]} />
       <Lights />
       <Floor />
       {/* invisible drag plane */}
       {onMoveStation && (
         <mesh rotation-x={-Math.PI / 2} position-y={0.001} onPointerMove={onPlaneMove} onPointerUp={endDrag} visible={false}>
-          <planeGeometry args={[60, 60]} />
+          <planeGeometry args={[80, 80]} />
           <meshBasicMaterial />
         </mesh>
       )}
@@ -206,6 +268,7 @@ function Scene({ snapshot, stations, highlightStation, onMoveStation, dragging, 
           snap={snapById.get(s.id)}
           highlighted={highlightStation === s.id}
           dragging={dragging === s.id}
+          dragTarget={dragging === s.id ? drag : null}
           onPointerDown={onMoveStation ? onStationDown : undefined}
         />
       ))}
@@ -222,19 +285,45 @@ function Scene({ snapshot, stations, highlightStation, onMoveStation, dragging, 
 
 export default function Kitchen3D(props: Kitchen3DProps) {
   const [dragging, setDragging] = useState<StationId | null>(null);
+  const [resetKey, setResetKey] = useState(0);
+  const focus = useMemo(() => {
+    if (!props.highlightStation) return null;
+    const s = props.stations.find((st) => st.id === props.highlightStation);
+    return s ? { x: toWorldX(s.x), z: toWorldZ(s.y) } : null;
+  }, [props.highlightStation, props.stations]);
+
   return (
-    <div className={`relative w-full h-full ${props.className ?? ""}`} style={{ touchAction: "none" }}>
+    <div className={`relative w-full h-full ${props.className ?? ""}`} style={{ touchAction: "none", background: UI.panel }}>
       <Canvas
-        shadows
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
-        style={{ background: "#0b0d12" }}
+        shadows="percentage"
+        dpr={[1, 2]}
+        gl={{ antialias: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
+        style={{ background: UI.panel }}
       >
         <Suspense fallback={null}>
-          <CameraRig dragging={dragging !== null} />
+          <CameraRig dragging={dragging !== null} focus={focus} resetKey={resetKey} />
           <Scene {...props} dragging={dragging} setDragging={setDragging} />
         </Suspense>
       </Canvas>
+      <button
+        type="button"
+        onClick={() => setResetKey((k) => k + 1)}
+        style={{
+          position: "absolute",
+          right: 10,
+          bottom: 10,
+          background: UI.panel,
+          border: `1px solid ${UI.border}`,
+          borderRadius: 4,
+          fontSize: 12,
+          lineHeight: "16px",
+          padding: "4px 8px",
+          color: UI.ink,
+          cursor: "pointer",
+        }}
+      >
+        Reset view
+      </button>
     </div>
   );
 }
