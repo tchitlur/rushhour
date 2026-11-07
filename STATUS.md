@@ -10,7 +10,7 @@ Live schedule (America/New_York). Start was 12:52 PM EST, ~80 min later than the
 | M3 planner with evidence, outputs | 2:50 PM | done 1:36 PM |
 | M4 Why (Shapley), Ask, curveballs, merge main | 3:15 PM | done 1:36 PM |
 | M5 race, drag-and-drop, demo mode, docs | 3:30 PM | done 1:45 PM |
-| Final tuning, polish, PITCH_NOTES, merge main | 4:00 PM | in progress |
+| Final tuning, polish, PITCH_NOTES, QA, merge main | 4:00 PM | done 2:12 PM |
 
 ## What's live
 - Simulation engine (deterministic, common random numbers), Web Worker pool, 2D + 3D kitchen, playback to 720×, timeline, counters.
