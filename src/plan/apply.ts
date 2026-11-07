@@ -283,17 +283,17 @@ export function patchChips(patch: ScenarioPatch, sc?: Scenario): string[] {
   for (const x of patch.extraStaff ?? []) {
     if (x.count === 0) continue;
     const n = Math.abs(x.count);
-    const who = x.station ? `${n} on the ${STATION_LABEL[x.station].toLowerCase()}` : `${n} ${n === 1 ? "cook" : "cooks"}`;
+    const who = x.station ? `${n} on the ${stationName(sc, x.station).toLowerCase()}` : `${n} ${n === 1 ? "cook" : "cooks"}`;
     const allNight = x.start <= SERVICE_START && x.end >= SERVICE_END;
     chips.push(x.count > 0 ? `+${who} ${fmtRange(x.start, x.end)}` : `Short ${n} ${n === 1 ? "person" : "people"} ${allNight ? "all night" : fmtRange(x.start, x.end)}`);
   }
   for (const e of patch.equipment ?? []) {
-    const st = STATION_LABEL[e.station];
+    const st = stationName(sc, e.station);
     chips.push(e.capacity === 0 ? `${st} down ${fmtRange(e.start, e.end)}` : `${st} at capacity ${e.capacity} ${fmtRange(e.start, e.end)}`);
   }
   for (const a of patch.addEquipment ?? []) {
     const base = sc?.stations.find(s => s.id === a.station)?.capacity;
-    const what = base != null && a.capacity >= base ? `Second ${STATION_LABEL[a.station].toLowerCase()}` : `${STATION_LABEL[a.station]} +${a.capacity}`;
+    const what = base != null && a.capacity >= base ? `Second ${stationName(sc, a.station).toLowerCase()}` : `${stationName(sc, a.station)} +${a.capacity}`;
     chips.push(a.time != null && a.time > SERVICE_START ? `${what} from ${fmtClockShort(a.time)}` : `${what} all night`);
   }
   for (const m of patch.menu ?? []) {
@@ -307,7 +307,7 @@ export function patchChips(patch: ScenarioPatch, sc?: Scenario): string[] {
     chips.push(p.end >= SERVICE_END ? `No ${ch} orders after ${fmtClockShort(p.start)}` : `No ${ch} orders ${fmtRange(p.start, p.end)}`);
   }
   for (const q of patch.quotedPrep ?? []) chips.push(`Quote ${q.minutes} min ${fmtRange(q.start, q.end)}`);
-  for (const l of patch.layout ?? []) chips.push(`${STATION_LABEL[l.station]} moved to (${trim(l.x)}, ${trim(l.y)})`);
+  for (const l of patch.layout ?? []) chips.push(`${stationName(sc, l.station)} moved to (${trim(l.x)}, ${trim(l.y)})`);
   for (const b of patch.bigOrders ?? []) {
     const items = b.items.map(i => `${i.qty} ${i.item}`).join(" + ");
     chips.push(`Catering: ${items} at ${fmtClockShort(b.time)} (${channelLabel(b.channel).toLowerCase()})`);
@@ -321,11 +321,11 @@ export function interventionTitle(iv: Intervention, sc?: Scenario): string {
     case "prep_batch": return `Par-cook ${iv.qty} ${iv.item} at ${fmtClockShort(iv.time)}`;
     case "quote_prep_time": return `Quote ${iv.minutes} min prep ${fmtRange(iv.start, iv.end)}`;
     case "throttle_channel": return `Pause ${channelLabel(iv.channel)} ${fmtRange(iv.start, iv.end)}`;
-    case "reassign_worker": return `Put ${workerName(sc, iv.worker)} on the ${STATION_LABEL[iv.station].toLowerCase()} ${fmtRange(iv.start, iv.end)}`;
+    case "reassign_worker": return `Put ${workerName(sc, iv.worker)} on the ${stationName(sc, iv.station).toLowerCase()} ${fmtRange(iv.start, iv.end)}`;
     case "move_station": {
       const pack = sc?.stations.find(s => s.id === "pack");
       const nearPack = pack && Math.hypot(pack.x - iv.x, pack.y - iv.y) <= 3;
-      return nearPack && iv.station !== "pack" ? `Move ${STATION_LABEL[iv.station]} next to Pack` : `Move ${STATION_LABEL[iv.station]} to (${trim(iv.x)}, ${trim(iv.y)})`;
+      return nearPack && iv.station !== "pack" ? `Move ${stationName(sc, iv.station)} next to Pack` : `Move ${stationName(sc, iv.station)} to (${trim(iv.x)}, ${trim(iv.y)})`;
     }
   }
 }
