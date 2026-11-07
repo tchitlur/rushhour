@@ -58,6 +58,8 @@ function Home() {
           <SetupForm />
         </section>
       </main>
+      <footer className="mx-auto max-w-[1140px] px-4 py-8 text-[13px] text-fg-3 flex gap-4"><span>Rush Rehearsal</span><a href="/demo" className="hover:text-fg-2">Demo</a></footer>
+
     </div>
   );
 }

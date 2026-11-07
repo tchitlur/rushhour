@@ -47,3 +47,11 @@ R reset · P play/pause · W why · Space rehearse · S race · C curveballs · 
 **Calm comparison night: Tuesday, November 10, 2026** — only small events. Cached as `CALM_DATE`.
 
 Full candidate list: `src/data/demo-night.json`.
+
+## Recording the demo
+1. Open `/demo` (there is also a quiet "Demo" link in the homepage footer).
+2. Press F11 for full screen; wait for "Everything is pre-loaded."
+3. Start your screen recorder at 1920×1080.
+4. Press **Start** (or the space bar). A 3-second countdown, then the 80-second walkthrough plays itself: Space pauses, R restarts, Esc exits.
+5. Stop the recorder on the end card ("Rush Rehearsal · rushhour-psi.vercel.app").
+Every run is identical: fixed demo seed, cached intake, pre-warmed plan and answers. Caption numbers are read from live app state.

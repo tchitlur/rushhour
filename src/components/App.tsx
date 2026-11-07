@@ -19,18 +19,19 @@ import { SERVICE_START } from "@/sim/types";
 
 const Kitchen3D = dynamic(() => import("@/components/Kitchen3D"), { ssr: false, loading: () => <div className="h-full w-full flex items-center justify-center text-fg-3 text-sm">Loading 3D kitchen…</div> });
 
-export default function App() {
+export default function App({ demoRestaurant }: { demoRestaurant?: string } = {}) {
   return (
     <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-fg-3 text-sm">Loading Rush Rehearsal…</div>}>
-      <AppInner />
+      <AppInner demoRestaurant={demoRestaurant} />
     </Suspense>
   );
 }
 
-function AppInner() {
+function AppInner({ demoRestaurant }: { demoRestaurant?: string }) {
   const s = useApp();
   const { tab, setTab, view, setView, night, tIdx, loadTonight, advance, playing, highlightStation, askNight, viewportSource, askView, setAskView } = s;
-  const restaurantId = useSearchParams().get("r");
+  const searchR = useSearchParams().get("r");
+  const restaurantId = demoRestaurant ?? searchR;
   const viewStations = viewportSource === "ask" && askView === "after" && s.askScenario ? s.askScenario.stations : s.tonight.stations;
   const [intro, setIntro] = useState<"on" | "out" | "off">("on");
   const restaurantName = s.tonight.restaurant?.name ?? "Maria's Burgers & Wings";
