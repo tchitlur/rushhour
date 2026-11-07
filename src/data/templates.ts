@@ -12,7 +12,7 @@ import { baseScenario, flatDemand, MENU, WORKERS, BASELINE_OPH, CHANNEL_MIX } fr
 export type Size = "small" | "medium" | "large";
 export const SIZE_FACTOR: Record<Size, number> = { small: 0.7, medium: 1, large: 1.5 };
 
-export interface RestaurantTemplate { id: string; name: string; cuisine: string; neighborhood: string; tagline: string; demo?: boolean; build: (size?: Size) => Scenario }
+export interface RestaurantTemplate { id: string; name: string; cuisine: string; neighborhood: string; tagline: string; demo?: boolean; disclaimer?: string; build: (size?: Size) => Scenario }
 
 export interface Neighborhood { id: string; name: string; lat: number; lon: number }
 export const NEIGHBORHOODS: Neighborhood[] = [
@@ -35,6 +35,8 @@ interface StaffSeed { name: string; wage: number; skills: Partial<Record<Station
 
 export interface CuisineTemplate {
   id: string;
+  /** worker id (lowercase first name) who calls out in the demo story */
+  demoAbsent: string;
   name: string;         // cuisine label ("Pizza")
   tagline: string;
   stations: Record<StationId, Slot>;
@@ -65,14 +67,14 @@ const COUNTER: Slot = { name: "Counter", kind: "counter", capacity: 99 };
 
 export const CUISINES: CuisineTemplate[] = [
   {
-    id: "burgers", name: "Burgers & wings", tagline: "Grill + fryer line; delivery-heavy on game nights.",
+    id: "burgers", demoAbsent: "jake", name: "Burgers & wings", tagline: "Grill + fryer line; delivery-heavy on game nights.",
     stations: { grill: { name: "Grill", kind: "grill", capacity: 6 }, fryer: { name: "Fryer", kind: "fryer", capacity: 4 }, cold: { name: "Cold", kind: "cold", capacity: 4 }, pack: PACK, counter: COUNTER },
     menu: MENU.map(m => ({ ...m })),
     staff: WORKERS.map(w => ({ name: w.name, wage: w.wage, skills: { ...w.skills }, shift: w.shifts[0] ? [w.shifts[0].start, w.shifts[0].end] as [number, number] : null })),
     channelMix: { ...CHANNEL_MIX }, demand: [...BASELINE_OPH], quotedPrepMin: 15, hours: { open: H(11), close: H(22) },
   },
   {
-    id: "pizza", name: "Pizza", tagline: "Deck ovens are the bottleneck; long bakes, big delivery share.",
+    id: "pizza", demoAbsent: "sarah", name: "Pizza", tagline: "Deck ovens are the bottleneck; long bakes, big delivery share.",
     stations: { grill: { name: "Pizza oven", kind: "pizza_oven", capacity: 8 }, fryer: { name: "Deck oven 2", kind: "oven", capacity: 6 }, cold: { name: "Salad / prep", kind: "cold", capacity: 4 }, pack: PACK, counter: COUNTER },
     menu: [
       { id: "cheese", name: "Cheese pie 16\"", price: 16, foodCost: 4.2, stations: ["grill"], prepMin: 12, prepSd: 1.5, holdMin: 15, popularity: 30 },
@@ -87,15 +89,15 @@ export const CUISINES: CuisineTemplate[] = [
       { id: "sodap", name: "2-liter soda", price: 3.5, foodCost: 1.1, stations: ["cold"], prepMin: 0.5, prepSd: 0.1, holdMin: 90, popularity: 30 },
     ],
     staff: [
-      { name: "Tony", wage: 0, skills: { grill: 1.3, fryer: 1.1, cold: 0.9, pack: 1.0, counter: 1.0 }, shift: [H(16), H(22)] },
-      { name: "Priya", wage: 18, skills: { grill: 1.0, fryer: 1.1, cold: 1.0, pack: 1.1, counter: 0.9 }, shift: [H(17), H(22)] },
-      { name: "Marcus", wage: 17, skills: { grill: 0.8, fryer: 1.0, cold: 1.1, pack: 1.2, counter: 1.1 }, shift: [H(16), H(22)] },
-      { name: "Lena", wage: 16, skills: { grill: 0.7, fryer: 0.8, cold: 1.0, pack: 1.1, counter: 1.2 }, shift: [H(18), H(22)] },
+      { name: "Mike", wage: 0, skills: { grill: 1.3, fryer: 1.1, cold: 0.9, pack: 1.0, counter: 1.0 }, shift: [H(16), H(22)] },
+      { name: "Sarah", wage: 18, skills: { grill: 1.0, fryer: 1.1, cold: 1.0, pack: 1.1, counter: 0.9 }, shift: [H(17), H(22)] },
+      { name: "Chris", wage: 17, skills: { grill: 0.8, fryer: 1.0, cold: 1.1, pack: 1.2, counter: 1.1 }, shift: [H(16), H(22)] },
+      { name: "Jess", wage: 16, skills: { grill: 0.7, fryer: 0.8, cold: 1.0, pack: 1.1, counter: 1.2 }, shift: [H(18), H(22)] },
     ],
     channelMix: { doordash: 0.4, ubereats: 0.18, phone: 0.22, counter: 0.2 }, demand: curve(10, 28, 11), quotedPrepMin: 25, hours: { open: H(11), close: H(23) },
   },
   {
-    id: "noodles", name: "Noodles & ramen", tagline: "Fast wok line, slow broth; short hold times punish waiting Dashers.",
+    id: "noodles", demoAbsent: "amy", name: "Noodles & ramen", tagline: "Fast wok line, slow broth; short hold times punish waiting Dashers.",
     stations: { grill: { name: "Wok line", kind: "wok", capacity: 4 }, fryer: { name: "Noodle boil", kind: "rice", capacity: 6 }, cold: { name: "Garnish / cold", kind: "cold", capacity: 4 }, pack: PACK, counter: COUNTER },
     menu: [
       { id: "tonkotsu", name: "Tonkotsu ramen", price: 15.5, foodCost: 4.4, stations: ["fryer", "cold"], prepMin: 6, prepSd: 0.8, holdMin: 6, popularity: 30 },
@@ -111,15 +113,15 @@ export const CUISINES: CuisineTemplate[] = [
       { id: "tea", name: "Iced tea", price: 3, foodCost: 0.4, stations: ["cold"], prepMin: 0.5, prepSd: 0.1, holdMin: 60, popularity: 24 },
     ],
     staff: [
-      { name: "Kenji", wage: 0, skills: { grill: 1.3, fryer: 1.2, cold: 1.0, pack: 1.0, counter: 0.9 }, shift: [H(16), H(22)] },
-      { name: "Mei", wage: 19, skills: { grill: 1.1, fryer: 1.1, cold: 1.1, pack: 1.0, counter: 1.0 }, shift: [H(17), H(22)] },
-      { name: "Dev", wage: 17, skills: { grill: 0.8, fryer: 0.9, cold: 1.2, pack: 1.2, counter: 1.1 }, shift: [H(16), H(22)] },
-      { name: "Rosa", wage: 16, skills: { grill: 0.6, fryer: 0.8, cold: 1.0, pack: 1.1, counter: 1.2 }, shift: [H(17, 30), H(21, 30)] },
+      { name: "Dave", wage: 0, skills: { grill: 1.3, fryer: 1.2, cold: 1.0, pack: 1.0, counter: 0.9 }, shift: [H(16), H(22)] },
+      { name: "Amy", wage: 19, skills: { grill: 1.1, fryer: 1.1, cold: 1.1, pack: 1.0, counter: 1.0 }, shift: [H(17), H(22)] },
+      { name: "Matt", wage: 17, skills: { grill: 0.8, fryer: 0.9, cold: 1.2, pack: 1.2, counter: 1.1 }, shift: [H(16), H(22)] },
+      { name: "Katie", wage: 16, skills: { grill: 0.6, fryer: 0.8, cold: 1.0, pack: 1.1, counter: 1.2 }, shift: [H(17, 30), H(21, 30)] },
     ],
     channelMix: { doordash: 0.35, ubereats: 0.2, phone: 0.05, counter: 0.4 }, demand: curve(9, 26, 10, 5), quotedPrepMin: 15, hours: { open: H(11, 30), close: H(22) },
   },
   {
-    id: "tacos", name: "Tacos", tagline: "Plancha + fryer; lots of small walk-in tickets.",
+    id: "tacos", demoAbsent: "chris", name: "Tacos", tagline: "Plancha + fryer; lots of small walk-in tickets.",
     stations: { grill: { name: "Plancha", kind: "flattop", capacity: 8 }, fryer: { name: "Fryer", kind: "fryer", capacity: 3 }, cold: { name: "Salsa / cold", kind: "cold", capacity: 5 }, pack: PACK, counter: COUNTER },
     menu: [
       { id: "alpastor", name: "Al pastor tacos (3)", price: 11, foodCost: 3.1, stations: ["grill"], prepMin: 4, prepSd: 0.6, holdMin: 10, popularity: 30 },
@@ -134,14 +136,14 @@ export const CUISINES: CuisineTemplate[] = [
       { id: "horchata", name: "Horchata", price: 3.5, foodCost: 0.5, stations: ["cold"], prepMin: 0.5, prepSd: 0.1, holdMin: 60, popularity: 26 },
     ],
     staff: [
-      { name: "Luis", wage: 0, skills: { grill: 1.3, fryer: 1.0, cold: 1.0, pack: 1.0, counter: 1.0 }, shift: [H(16), H(22)] },
-      { name: "Camila", wage: 18, skills: { grill: 1.1, fryer: 1.0, cold: 1.1, pack: 1.1, counter: 1.0 }, shift: [H(17), H(22)] },
-      { name: "Javi", wage: 16, skills: { grill: 0.8, fryer: 1.1, cold: 1.0, pack: 1.2, counter: 1.2 }, shift: [H(16), H(22)] },
+      { name: "Mike", wage: 0, skills: { grill: 1.3, fryer: 1.0, cold: 1.0, pack: 1.0, counter: 1.0 }, shift: [H(16), H(22)] },
+      { name: "Sarah", wage: 18, skills: { grill: 1.1, fryer: 1.0, cold: 1.1, pack: 1.1, counter: 1.0 }, shift: [H(17), H(22)] },
+      { name: "Chris", wage: 16, skills: { grill: 0.8, fryer: 1.1, cold: 1.0, pack: 1.2, counter: 1.2 }, shift: [H(16), H(22)] },
     ],
     channelMix: { doordash: 0.28, ubereats: 0.14, phone: 0.08, counter: 0.5 }, demand: curve(10, 24, 9, 5), quotedPrepMin: 12, hours: { open: H(11), close: H(22) },
   },
   {
-    id: "cafe", name: "Café & bakery", tagline: "Espresso and ovens; the rush is early and fades through the evening.",
+    id: "cafe", demoAbsent: "dave", name: "Café & bakery", tagline: "Espresso and ovens; the rush is early and fades through the evening.",
     stations: { grill: { name: "Ovens", kind: "oven", capacity: 10 }, fryer: { name: "Espresso", kind: "espresso", capacity: 2 }, cold: { name: "Pastry case / cold", kind: "cold", capacity: 6 }, pack: PACK, counter: COUNTER },
     menu: [
       { id: "latte", name: "Latte", price: 5.5, foodCost: 0.9, stations: ["fryer"], prepMin: 2.5, prepSd: 0.4, holdMin: 8, popularity: 40 },
@@ -156,14 +158,14 @@ export const CUISINES: CuisineTemplate[] = [
       { id: "cake", name: "Cake slice", price: 6.5, foodCost: 1.4, stations: ["cold"], prepMin: 1, prepSd: 0.2, holdMin: 60, popularity: 12 },
     ],
     staff: [
-      { name: "Hannah", wage: 0, skills: { grill: 1.1, fryer: 1.3, cold: 1.1, pack: 1.0, counter: 1.1 }, shift: [H(16), H(22)] },
-      { name: "Omar", wage: 17, skills: { grill: 1.0, fryer: 1.2, cold: 1.0, pack: 1.0, counter: 1.0 }, shift: [H(16), H(20)] },
-      { name: "Bea", wage: 16, skills: { grill: 0.9, fryer: 0.8, cold: 1.1, pack: 1.1, counter: 1.2 }, shift: [H(16), H(22)] },
+      { name: "Jess", wage: 0, skills: { grill: 1.1, fryer: 1.3, cold: 1.1, pack: 1.0, counter: 1.1 }, shift: [H(16), H(22)] },
+      { name: "Dave", wage: 17, skills: { grill: 1.0, fryer: 1.2, cold: 1.0, pack: 1.0, counter: 1.0 }, shift: [H(16), H(20)] },
+      { name: "Amy", wage: 16, skills: { grill: 0.9, fryer: 0.8, cold: 1.1, pack: 1.1, counter: 1.2 }, shift: [H(16), H(22)] },
     ],
     channelMix: { doordash: 0.15, ubereats: 0.1, phone: 0.05, counter: 0.7 }, demand: falling(26, 6), quotedPrepMin: 10, hours: { open: H(6, 30), close: H(18) },
   },
   {
-    id: "sushi", name: "Sushi", tagline: "Knife work on the cold line; the sushi bar is the bottleneck, not the heat.",
+    id: "sushi", demoAbsent: "sarah", name: "Sushi", tagline: "Knife work on the cold line; the sushi bar is the bottleneck, not the heat.",
     stations: { grill: { name: "Hot line / tempura", kind: "fryer", capacity: 3 }, fryer: { name: "Rice & robata", kind: "rice", capacity: 4 }, cold: { name: "Sushi bar", kind: "cold", capacity: 4 }, pack: PACK, counter: COUNTER },
     menu: [
       { id: "calif", name: "California roll", price: 9, foodCost: 2.3, stations: ["cold"], prepMin: 4, prepSd: 0.6, holdMin: 25, popularity: 28 },
@@ -178,15 +180,15 @@ export const CUISINES: CuisineTemplate[] = [
       { id: "edamame2", name: "Edamame", price: 5, foodCost: 1, stations: ["cold"], prepMin: 1.5, prepSd: 0.3, holdMin: 30, popularity: 16 },
     ],
     staff: [
-      { name: "Hiro", wage: 0, skills: { grill: 0.9, fryer: 1.0, cold: 1.35, pack: 1.0, counter: 0.9 }, shift: [H(16), H(22)] },
-      { name: "Yuki", wage: 21, skills: { grill: 0.9, fryer: 1.0, cold: 1.2, pack: 1.0, counter: 1.0 }, shift: [H(17), H(22)] },
-      { name: "Nate", wage: 18, skills: { grill: 1.2, fryer: 1.2, cold: 0.7, pack: 1.0, counter: 0.9 }, shift: [H(16), H(22)] },
-      { name: "Grace", wage: 16, skills: { grill: 0.6, fryer: 0.7, cold: 0.8, pack: 1.2, counter: 1.3 }, shift: [H(17), H(22)] },
+      { name: "Mike", wage: 0, skills: { grill: 0.9, fryer: 1.0, cold: 1.35, pack: 1.0, counter: 0.9 }, shift: [H(16), H(22)] },
+      { name: "Sarah", wage: 21, skills: { grill: 0.9, fryer: 1.0, cold: 1.2, pack: 1.0, counter: 1.0 }, shift: [H(17), H(22)] },
+      { name: "Chris", wage: 18, skills: { grill: 1.2, fryer: 1.2, cold: 0.7, pack: 1.0, counter: 0.9 }, shift: [H(16), H(22)] },
+      { name: "Jess", wage: 16, skills: { grill: 0.6, fryer: 0.7, cold: 0.8, pack: 1.2, counter: 1.3 }, shift: [H(17), H(22)] },
     ],
     channelMix: { doordash: 0.35, ubereats: 0.2, phone: 0.1, counter: 0.35 }, demand: curve(7, 22, 11, 5), quotedPrepMin: 20, hours: { open: H(12), close: H(22) },
   },
   {
-    id: "indian", name: "Indian", tagline: "Tandoor and curry line; big family orders, long holds.",
+    id: "indian", demoAbsent: "amy", name: "Indian", tagline: "Tandoor and curry line; big family orders, long holds.",
     stations: { grill: { name: "Tandoor", kind: "pizza_oven", capacity: 6 }, fryer: { name: "Curry line", kind: "wok", capacity: 8 }, cold: { name: "Rice & cold", kind: "rice", capacity: 6 }, pack: PACK, counter: COUNTER },
     menu: [
       { id: "butterchicken", name: "Butter chicken", price: 16.5, foodCost: 4.8, stations: ["fryer", "cold"], prepMin: 7, prepSd: 1, holdMin: 25, popularity: 30 },
@@ -201,15 +203,15 @@ export const CUISINES: CuisineTemplate[] = [
       { id: "lassi", name: "Mango lassi", price: 5, foodCost: 1, stations: ["cold"], prepMin: 1.5, prepSd: 0.3, holdMin: 30, popularity: 18 },
     ],
     staff: [
-      { name: "Anil", wage: 0, skills: { grill: 1.3, fryer: 1.1, cold: 1.0, pack: 1.0, counter: 0.9 }, shift: [H(16), H(22)] },
-      { name: "Sunita", wage: 19, skills: { grill: 0.9, fryer: 1.3, cold: 1.1, pack: 1.0, counter: 1.0 }, shift: [H(16), H(22)] },
-      { name: "Raj", wage: 17, skills: { grill: 1.0, fryer: 0.9, cold: 1.1, pack: 1.2, counter: 1.1 }, shift: [H(17), H(22)] },
-      { name: "Fatima", wage: 16, skills: { grill: 0.6, fryer: 0.7, cold: 1.0, pack: 1.1, counter: 1.3 }, shift: [H(17), H(22)] },
+      { name: "Dave", wage: 0, skills: { grill: 1.3, fryer: 1.1, cold: 1.0, pack: 1.0, counter: 0.9 }, shift: [H(16), H(22)] },
+      { name: "Amy", wage: 19, skills: { grill: 0.9, fryer: 1.3, cold: 1.1, pack: 1.0, counter: 1.0 }, shift: [H(16), H(22)] },
+      { name: "Matt", wage: 17, skills: { grill: 1.0, fryer: 0.9, cold: 1.1, pack: 1.2, counter: 1.1 }, shift: [H(17), H(22)] },
+      { name: "Katie", wage: 16, skills: { grill: 0.6, fryer: 0.7, cold: 1.0, pack: 1.1, counter: 1.3 }, shift: [H(17), H(22)] },
     ],
     channelMix: { doordash: 0.42, ubereats: 0.2, phone: 0.18, counter: 0.2 }, demand: curve(8, 24, 12, 5), quotedPrepMin: 25, hours: { open: H(11, 30), close: H(22) },
   },
   {
-    id: "bowls", name: "Bowls & salads", tagline: "Assembly line; fast, cold-heavy, lunch-style tickets at dinner.",
+    id: "bowls", demoAbsent: "sarah", name: "Bowls & salads", tagline: "Assembly line; fast, cold-heavy, lunch-style tickets at dinner.",
     stations: { grill: { name: "Proteins grill", kind: "flattop", capacity: 8 }, fryer: { name: "Grains & roast", kind: "oven", capacity: 10 }, cold: { name: "Assembly line", kind: "cold", capacity: 6 }, pack: PACK, counter: COUNTER },
     menu: [
       { id: "chkbowl", name: "Grilled chicken bowl", price: 13.5, foodCost: 3.9, stations: ["grill", "cold"], prepMin: 3.5, prepSd: 0.5, holdMin: 20, popularity: 30 },
@@ -224,15 +226,42 @@ export const CUISINES: CuisineTemplate[] = [
       { id: "kombucha", name: "Kombucha", price: 4.5, foodCost: 1.6, stations: ["cold"], prepMin: 0.3, prepSd: 0.1, holdMin: 120, popularity: 18 },
     ],
     staff: [
-      { name: "Jordan", wage: 0, skills: { grill: 1.2, fryer: 1.1, cold: 1.2, pack: 1.0, counter: 1.0 }, shift: [H(16), H(22)] },
-      { name: "Aisha", wage: 17, skills: { grill: 0.9, fryer: 1.0, cold: 1.3, pack: 1.1, counter: 1.0 }, shift: [H(16), H(21)] },
-      { name: "Theo", wage: 16, skills: { grill: 1.0, fryer: 1.0, cold: 1.0, pack: 1.2, counter: 1.2 }, shift: [H(17), H(22)] },
+      { name: "Mike", wage: 0, skills: { grill: 1.2, fryer: 1.1, cold: 1.2, pack: 1.0, counter: 1.0 }, shift: [H(16), H(22)] },
+      { name: "Sarah", wage: 17, skills: { grill: 0.9, fryer: 1.0, cold: 1.3, pack: 1.1, counter: 1.0 }, shift: [H(16), H(21)] },
+      { name: "Chris", wage: 16, skills: { grill: 1.0, fryer: 1.0, cold: 1.0, pack: 1.2, counter: 1.2 }, shift: [H(17), H(22)] },
     ],
     channelMix: { doordash: 0.36, ubereats: 0.24, phone: 0.05, counter: 0.35 }, demand: curve(9, 22, 9, 5), quotedPrepMin: 12, hours: { open: H(11), close: H(21) },
   },
 ];
 
+/** Primanti Bros. demo kitchen. Estimated menu, staffing and volumes; not Primanti Bros. data. Not a setup-form template. */
+export const PRIMANTI: CuisineTemplate = {
+  id: "primanti", demoAbsent: "chris", name: "Pittsburgh sandwiches", tagline: "Fries and slaw go ON the sandwich, so every sandwich crosses the fryer before the flat-top.",
+  stations: { grill: { name: "Flat-top grill", kind: "flattop", capacity: 6 }, fryer: { name: "Fryer", kind: "fryer", capacity: 4 }, cold: { name: "Cold / chili", kind: "cold", capacity: 4 }, pack: { name: "Pass / wrap", kind: "pack", capacity: 99 }, counter: COUNTER },
+  menu: [
+    { id: "pittsburger", name: "Pitts-burger & Cheese", price: 13.5, foodCost: 4.2, stations: ["fryer", "grill"], prepMin: 7, prepSd: 1.0, holdMin: 10, popularity: 30, fryerBaskets: 0.5 },
+    { id: "capicola", name: "Capicola & Cheese", price: 12.5, foodCost: 3.8, stations: ["fryer", "grill"], prepMin: 6.5, prepSd: 0.9, holdMin: 10, popularity: 26, fryerBaskets: 0.5 },
+    { id: "kielbasa", name: "Kielbasa & Cheese", price: 12.5, foodCost: 3.6, stations: ["fryer", "grill"], prepMin: 6.5, prepSd: 0.9, holdMin: 10, popularity: 14, fryerBaskets: 0.5 },
+    { id: "pastrami", name: "Pastrami & Cheese", price: 13, foodCost: 4.1, stations: ["fryer", "grill"], prepMin: 6.5, prepSd: 0.9, holdMin: 10, popularity: 16, fryerBaskets: 0.5 },
+    { id: "wings", name: "Wings (10)", price: 15, foodCost: 5.1, stations: ["fryer"], prepMin: 11, prepSd: 1.0, holdMin: 12, popularity: 14, fryerBaskets: 1 },
+    { id: "fries", name: "Fries", price: 4.5, foodCost: 0.9, stations: ["fryer"], prepMin: 3.5, prepSd: 0.5, holdMin: 9, popularity: 20, fryerBaskets: 0.5 },
+    { id: "chili", name: "Chili", price: 5.5, foodCost: 1.3, stations: ["cold"], prepMin: 1.5, prepSd: 0.3, holdMin: 30, popularity: 12 },
+    { id: "salad", name: "Salad", price: 9, foodCost: 2.4, stations: ["cold"], prepMin: 3, prepSd: 0.5, holdMin: 25, popularity: 6 },
+    { id: "soda", name: "Fountain drink", price: 2.75, foodCost: 0.3, stations: ["cold"], prepMin: 0.5, prepSd: 0.1, holdMin: 60, popularity: 30 },
+    { id: "ironcity", name: "Iron City beer", price: 5, foodCost: 1.2, stations: ["cold"], prepMin: 0.5, prepSd: 0.1, holdMin: 60, popularity: 16 },
+  ],
+  staff: [
+    { name: "Mike", wage: 22, skills: { grill: 1.25, fryer: 1.0, cold: 1.0, pack: 1.1, counter: 1.0 }, shift: [H(16), H(22)] },
+    { name: "Sarah", wage: 18, skills: { grill: 1.1, fryer: 1.0, cold: 1.1, pack: 1.0, counter: 1.0 }, shift: [H(17), H(22)] },
+    { name: "Chris", wage: 19, skills: { grill: 0.9, fryer: 1.3, cold: 0.9, pack: 1.0, counter: 0.8 }, shift: [H(18), H(22)] },
+    { name: "Jess", wage: 16, skills: { grill: 0.7, fryer: 0.9, cold: 1.1, pack: 1.1, counter: 1.2 }, shift: [H(16), H(22)] },
+    { name: "Dave", wage: 16, skills: { grill: 0.8, fryer: 0.9, cold: 1.0, pack: 1.2, counter: 1.1 }, shift: [H(17), H(21)] },
+  ],
+  channelMix: { doordash: 0.35, ubereats: 0.15, phone: 0.1, counter: 0.4 }, demand: [...BASELINE_OPH], quotedPrepMin: 15, hours: { open: H(10), close: H(24) },
+};
+
 export function getCuisine(id: string | undefined | null): CuisineTemplate {
+  if (id === PRIMANTI.id) return PRIMANTI;
   return CUISINES.find(c => c.id === id) ?? CUISINES[0];
 }
 
@@ -247,6 +276,8 @@ export interface BuildOptions {
   aov?: number;
   hoursOpen?: number;   // minutes since midnight
   hoursClose?: number;
+  /** one-line honesty note shown in the UI (demo presets) */
+  disclaimer?: string;
 }
 
 function roundCap(c: number, f: number) { return c >= 99 ? 99 : Math.max(1, Math.round(c * f)); }
@@ -305,7 +336,10 @@ export function buildScenario(cuisineId: string, opts: BuildOptions = {}): Scena
   s.channelMix = mix;
   s.demand = flatDemand();
   s.quotedPrep = [{ start: SERVICE_START, end: SERVICE_END, minutes: c.quotedPrepMin }];
-  s.restaurant = { name: opts.name?.trim() || `${c.name} (${nb.name})`, cuisine: c.id, neighborhood: nb.name, lat: nb.lat, lon: nb.lon, hours: { open: opts.hoursOpen ?? c.hours.open, close: opts.hoursClose ?? c.hours.close } };
+  // demo story: the named worker calls out; if that worker is not on this roster (small staff count), the last scheduled worker is.
+  const demoAbsent = s.workers.some(w => w.id === c.demoAbsent && w.shifts.length) ? c.demoAbsent : [...s.workers].reverse().find(w => w.shifts.length)?.id;
+  s.restaurant = { name: opts.name?.trim() || `${c.name} (${nb.name})`, cuisine: c.id, neighborhood: nb.name, lat: nb.lat, lon: nb.lon, hours: { open: opts.hoursOpen ?? c.hours.open, close: opts.hoursClose ?? c.hours.close }, demoAbsent };
+  if (opts.disclaimer) s.restaurant.disclaimer = opts.disclaimer;
   s.label = "Normal night";
   return s;
 }
@@ -316,16 +350,18 @@ export const TEMPLATES: RestaurantTemplate[] = CUISINES.map(c => ({
   build: (size: Size = "medium") => buildScenario(c.id, { size }),
 }));
 
-export interface PresetDef { id: string; name: string; cuisine: string; neighborhood: string; size: Size; tagline: string; demo?: boolean }
+export interface PresetDef { id: string; name: string; cuisine: string; neighborhood: string; size: Size; tagline: string; demo?: boolean; disclaimer?: string }
+export const PRIMANTI_DISCLAIMER = "Demo uses estimated menu, staffing and volumes, not Primanti Bros. data.";
 export const PRESET_DEFS: PresetDef[] = [
-  { id: "maria", name: "Maria's Burgers & Wings", cuisine: "burgers", neighborhood: "North Shore", size: "medium", tagline: "Grill + fryer, 4 staff, delivery-heavy on Steelers nights. The built-in demo.", demo: true },
+  { id: "primanti", name: "Primanti Bros. — Strip District", cuisine: "primanti", neighborhood: "Strip District", size: "medium", tagline: "Fries on the sandwich means every ticket crosses the fryer. Five on the line; the fry cook calls out on a Pitt game night.", demo: true, disclaimer: PRIMANTI_DISCLAIMER },
+  { id: "maria", name: "Maria's Burgers & Wings", cuisine: "burgers", neighborhood: "North Shore", size: "medium", tagline: "Grill + fryer, 4 staff, delivery-heavy on Steelers nights." },
   { id: "slice-theory", name: "Slice Theory Pizza", cuisine: "pizza", neighborhood: "Oakland", size: "medium", tagline: "Two deck ovens, student slices by the counter, pies by DoorDash." },
   { id: "noodle-bar", name: "Noodle Bar", cuisine: "noodles", neighborhood: "Lawrenceville", size: "small", tagline: "Ramen and wok dishes with six-minute hold limits." },
   { id: "morning-rise", name: "Morning Rise Bakery & Café", cuisine: "cafe", neighborhood: "Strip District", size: "medium", tagline: "Espresso bar and ovens; the rush is early and fades." },
 ];
 export const PRESETS: RestaurantTemplate[] = PRESET_DEFS.map(p => ({
-  id: p.id, name: p.name, cuisine: p.cuisine, neighborhood: p.neighborhood, tagline: p.tagline, demo: p.demo,
-  build: (size: Size = p.size) => buildScenario(p.cuisine, { size, name: p.name, neighborhood: p.neighborhood }),
+  id: p.id, name: p.name, cuisine: p.cuisine, neighborhood: p.neighborhood, tagline: p.tagline, demo: p.demo, disclaimer: p.disclaimer,
+  build: (size: Size = p.size) => buildScenario(p.cuisine, { size, name: p.name, neighborhood: p.neighborhood, disclaimer: p.disclaimer }),
 }));
 
 // ---- saved restaurants (localStorage) ----
@@ -361,12 +397,12 @@ export function getRestaurantName(id: string | null): string | null {
   return listSavedRestaurants().find(s => s.id === id)?.name ?? null;
 }
 
-/** Resolve `?r=<id>`: "maria" (demo) => null (Maria's built-in defaults, numbers unchanged); a preset id => its scenario;
+/** Resolve `?r=<id>`: "maria" => null (Maria's built-in defaults, numbers unchanged); a preset id (incl. the "primanti" demo) => its scenario;
  *  a cuisine template id => that template at medium size; a saved id (localStorage "rr:restaurants") => the saved scenario. */
 export function getRestaurantScenario(id: string | null): Scenario | null {
   if (!id || id === "maria") return null;
   const p = PRESETS.find(p => p.id === id);
-  if (p) return p.demo ? null : p.build();
+  if (p) return p.build();
   const t = TEMPLATES.find(t => t.id === id);
   if (t) return t.build();
   return listSavedRestaurants().find(s => s.id === id)?.scenario ?? null;
