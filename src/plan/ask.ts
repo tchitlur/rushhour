@@ -2,7 +2,7 @@
 import type { Scenario } from "@/sim/types";
 import { fmtClockShort } from "@/sim/types";
 import { ScenarioPatchSchema, type AskResult, type ScenarioPatch, type PlanCard } from "./types";
-import { applyPatch, fmtRange, patchChips, STATION_LABEL, resolveItemId, resolveWorkerId, splitOrder, stationName, validatePatch } from "./apply";
+import { applyPatch, fmtRange, patchChips, STATION_LABEL, resolveWorkerId, splitOrder, stationName, validatePatch } from "./apply";
 import { CHANNEL_LABEL } from "@/sim/layout";
 import { bottleneckReport } from "./bottleneck";
 import { ruleBasedProposals } from "./rules";
@@ -240,7 +240,7 @@ function clausePatch(s: string, sc?: Scenario): ScenarioPatch | null {
   // --- catering / big orders (split by THIS menu's popularity) ---
   const m = /(\d+)[- ]?(person|people|ppl|top|guests?|heads?)/.exec(s);
   const dishes = /(\d+)[- ]?(dish(es)?|items?|plates?|meals?|bowls?|pies?|tacos?|orders? of)/.exec(s);
-  if (m || dishes || /cater|big order|large order|party order|phone order/.test(s)) {
+  if (m || dishes || /cater|big order|large order|party order/.test(s)) {
     const people = m ? parseInt(m[1]) : null; const total = dishes ? parseInt(dishes[1]) : null;
     const st = time ?? (/\bat 8\b/.test(s) ? 1200 : 1110);
     const ch = /doordash|door dash/.test(s) ? "doordash" : /uber/.test(s) ? "ubereats" : /counter|walk/.test(s) ? "counter" : "phone";

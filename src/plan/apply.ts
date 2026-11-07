@@ -309,7 +309,7 @@ export function patchChips(patch: ScenarioPatch, sc?: Scenario): string[] {
   for (const q of patch.quotedPrep ?? []) chips.push(`Quote ${q.minutes} min ${fmtRange(q.start, q.end)}`);
   for (const l of patch.layout ?? []) chips.push(`${STATION_LABEL[l.station]} moved to (${trim(l.x)}, ${trim(l.y)})`);
   for (const b of patch.bigOrders ?? []) {
-    const items = b.items.map(i => `${i.qty} ${sc?.menu.find(m => m.id === resolveItemId(sc, i.item))?.name ?? i.item}`).join(" + ");
+    const items = b.items.map(i => `${i.qty} ${i.item}`).join(" + ");
     chips.push(`Catering: ${items} at ${fmtClockShort(b.time)} (${channelLabel(b.channel).toLowerCase()})`);
   }
   return chips;

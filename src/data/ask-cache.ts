@@ -18,6 +18,8 @@ export const isMariaMenu = (sc: Scenario) => ["wings", "fries", "burger"].every(
 export function absentWorker(sc: Scenario): Worker | null {
   const demo = sc.restaurant?.demoAbsent ? sc.workers.find(w => w.id === sc.restaurant!.demoAbsent && w.shifts.length) : undefined;
   if (demo) return demo;
+  const sam = sc.workers.find(w => w.id === "sam" && w.shifts.length);
+  if (isMariaMenu(sc) && sam) return sam; // Maria's demo: keep Sam so her numbers don't change
   const on = sc.workers.filter(w => w.shifts.length);
   const nonOwner = on.filter(w => !isOwner(sc, w)).sort((a, b) => avgSkill(a) - avgSkill(b));
   return nonOwner[0] ?? on[0] ?? sc.workers[0] ?? null;

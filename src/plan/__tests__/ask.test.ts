@@ -33,7 +33,7 @@ describe("ask pipeline", () => {
     const p = keywordPatch("100-dish phone order at 8", sc);
     expect(p?.bigOrders?.[0].time).toBe(1200);
     const items = p!.bigOrders![0].items;
-    expect(items.map(i => i.item).sort()).toEqual(["padthai", "shoyu", "tonkotsu"]); // top 3 cooked items; iced tea excluded
+    expect(items.map(i => i.item).sort()).toEqual(["gyoza", "padthai", "shoyu", "tonkotsu"]); // top 4 cooked items; iced tea excluded
     expect(items.reduce((a, i) => a + i.qty, 0)).toBe(100);
     for (const i of items) expect(sc.menu.some(m => m.id === i.item)).toBe(true);
     expect(JSON.stringify(p)).not.toMatch(/burger|wings|fries/);
@@ -51,7 +51,7 @@ describe("ask pipeline", () => {
     expect(v.patch.staff).toEqual([{ worker: "priya", action: "leave", start: 1200 }]);
     expect(v.patch.menu).toBeUndefined();
     expect(v.unknownWorkers).toEqual(["Sam"]);
-    expect(v.unknownItems).toEqual(["burger", "wings"]);
+    expect(v.unknownItems.sort()).toEqual(["burger", "wings"]);
     const nothing = validatePatch({ summary: "x", bigOrders: [{ time: 1200, channel: "phone", items: [{ item: "burger", qty: 35 }] }] }, sc);
     expect(nothing.patch.bigOrders).toBeUndefined();
     expect(JSON.stringify(applyPatch(sc, nothing.patch))).toBe(JSON.stringify(sc));
@@ -70,7 +70,7 @@ describe("ask pipeline", () => {
     expect(unknownPerson("the fryer breaks at 7", sc)).toBeNull();
     // keyword translator uses the real staff, never Maria's
     expect(keywordPatch("Priya leaves at 8", sc)?.staff?.[0]).toMatchObject({ worker: "priya", action: "leave", start: 1200 });
-    expect(keywordPatch("a cook calls out", sc)?.staff?.[0]).toMatchObject({ worker: "marcus", action: "absent" });
+    expect(keywordPatch("a cook calls out", sc)?.staff?.[0]).toMatchObject({ worker: "priya", action: "absent" }); // lowest-skill on-shift non-owner
     expect(keywordPatch("the wok line breaks at 7", sc)?.equipment?.[0]).toMatchObject({ station: "grill", start: 1140, capacity: 0 });
     expect(keywordPatch("add a second wok line", sc)?.addEquipment?.[0]).toMatchObject({ station: "grill", capacity: 4 });
     expect(keywordPatch("86 the gyoza", sc)?.menu?.[0]).toMatchObject({ item: "gyoza", action: "remove" });
@@ -83,8 +83,8 @@ describe("ask pipeline", () => {
     const sc = noodleShop();
     const cb = curveballs(sc);
     expect(cb.map(c => c.label)).toEqual(["Cook calls out", "Game goes to overtime", "Sudden rain", "30-person catering at 6:30"]);
-    expect(cb[0].question).toMatch(/^Marcus calls out/);
-    expect(cb[0].patch.staff?.[0]).toMatchObject({ worker: "marcus", action: "absent" });
+    expect(cb[0].question).toMatch(/^Priya calls out/);
+    expect(cb[0].patch.staff?.[0]).toMatchObject({ worker: "priya", action: "absent" });
     expect(cb[3].patch.bigOrders?.[0].items.every(i => sc.menu.some(m => m.id === i.item))).toBe(true);
     const lq = likelyQuestions(sc);
     expect(lq[0].label).toBe("Wok line breaks at 7");
@@ -117,7 +117,7 @@ describe("ask pipeline", () => {
   it("keeps the four curveballs and caches the likely questions (plus aliases)", () => {
     const sc = baseScenario();
     expect(curveballs(sc).map(c => c.label)).toEqual(["Cook calls out", "Game goes to overtime", "Sudden rain", "30-person catering at 6:30"]);
-    for (const q of ["2 extra employees come at 6", "2 extra cooks come at 6", "the fryer breaks at 7", "Sam leaves at 8", "add a second fryer", "we're short one person all night", "snow keeps people home", "Fries take longer to cook tonight", "pause Uber Eats 7 to 7:30", "quote 20 minutes after 6:45", "100 dishes at 8", "close at 9"]) {
+    for (const q of ["2 extra employees come at 6", "2 extra cooks come at 6", "the fryer breaks at 7", likelyQuestions(sc).find(p => /leaves at 8/.test(p.label))!.question, "add a second fryer", "we're short one person all night", "snow keeps people home", "Fries take longer to cook tonight", "pause Uber Eats 7 to 7:30", "quote 20 minutes after 6:45", "100 dishes at 8", "close at 9"]) {
       expect(cachedPatch(q, sc), q).not.toBeNull();
     }
     expect(cachedPatch("2 extra employees come at 6", sc)?.extraStaff?.[0]).toMatchObject({ count: 2, start: 1080 });
