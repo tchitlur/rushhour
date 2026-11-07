@@ -52,6 +52,7 @@ export default function KitchenPanel() {
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   const name = sc.restaurant?.name ?? getRestaurantName(rid) ?? "Maria's Burgers & Wings";
+  const hoursLabel = sc.restaurant?.hours ? `${fmtClockShort(sc.restaurant.hours.open)}–${fmtClockShort(sc.restaurant.hours.close)}` : null;
   const mixPct = (ch: Channel) => Math.round((draft[`mix:${ch}`] ?? sc.channelMix[ch]) * 100);
 
   const setMix = (ch: Channel, pct: number) => {
@@ -74,7 +75,7 @@ export default function KitchenPanel() {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="font-semibold text-[14px] truncate">{name}</div>
-          <div className="sub">{sc.restaurant ? `${sc.restaurant.neighborhood}${sc.restaurant.hours ? ` · ${fmtClockShort(sc.restaurant.hours.open)}–${fmtClockShort(sc.restaurant.hours.close)}` : ""}` : "North Shore · built-in defaults"}</div>
+          <div className="sub">{sc.restaurant ? `${sc.restaurant.neighborhood}${hoursLabel ? ` · open ${hoursLabel}` : ""}` : "North Shore · built-in defaults"}</div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {loadingNight && <span className="sub text-plan">Re-simulating…</span>}
@@ -83,7 +84,7 @@ export default function KitchenPanel() {
       </div>
 
       {/* EQUIPMENT */}
-      <Section title="Equipment" right={<span className="sub">5 slots · capacity = concurrent items</span>}>
+      <Section title="Equipment" right={<span className="sub">5 slots · name, kind, capacity (concurrent items)</span>}>
         <div className="flex flex-col gap-1.5">
           {sc.stations.map(st => {
             const fixed = st.id === "pack" || st.id === "counter";
@@ -203,7 +204,7 @@ export default function KitchenPanel() {
             </div>
           ))}
           <button className="btn !py-0.5 !px-2 text-xs self-start" onClick={() => update(b => { const last = b.quotedPrep[b.quotedPrep.length - 1]; b.quotedPrep.push({ start: Math.min(1305, last.end), end: 1320, minutes: last.minutes + 5 }); })}>+ Add window</button>
-          <div className="sub mt-1">Hours (identity only; the rehearsal always covers 4–10 PM)</div>
+          <div className="sub mt-1">Hours <span className="text-fg-3">· Simulation window is 4–10 PM in this build</span></div>
           <div className="grid grid-cols-[1fr_12px_1fr] items-center gap-1.5">
             <input type="time" step={900} className={`${inp} num`} value={toHHMM(sc.restaurant?.hours?.open ?? 660)} onChange={e => update(b => { ensureRestaurant(b).hours = { open: toMin(e.target.value), close: b.restaurant?.hours?.close ?? 1320 }; })} />
             <span className="text-fg-3 text-center">–</span>

@@ -9,7 +9,7 @@ import { useApp, snapshotAt, TABS } from "@/store/app";
 import Kitchen2D from "@/components/Kitchen2D";
 import Counters from "@/components/Counters";
 import Timeline from "@/components/Timeline";
-import TonightPanel from "@/components/TonightPanel";
+import TonightPanel, { fmtDate } from "@/components/TonightPanel";
 import RehearsePanel from "@/components/RehearsePanel";
 import OutputsPanel from "@/components/OutputsPanel";
 import WhyPanel from "@/components/WhyPanel";
@@ -35,6 +35,9 @@ function AppInner() {
   const [intro, setIntro] = useState<"on" | "out" | "off">("on");
   const restaurantName = s.tonight.restaurant?.name ?? "Maria's Burgers & Wings";
   const neighborhood = s.tonight.restaurant?.neighborhood ?? "North Shore, Pittsburgh";
+  // avoid "Noodle Bar Lawrenceville · Lawrenceville": only add the neighborhood when the name doesn't already say it
+  const showHood = !restaurantName.toLowerCase().includes(neighborhood.split(",")[0].trim().toLowerCase());
+  const whatIfTitle = s.askResult?.patch.summary ?? "";
 
   useEffect(() => {
     // pick the restaurant from ?r= before the first intake so the scenario builds on the right base (null / "maria" = Maria's)
@@ -117,7 +120,7 @@ function AppInner() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-3 text-xs text-fg-2">
-          <span className="hidden lg:inline truncate max-w-[360px]"><span className="text-fg font-medium">{restaurantName}</span> · {neighborhood} · <span className="num">{s.tonight.date}</span></span>
+          <span className="hidden lg:inline truncate max-w-[360px]" title={`${restaurantName} · ${neighborhood}`}><span className="text-fg font-medium">{restaurantName}</span>{showHood ? ` · ${neighborhood}` : ""} · <span className="num">{fmtDate(s.tonight.date)}</span></span>
           <Link href="/" className="btn !py-1 !px-2 text-xs">Switch restaurant</Link>
           <div className="flex rounded border border-line overflow-hidden text-xs">
             <button onClick={() => setView("2d")} className={`px-2.5 py-1 ${view === "2d" ? "bg-fg text-white" : "text-fg-2 hover:bg-bg-3"}`}>2D</button>
@@ -134,8 +137,8 @@ function AppInner() {
         )}
         <section className="panel relative overflow-hidden flex flex-col no-print">
           {viewportSource === "ask" && tab !== "Race" && (
-            <div className="shrink-0 flex items-center gap-3 px-3 py-1.5 border-b border-line bg-bg-2 text-xs">
-              <span className="text-plan font-semibold truncate min-w-0">What-if: <span className="font-normal text-fg">{s.askResult?.patch.summary ?? ""}</span></span>
+            <div className="shrink-0 flex items-center gap-3 px-3 py-1.5 border-b border-line bg-bg-2 text-xs min-h-[36px]">
+              <span className="text-plan font-semibold truncate min-w-0 flex-1" title={`What-if: ${whatIfTitle}`}>What-if: <span className="font-normal text-fg">{whatIfTitle}</span></span>
               <div className="ml-auto flex rounded border border-line overflow-hidden shrink-0">
                 {(["before", "after", "race"] as const).map((v, i) => (
                   <button key={v} onClick={() => setAskView(v)} className={`px-2.5 py-0.5 ${i > 0 ? "border-l border-line" : ""} ${askView === v ? "bg-fg text-white" : "text-fg-2 hover:bg-bg-3"}`}>{v === "before" ? "Before" : v === "after" ? "After" : "Side-by-side"}</button>

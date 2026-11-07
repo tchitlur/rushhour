@@ -1,11 +1,14 @@
 "use client";
-import type { Snapshot, Station, StationId } from "@/sim/types";
+import type { Snapshot, Station, StationId, StationKind } from "@/sim/types";
 import { FLOOR_W, FLOOR_H, DOOR, CHANNEL_COLOR } from "@/sim/layout";
 import { PALETTE } from "@/lib/palette";
 
 const S = 64; // px per meter (viewBox units)
 // thin colored top stripe per station type (desaturated, meaningful: heat = warm, cold = cool, pass = neutral)
 const STATION_STRIPE: Record<StationId, string> = { grill: "#B83227", fryer: "#B7791F", cold: "#2F6DB5", pack: "#5A6370", counter: "#9A6B12" };
+// kind-specific stripe (a slot re-purposed as a wok or pizza oven should not keep the grill's red)
+const KIND_STRIPE: Partial<Record<StationKind, string>> = { grill: "#B83227", flattop: "#A83A2A", fryer: "#B7791F", pizza_oven: "#8F3A1F", oven: "#8F4A2A", wok: "#A04A1A", rice: "#6B7F2A", espresso: "#5A3A2A", cold: "#2F6DB5", pack: "#5A6370", counter: "#9A6B12" };
+const stripeFor = (st: Station) => (st.kind && KIND_STRIPE[st.kind]) || STATION_STRIPE[st.id];
 const STATION_SIZE: Record<StationId, [number, number]> = { grill: [3.0, 1.1], fryer: [3.0, 1.1], cold: [3.0, 1.1], pack: [3.2, 1.0], counter: [3.6, 0.9] };
 
 export interface Kitchen2DProps {
@@ -28,6 +31,21 @@ function warmthColor(base: string, warmth: number) {
   const b = [parseInt(base.slice(1, 3), 16), parseInt(base.slice(3, 5), 16), parseInt(base.slice(5, 7), 16)];
   const c = b.map((v, i) => Math.round(v + (to[i] - v) * w));
   return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+
+/** Workers standing within 0.5 m of each other are offset ±0.3 m horizontally; crowded name labels alternate above/below. */
+function spreadWorkers<T extends { x: number; y: number }>(ws: T[]): { w: T; x: number; y: number; below: boolean }[] {
+  const out = ws.map(w => ({ w, x: w.x, y: w.y, below: true }));
+  for (let i = 0; i < out.length; i++) {
+    for (let j = i + 1; j < out.length; j++) {
+      const a = out[i], b = out[j];
+      if (Math.hypot(a.w.x - b.w.x, a.w.y - b.w.y) < 0.5) {
+        a.x = a.w.x - 0.3; b.x = b.w.x + 0.3;
+        b.below = !a.below;
+      }
+    }
+  }
+  return out;
 }
 
 export default function Kitchen2D({ snapshot, stations, highlightStation, className }: Kitchen2DProps) {
@@ -73,7 +91,7 @@ export default function Kitchen2D({ snapshot, stations, highlightStation, classN
             <clipPath id={`clip-${st.id}`}><rect x={x} y={y} width={w * S - 26} height={h * S} /></clipPath>
             {(sat || hl || out) && <rect x={x - 4} y={y - 4} width={w * S + 8} height={h * S + 8} rx={6} fill="none" stroke={hl ? PALETTE.plan : PALETTE.bad} strokeWidth={2} />}
             <rect x={x} y={y} width={w * S} height={h * S} rx={4} fill={out ? "#F5E6E0" : "#FFFFFF"} stroke={out ? PALETTE.bad : PALETTE.border} strokeWidth={out ? 1.5 : 1} />
-            <rect x={x} y={y} width={w * S} height={4} rx={1} fill={out ? PALETTE.bad : STATION_STRIPE[st.id]} opacity={out ? 0.6 : 1} />
+            <rect x={x} y={y} width={w * S} height={4} rx={1} fill={out ? PALETTE.bad : stripeFor(st)} opacity={out ? 0.6 : 1} />
             <text x={x + 12} y={y + 26} fill={out ? PALETTE.text2 : PALETTE.ink} fontSize={15} fontWeight={600}>{st.name}</text>
             {out && (
               <g>
@@ -118,9 +136,9 @@ export default function Kitchen2D({ snapshot, stations, highlightStation, classN
         <text x={bigLabel.x} y={bigLabel.y} textAnchor="middle" fill={PALETTE.ink} fontSize={11} fontWeight={600} style={{ paintOrder: "stroke", stroke: "#E9EBEF", strokeWidth: 3 }}>catering · <tspan className="num">{bigLabel.n}</tspan></text>
       )}
 
-      {/* workers (extra what-if staff get a "+" badge) */}
-      {snapshot?.workers.filter(w => w.onShift).map(w => (
-        <g key={w.id} transform={`translate(${w.x * S}, ${(w.y + 0.95) * S})`}>
+      {/* workers (extra what-if staff get a "+" badge); two cooks at one station are nudged apart so neither hides the other */}
+      {spreadWorkers(snapshot?.workers.filter(w => w.onShift) ?? []).map(({ w, x, y, below }) => (
+        <g key={w.id} transform={`translate(${x * S}, ${(y + 0.95) * S})`}>
           <circle r={14} fill={w.color} stroke="#FFFFFF" strokeWidth={2.5} />
           {w.busy && <circle r={18} fill="none" stroke={w.color} strokeWidth={1.5} opacity={0.6} />}
           {w.extra && (
@@ -129,7 +147,7 @@ export default function Kitchen2D({ snapshot, stations, highlightStation, classN
               <text y={3.5} textAnchor="middle" fill="#FFFFFF" fontSize={11} fontWeight={700}>+</text>
             </g>
           )}
-          <text y={31} textAnchor="middle" fill={PALETTE.ink} fontSize={12} fontWeight={600} style={{ paintOrder: "stroke", stroke: "#E9EBEF", strokeWidth: 3 }}>{w.name}</text>
+          <text y={below ? 31 : -22} textAnchor="middle" fill={PALETTE.ink} fontSize={12} fontWeight={600} style={{ paintOrder: "stroke", stroke: "#E9EBEF", strokeWidth: 3 }}>{w.name}</text>
         </g>
       ))}
 

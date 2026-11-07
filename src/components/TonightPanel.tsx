@@ -3,31 +3,83 @@ import { memo, useState } from "react";
 import DatePicker from "@/components/tonight/DatePicker";
 import { useApp } from "@/store/app";
 import { useShallow } from "zustand/react/shallow";
-import { eventMagnitude, isoToMin, fmtT } from "@/lib/demand";
+import { eventMagnitude, isoToMin } from "@/lib/demand";
 import type { EventFact } from "@/lib/intake-types";
-import { SERVICE_START, SERVICE_END, fmtClockShort } from "@/sim/types";
+import { SERVICE_START, SERVICE_END, fmtClock, fmtClockShort } from "@/sim/types";
+
+/** Pre-game crowds build for ~2.5 h before an event, so anything still running at 2 PM touches a 4–10 PM service. */
+const PREGAME_MIN = 120;
+const DEFAULT_EVENT_LEN = 180;
+
+function eventEndMin(e: EventFact): number {
+  return e.end ? isoToMin(e.end) : isoToMin(e.start) + DEFAULT_EVENT_LEN;
+}
+/** Does the event (incl. its pre-game build-up) overlap the simulated service window? */
+export function affectsService(e: EventFact): boolean {
+  const start = isoToMin(e.start);
+  return start <= SERVICE_END && eventEndMin(e) >= SERVICE_START - PREGAME_MIN;
+}
+/** Human impact label + estimated extra orders, from the same magnitude the demand model uses. */
+export function impactLabel(m: number): { tag: string; pct: number; hot: boolean } {
+  return { tag: m > 0.5 ? "High impact" : m > 0.05 ? "Some impact" : "Low impact", pct: Math.round(m * 35), hot: m > 0.5 };
+}
 
 function templateLine(e: EventFact): string {
   const m = eventMagnitude(e);
-  const when = fmtT(isoToMin(e.start));
+  const when = fmtClock(isoToMin(e.start));
   if (m > 0.5) return `${e.attendance.toLocaleString()} people ${e.distanceMiles <= 0.5 ? "next door" : `${e.distanceMiles.toFixed(1)} mi away`}; expect a pre-game delivery surge before ${when}.`;
   if (m > 0.05) return `${e.attendance.toLocaleString()} at ${e.venue.split(",")[0]} at ${when}; a modest bump in delivery orders.`;
   return `Small crowd (${e.attendance.toLocaleString()}) ${e.distanceMiles.toFixed(1)} mi away; little effect on tonight.`;
 }
 
 function TonightPanel() {
-  const { tonightData, tonightLoading, tonightSource, demand, explanations, jakeOut, rainWhatIf, setToggles, tonight, normal, tonightMC, normalMC } = useApp(useShallow(s => ({ tonightData: s.tonightData, tonightLoading: s.tonightLoading, tonightSource: s.tonightSource, demand: s.demand, explanations: s.explanations, jakeOut: s.jakeOut, rainWhatIf: s.rainWhatIf, setToggles: s.setToggles, tonight: s.tonight, normal: s.normal, tonightMC: s.tonightMC, normalMC: s.normalMC })));
+  const { tonightData, tonightLoading, tonightSource, demand, explanations, absentWorker, setAbsentWorker, rainWhatIf, setToggles, tonight, normal, tonightMC, normalMC } = useApp(useShallow(s => ({ tonightData: s.tonightData, tonightLoading: s.tonightLoading, tonightSource: s.tonightSource, demand: s.demand, explanations: s.explanations, absentWorker: s.absentWorker, setAbsentWorker: s.setAbsentWorker, rainWhatIf: s.rainWhatIf, setToggles: s.setToggles, tonight: s.tonight, normal: s.normal, tonightMC: s.tonightMC, normalMC: s.normalMC })));
   const [open, setOpen] = useState<string | null>(null);
-  const events = [...(tonightData?.events ?? [])].sort((a, b) => eventMagnitude(b) - eventMagnitude(a));
+  const [showEarlier, setShowEarlier] = useState(false);
+  const all = [...(tonightData?.events ?? [])].sort((a, b) => eventMagnitude(b) - eventMagnitude(a));
+  const events = all.filter(affectsService);
+  const earlier = all.filter(e => !affectsService(e));
   const w = tonightData?.weather;
   const name = tonight.restaurant?.name ?? "Maria's Burgers & Wings";
   const hood = tonight.restaurant?.neighborhood ?? "North Shore, Pittsburgh";
+  const place = name.toLowerCase().includes(hood.split(",")[0].toLowerCase()) ? name : `${name} · ${hood}`;
+  const disclaimer = tonight.restaurant?.disclaimer ?? "Demo restaurant. Synthetic history, real events and weather.";
+  // staff who could call out: the base roster (before tonight's absence is applied), only people with a shift
+  const roster = (normal.workers.length ? normal.workers : tonight.workers).filter(wk => wk.shifts.length);
+  const absent = roster.find(wk => wk.id === absentWorker) ?? tonight.workers.find(wk => wk.id === absentWorker) ?? null;
+  const shiftLabel = (wk: { shifts: { start: number; end: number }[] }) => wk.shifts.length ? `${fmtClockShort(wk.shifts[0].start)}–${fmtClockShort(wk.shifts[0].end)}` : "";
   // expected orders: Monte Carlo means when ready, else the deterministic demand multiplier on the baseline
   const baseOrders = normal.baselineOrdersPerHour.reduce((a, b) => a + b, 0) / 4; // 15-min bins of an hourly rate
   const mult = demand ? demand.bins.reduce((a, b) => a + b.total, 0) / demand.bins.length : 1;
   const expOrders = tonightMC && normalMC ? tonightMC.mean.orders : Math.round(baseOrders * mult);
   const normOrders = tonightMC && normalMC ? normalMC.mean.orders : Math.round(baseOrders);
   const pct = normOrders > 0 ? Math.round((expOrders / normOrders - 1) * 100) : 0;
+
+  const renderEvent = (e: EventFact, muted: boolean) => {
+    const m = eventMagnitude(e);
+    const { tag, pct: est, hot } = impactLabel(m);
+    const isOpen = open === e.id;
+    return (
+      <div key={e.id} className={`pl-2 border-l-[3px] ${hot && !muted ? "border-l-bad" : "border-l-transparent"} ${muted ? "opacity-70" : ""}`}>
+        <button className="w-full text-left py-1.5 flex items-start gap-2 text-xs hover:bg-bg-3" onClick={() => setOpen(isOpen ? null : e.id)} aria-expanded={isOpen}>
+          <span className="num text-fg-2 shrink-0 w-[58px] whitespace-nowrap pt-px">{fmtClock(isoToMin(e.start))}</span>
+          <span className="font-medium text-fg flex-1 min-w-0 leading-snug" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }} title={e.name}>{e.name}</span>
+          <span className="shrink-0 text-right leading-tight">
+            <span className={`block font-medium ${hot && !muted ? "text-bad" : "text-fg-2"}`}>{muted ? "No effect" : tag}</span>
+            <span className="block num text-fg-3 text-[11px]">{muted ? `${e.distanceMiles.toFixed(1)} mi` : `+${est}% orders est.`}</span>
+          </span>
+        </button>
+        {isOpen && (
+          <div className="pb-2 pr-1 text-xs">
+            <div className="text-fg-2">{e.type} · {e.venue.split(",")[0]} · <span className="num">{e.distanceMiles.toFixed(1)} mi</span> · ~<span className="num">{e.attendance.toLocaleString()}</span> people · {e.impact === "both" ? "delivery up, walk-in down" : e.impact === "delivery_up" ? "delivery up" : e.impact === "dine_in_down" ? "walk-in down" : "neutral"} · confidence <span className="num">{Math.round(e.confidence * 100)}%</span></div>
+            <div className="text-fg mt-1">{muted ? `Ends around ${fmtClock(eventEndMin(e))}, before the dinner rush; no effect on tonight's orders.` : (explanations[e.id] ?? templateLine(e))}</div>
+            <a href={e.sourceUrl} target="_blank" rel="noreferrer" className="text-fg-2 underline underline-offset-2 hover:text-fg">{e.source === "web_search" ? "web source" : e.source === "cache" ? "cached source" : "Ticketmaster"}</a>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -36,7 +88,7 @@ function TonightPanel() {
           {tonightSource && <span className={`chip ${tonightSource === "live" ? "!text-ok !border-ok" : ""}`} title={tonightSource === "live" ? "Fetched live just now" : "Served from committed cache of real data"}>{tonightSource === "live" ? "live data" : tonightSource === "mixed" ? "live + cached" : "cached"}</span>}
         </div>
         <div className="mt-1 text-xl font-semibold leading-tight">{tonightData ? fmtDate(tonightData.date) : "Loading…"}</div>
-        <div className="sub mt-0.5">{name} · {hood}</div>
+        <div className="sub mt-0.5">{place}</div>
         <div className="mt-2"><DatePicker /></div>
       </div>
 
@@ -58,44 +110,41 @@ function TonightPanel() {
       {tonightData && (
         <div className="border-t border-line pt-3">
           <div className="panel-title mb-1.5">Events nearby <span className="num text-fg-2 font-normal">({events.length})</span></div>
-          {events.length === 0 && <div className="text-xs text-fg-3">Nothing within range. Baseline night.</div>}
-          <div className="flex flex-col divide-y divide-line border-y border-line">
-            {events.slice(0, 8).map(e => {
-              const m = eventMagnitude(e);
-              const tag = m > 0.5 ? "major" : m > 0.05 ? "minor" : "tiny";
-              const isOpen = open === e.id;
-              return (
-                <div key={e.id} className={`pl-2 border-l-[3px] ${m > 0.5 ? "border-l-bad" : "border-l-transparent"}`}>
-                  <button className="w-full text-left py-1.5 flex items-center gap-2 text-xs hover:bg-bg-3" onClick={() => setOpen(isOpen ? null : e.id)} aria-expanded={isOpen}>
-                    <span className="num text-fg-2 shrink-0 w-[60px] whitespace-nowrap">{fmtT(isoToMin(e.start))}</span>
-                    <span className="font-medium text-fg truncate flex-1 min-w-0">{e.name}</span>
-                    <span className="num text-fg-2 shrink-0">{e.distanceMiles.toFixed(1)} mi</span>
-                    <span className={`tag shrink-0 ${m > 0.5 ? "text-bad" : "text-fg-3"}`}>{tag}</span>
-                  </button>
-                  {isOpen && (
-                    <div className="pb-2 pr-1 text-xs">
-                      <div className="text-fg-2">{e.type} · {e.venue.split(",")[0]} · ~<span className="num">{e.attendance.toLocaleString()}</span> people · {e.impact === "both" ? "delivery up, walk-in down" : e.impact === "delivery_up" ? "delivery up" : e.impact === "dine_in_down" ? "walk-in down" : "neutral"} · confidence <span className="num">{Math.round(e.confidence * 100)}%</span></div>
-                      <div className="text-fg mt-1">{explanations[e.id] ?? templateLine(e)}</div>
-                      <a href={e.sourceUrl} target="_blank" rel="noreferrer" className="text-fg-2 underline underline-offset-2 hover:text-fg">{e.source === "web_search" ? "web source" : e.source === "cache" ? "cached source" : "Ticketmaster"}</a>
-                    </div>
-                  )}
+          {events.length === 0 && <div className="text-xs text-fg-3">Nothing during the dinner window. Baseline night.</div>}
+          {events.length > 0 && (
+            <div className="flex flex-col divide-y divide-line border-y border-line">
+              {events.slice(0, 8).map(e => renderEvent(e, false))}
+            </div>
+          )}
+          {earlier.length > 0 && (
+            <div className="mt-2">
+              <button className="text-left text-xs text-fg-2 underline underline-offset-2 hover:text-fg" onClick={() => setShowEarlier(v => !v)} aria-expanded={showEarlier}>Earlier today · no effect on the rush <span className="num">({earlier.length})</span></button>
+              {showEarlier && (
+                <div className="flex flex-col divide-y divide-line border-y border-line mt-1.5">
+                  {earlier.slice(0, 8).map(e => renderEvent(e, true))}
                 </div>
-              );
-            })}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
       <div className="border-t border-line pt-3 flex flex-col gap-1.5">
-        <label className="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox" checked={jakeOut} onChange={e => setToggles({ jakeOut: e.target.checked })} className="accent-[#16191D]" />
-          <span>Jake called out <span className="text-fg-2 text-xs">(6–10 PM shift)</span></span>
+        <label className="flex items-center gap-2 text-sm">
+          <span className="shrink-0">One cook calls out</span>
+          <select aria-label="Who calls out tonight" className="num text-xs border border-line rounded px-1.5 py-1 bg-bg-2 text-fg flex-1 min-w-0" value={absentWorker ?? ""} onChange={e => setAbsentWorker(e.target.value || null)}>
+            <option value="">Nobody</option>
+            {roster.map(wk => <option key={wk.id} value={wk.id}>{wk.name} ({shiftLabel(wk)})</option>)}
+            {absent && !roster.some(wk => wk.id === absent.id) && <option value={absent.id}>{absent.name}</option>}
+          </select>
         </label>
+        {absent && <div className="text-[11px] text-fg-2 -mt-0.5">{absent.name} is off tonight{shiftLabel(absent) ? ` (${shiftLabel(absent)} shift)` : ""}; the kitchen runs short-handed.</div>}
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input type="checkbox" checked={rainWhatIf} onChange={e => setToggles({ rainWhatIf: e.target.checked })} className="accent-[#16191D]" />
-          <span>What-if: rain 6–9 PM <span className="text-fg-2 text-xs">(not in the forecast)</span></span>
+          <span>What-if: rain <span className="num">6–9 PM</span> <span className="text-fg-2 text-xs">(not in the forecast)</span></span>
         </label>
-        <div className="text-[11px] text-fg-3">Demo restaurant: synthetic history ({normal.label.toLowerCase()}), real events and weather. Demand = event size × proximity × timing + weather, capped 0.7×–1.8×.</div>
+        <div className="text-[11px] text-fg-3">{disclaimer}</div>
+        <div className="text-[11px] text-fg-3">Demand = event size × proximity × timing + weather, capped 0.7×–1.8×.</div>
       </div>
     </div>
   );
@@ -123,9 +172,10 @@ function DemandCurve() {
   );
 }
 
-function fmtDate(d: string) {
+/** "Fri, Nov 13" */
+export function fmtDate(d: string) {
   const [y, m, dd] = d.split("-").map(Number);
-  return new Date(y, m - 1, dd).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+  return new Date(y, m - 1, dd).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
 
 export default memo(TonightPanel);

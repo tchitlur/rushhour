@@ -9,9 +9,10 @@ import { fmtMoney } from "./Counters";
 const STATION_NAME: Record<string, string> = { grill: "Grill", fryer: "Fryer", cold: "Cold station", pack: "Pack / Expo", counter: "Counter" };
 
 function RehearsePanel() {
-  const { plan, planLoading, planStatus, planSource, planExplanations, runRehearse, togglePlanCard, tonightMC, setTab } = useApp(useShallow(s => ({
-    plan: s.plan, planLoading: s.planLoading, planStatus: s.planStatus, planSource: s.planSource, planExplanations: s.planExplanations, runRehearse: s.runRehearse, togglePlanCard: s.togglePlanCard, tonightMC: s.tonightMC, setTab: s.setTab,
+  const { plan, planLoading, planStatus, planSource, planExplanations, runRehearse, togglePlanCard, tonightMC, setTab, stations } = useApp(useShallow(s => ({
+    plan: s.plan, planLoading: s.planLoading, planStatus: s.planStatus, planSource: s.planSource, planExplanations: s.planExplanations, runRehearse: s.runRehearse, togglePlanCard: s.togglePlanCard, tonightMC: s.tonightMC, setTab: s.setTab, stations: s.tonight.stations,
   })));
+  const bottleneckName = plan ? (stations.find(st => st.id === plan.bottleneck.station)?.name ?? stationName(plan.bottleneck.station)) : "";
   const accepted = plan?.cards.filter(c => c.accepted) ?? [];
   const rejected = plan?.cards.filter(c => !c.accepted) ?? [];
   const ev = plan?.combinedEvidence;
@@ -56,7 +57,7 @@ function RehearsePanel() {
       {plan && (
         <div className="text-sm border-t border-line pt-3">
           <span className="text-xs font-semibold text-bad">Bottleneck</span>
-          <div className="mt-0.5">{plan.bottleneck.summary}</div>
+          <div className="mt-0.5" title={`${bottleneckName} · ${fmtClockShort(plan.bottleneck.window.start)}–${fmtClockShort(plan.bottleneck.window.end)}`}>{plan.bottleneck.summary}</div>
         </div>
       )}
       {accepted.length > 0 && (

@@ -68,13 +68,71 @@ export function setQuotedPrep(windows: Scenario["quotedPrep"], start: number, en
   return merged;
 }
 
-function resolveItemId(sc: Scenario, item: string): string {
+/** Map an item id OR name (case-insensitive; prefix / word match) to the scenario's item id. Returns the input unchanged when nothing matches. */
+export function resolveItemId(sc: Scenario, item: string): string {
   const key = item.trim().toLowerCase();
+  if (!key) return item;
   const byId = sc.menu.find(m => m.id.toLowerCase() === key);
   if (byId) return byId.id;
-  const byName = sc.menu.find(m => m.name.toLowerCase() === key || m.name.toLowerCase().startsWith(key));
+  const names = sc.menu.map(m => ({ id: m.id, n: m.name.toLowerCase() }));
+  const byName = names.find(m => m.n === key) ?? names.find(m => m.n.startsWith(key)) ?? names.find(m => new RegExp(`\\b${key.replace(/[^a-z0-9 ]/g, "")}`).test(m.n)) ?? names.find(m => key.includes(m.n.replace(/\s*\(.*\)$/, "")));
   return byName ? byName.id : item;
 }
+/** Map a worker id OR name (case-insensitive) to the scenario's worker id; null when unknown. */
+export function resolveWorkerId(sc: Scenario, who: string): string | null {
+  const key = who.trim().toLowerCase();
+  if (!key) return null;
+  const w = sc.workers.find(w => w.id.toLowerCase() === key) ?? sc.workers.find(w => w.name.toLowerCase() === key) ?? sc.workers.find(w => w.name.toLowerCase().split(/\s+/)[0] === key);
+  return w ? w.id : null;
+}
+const itemExists = (sc: Scenario, id: string) => sc.menu.some(m => m.id === id);
+
+/** Split `total` items across the restaurant's own most popular cooked items (top 3–4 by popularity). */
+export function splitOrder(menu: Scenario["menu"], total: number): { item: string; qty: number }[] {
+  const hot = menu.filter(m => m.stations.some(s => s === "grill" || s === "fryer"));
+  const pool = [...(hot.length >= 3 ? hot : menu)].sort((a, b) => b.popularity - a.popularity);
+  const k = Math.min(pool.length, total >= 60 ? 4 : 3);
+  const top = pool.slice(0, k);
+  const w = top.reduce((a, m) => a + m.popularity, 0) || 1;
+  const out = top.map(m => ({ item: m.id, qty: Math.max(1, Math.round((total * m.popularity) / w)) }));
+  let diff = total - out.reduce((a, x) => a + x.qty, 0);
+  for (let i = 0; diff !== 0 && out.length; i = (i + 1) % out.length) { const d = Math.sign(diff); if (out[i].qty + d >= 1) { out[i].qty += d; diff -= d; } }
+  return out.map(x => ({ item: x.item, qty: Math.min(100, x.qty) }));
+}
+
+export interface ValidatedPatch { patch: ScenarioPatch; dropped: string[]; unknownWorkers: string[]; unknownItems: string[] }
+/** Resolve names to ids and drop anything that does not exist in this scenario. Pure. */
+export function validatePatch(patch: ScenarioPatch, sc: Scenario): ValidatedPatch {
+  const dropped: string[] = []; const unknownWorkers: string[] = []; const unknownItems: string[] = [];
+  const out: ScenarioPatch = { ...patch };
+  if (patch.staff) {
+    out.staff = [];
+    for (const s of patch.staff) {
+      const id = resolveWorkerId(sc, s.worker);
+      if (id) out.staff.push({ ...s, worker: id }); else { unknownWorkers.push(s.worker); dropped.push(`no "${s.worker}" on staff`); }
+    }
+    if (!out.staff.length) delete out.staff;
+  }
+  if (patch.menu) {
+    out.menu = [];
+    for (const m of patch.menu) {
+      const id = resolveItemId(sc, m.item);
+      if (itemExists(sc, id)) out.menu.push({ ...m, item: id }); else { unknownItems.push(m.item); dropped.push(`"${m.item}" is not on the menu`); }
+    }
+    if (!out.menu.length) delete out.menu;
+  }
+  if (patch.bigOrders) {
+    out.bigOrders = [];
+    for (const b of patch.bigOrders) {
+      const items = b.items.map(i => ({ item: resolveItemId(sc, i.item), qty: i.qty })).filter(i => { const ok = itemExists(sc, i.item); if (!ok) { unknownItems.push(i.item); dropped.push(`"${i.item}" is not on the menu`); } return ok; });
+      if (items.length) out.bigOrders.push({ ...b, items });
+    }
+    if (!out.bigOrders.length) delete out.bigOrders;
+  }
+  return { patch: out, dropped, unknownWorkers, unknownItems };
+}
+
+export const stationName = (sc: Scenario | undefined, id: StationId): string => sc?.stations.find(s => s.id === id)?.name ?? STATION_LABEL[id];
 
 function applyInPlace(sc: Scenario, iv: Intervention): void {
   switch (iv.type) {
@@ -251,7 +309,7 @@ export function patchChips(patch: ScenarioPatch, sc?: Scenario): string[] {
   for (const q of patch.quotedPrep ?? []) chips.push(`Quote ${q.minutes} min ${fmtRange(q.start, q.end)}`);
   for (const l of patch.layout ?? []) chips.push(`${STATION_LABEL[l.station]} moved to (${trim(l.x)}, ${trim(l.y)})`);
   for (const b of patch.bigOrders ?? []) {
-    const items = b.items.map(i => `${i.qty} ${i.item}`).join(" + ");
+    const items = b.items.map(i => `${i.qty} ${sc?.menu.find(m => m.id === resolveItemId(sc, i.item))?.name ?? i.item}`).join(" + ");
     chips.push(`Catering: ${items} at ${fmtClockShort(b.time)} (${channelLabel(b.channel).toLowerCase()})`);
   }
   return chips;

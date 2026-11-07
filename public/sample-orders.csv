@@ -1,0 +1,307 @@
+Date,Time,Order ID,Item,Qty,Gross Sales,Channel
+2026-10-17,18:34:00,SQ-48120,Vanilla Shake,1,$5.50,Counter
+2026-10-17,19:10:00,SQ-48121,Double Smash Burger,1,$11.50,DoorDash
+2026-10-17,18:19:00,SQ-48122,Double Smash Burger,1,$11.50,Counter
+2026-10-17,18:12:00,SQ-48123,Double Smash Burger,2,$23.00,Counter
+2026-10-17,18:12:00,SQ-48123,Loaded Fries,1,$7.00,Counter
+2026-10-17,20:47:00,SQ-48124,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-10-17,20:47:00,SQ-48124,Fries,1,$3.50,Counter
+2026-10-17,19:13:00,SQ-48125,Single Smash Burger,1,$8.50,DoorDash
+2026-10-17,18:57:00,SQ-48126,Crispy Chicken Sandwich,1,$10.50,DoorDash
+2026-10-17,18:57:00,SQ-48127,Fries,1,$3.50,Phone
+2026-10-17,18:57:00,SQ-48127,"Wings, 10 pc",1,$13.00,Phone
+2026-10-17,18:35:00,SQ-48128,Fries,1,$3.50,DoorDash
+2026-10-17,18:35:00,SQ-48128,Fountain Soda,1,$2.50,DoorDash
+2026-10-17,18:39:00,SQ-48129,Single Smash Burger,1,$8.50,Phone
+2026-10-17,17:06:00,SQ-48130,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-10-18,19:20:00,SQ-48131,Vanilla Shake,1,$5.50,DoorDash
+2026-10-18,19:20:00,SQ-48131,"Wings, 10 pc",1,$13.00,DoorDash
+2026-10-18,19:17:00,SQ-48132,Crispy Chicken Sandwich,2,$21.00,DoorDash
+2026-10-18,19:17:00,SQ-48132,"Wings, 10 pc",2,$26.00,DoorDash
+2026-10-18,19:41:00,SQ-48133,Loaded Fries,1,$7.00,Phone
+2026-10-18,17:37:00,SQ-48134,"Wings, 20 pc",1,$24.00,Uber Eats
+2026-10-18,17:37:00,SQ-48134,Onion Rings,1,$4.50,Uber Eats
+2026-10-18,19:47:00,SQ-48135,Crispy Chicken Sandwich,1,$10.50,Phone
+2026-10-18,21:01:00,SQ-48136,Double Smash Burger,2,$23.00,DoorDash
+2026-10-18,21:01:00,SQ-48136,Fries,1,$3.50,DoorDash
+2026-10-18,18:26:00,SQ-48137,Fries,1,$3.50,DoorDash
+2026-10-18,18:26:00,SQ-48137,Fountain Soda,1,$2.50,DoorDash
+2026-10-19,18:50:00,SQ-48138,Double Smash Burger,1,$11.50,DoorDash
+2026-10-19,18:50:00,SQ-48138,Crispy Chicken Sandwich,1,$10.50,DoorDash
+2026-10-19,19:12:00,SQ-48139,Fountain Soda,2,$5.00,Phone
+2026-10-19,19:36:00,SQ-48140,Fries,2,$7.00,DoorDash
+2026-10-19,19:58:00,SQ-48141,Double Smash Burger,1,$11.50,Uber Eats
+2026-10-19,17:28:00,SQ-48142,Onion Rings,1,$4.50,DoorDash
+2026-10-19,17:28:00,SQ-48142,Double Smash Burger,1,$11.50,DoorDash
+2026-10-19,19:40:00,SQ-48143,Fries,1,$3.50,DoorDash
+2026-10-19,19:40:00,SQ-48143,Crispy Chicken Sandwich,1,$10.50,DoorDash
+2026-10-19,19:40:00,SQ-48143,Double Smash Burger,1,$11.50,DoorDash
+2026-10-19,19:15:00,SQ-48144,Fries,1,$3.50,DoorDash
+2026-10-19,19:15:00,SQ-48144,Double Smash Burger,2,$23.00,DoorDash
+2026-10-19,16:40:00,SQ-48145,Crispy Chicken Sandwich,1,$10.50,Uber Eats
+2026-10-19,16:40:00,SQ-48145,Single Smash Burger,1,$8.50,Uber Eats
+2026-10-20,20:17:00,SQ-48146,Bacon Cheeseburger,1,$12.50,Counter
+2026-10-20,20:17:00,SQ-48146,Onion Rings,1,$4.50,Counter
+2026-10-20,18:29:00,SQ-48147,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-10-20,18:29:00,SQ-48147,Bacon Cheeseburger,1,$12.50,Counter
+2026-10-20,18:29:00,SQ-48147,Fries,1,$3.50,Counter
+2026-10-20,20:02:00,SQ-48148,"Wings, 20 pc",1,$24.00,Uber Eats
+2026-10-20,20:02:00,SQ-48148,Onion Rings,1,$4.50,Uber Eats
+2026-10-20,19:48:00,SQ-48149,"Wings, 20 pc",1,$24.00,Counter
+2026-10-20,19:48:00,SQ-48149,Fountain Soda,1,$2.50,Counter
+2026-10-20,20:04:00,SQ-48150,Fries,2,$7.00,DoorDash
+2026-10-20,20:04:00,SQ-48150,Fountain Soda,2,$5.00,DoorDash
+2026-10-20,20:48:00,SQ-48151,"Wings, 20 pc",2,$48.00,DoorDash
+2026-10-20,20:48:00,SQ-48151,Crispy Chicken Sandwich,1,$10.50,DoorDash
+2026-10-20,20:48:00,SQ-48151,"Wings, 10 pc",1,$13.00,DoorDash
+2026-10-20,20:50:00,SQ-48152,"Wings, 20 pc",2,$48.00,DoorDash
+2026-10-21,17:59:00,SQ-48153,Crispy Chicken Sandwich,1,$10.50,DoorDash
+2026-10-21,17:59:00,SQ-48153,Fries,1,$3.50,DoorDash
+2026-10-21,20:16:00,SQ-48154,Loaded Fries,2,$14.00,Counter
+2026-10-21,18:00:00,SQ-48155,Single Smash Burger,1,$8.50,Counter
+2026-10-21,18:00:00,SQ-48155,Onion Rings,1,$4.50,Counter
+2026-10-21,19:30:00,SQ-48156,Fries,1,$3.50,DoorDash
+2026-10-21,17:44:00,SQ-48157,Double Smash Burger,1,$11.50,DoorDash
+2026-10-21,19:15:00,SQ-48158,Double Smash Burger,1,$11.50,Counter
+2026-10-21,19:15:00,SQ-48158,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-10-21,19:35:00,SQ-48159,Fries,1,$3.50,Counter
+2026-10-21,20:05:00,SQ-48160,"Wings, 20 pc",2,$48.00,Counter
+2026-10-21,20:05:00,SQ-48160,Bacon Cheeseburger,1,$12.50,Counter
+2026-10-22,20:42:00,SQ-48161,Fountain Soda,1,$2.50,DoorDash
+2026-10-22,19:23:00,SQ-48162,Double Smash Burger,2,$23.00,Uber Eats
+2026-10-22,19:23:00,SQ-48162,Crispy Chicken Sandwich,1,$10.50,Uber Eats
+2026-10-22,18:49:00,SQ-48163,Double Smash Burger,1,$11.50,Phone
+2026-10-22,17:44:00,SQ-48164,Double Smash Burger,1,$11.50,Counter
+2026-10-22,17:44:00,SQ-48164,"Wings, 20 pc",1,$24.00,Counter
+2026-10-22,17:44:00,SQ-48164,Vanilla Shake,1,$5.50,Counter
+2026-10-22,19:23:00,SQ-48165,Fries,2,$7.00,DoorDash
+2026-10-22,19:23:00,SQ-48165,Double Smash Burger,1,$11.50,DoorDash
+2026-10-22,19:19:00,SQ-48166,Fries,1,$3.50,Counter
+2026-10-22,19:19:00,SQ-48166,Single Smash Burger,2,$17.00,Counter
+2026-10-22,18:13:00,SQ-48167,Fries,2,$7.00,Phone
+2026-10-22,17:13:00,SQ-48168,Fries,2,$7.00,DoorDash
+2026-10-22,17:13:00,SQ-48168,"Wings, 10 pc",2,$26.00,DoorDash
+2026-10-22,17:13:00,SQ-48168,Fountain Soda,1,$2.50,DoorDash
+2026-10-22,17:31:00,SQ-48169,"Wings, 10 pc",1,$13.00,Counter
+2026-10-22,17:31:00,SQ-48169,Single Smash Burger,1,$8.50,Counter
+2026-10-23,20:10:00,SQ-48170,Fries,1,$3.50,Counter
+2026-10-23,19:23:00,SQ-48171,Fountain Soda,1,$2.50,DoorDash
+2026-10-23,19:23:00,SQ-48171,Single Smash Burger,1,$8.50,DoorDash
+2026-10-23,19:41:00,SQ-48172,Fries,1,$3.50,Uber Eats
+2026-10-23,19:22:00,SQ-48173,Crispy Chicken Sandwich,2,$21.00,DoorDash
+2026-10-23,19:05:00,SQ-48174,Onion Rings,1,$4.50,Counter
+2026-10-23,20:07:00,SQ-48175,"Wings, 20 pc",1,$24.00,Uber Eats
+2026-10-23,20:07:00,SQ-48175,Fries,1,$3.50,Uber Eats
+2026-10-23,17:12:00,SQ-48176,Double Smash Burger,2,$23.00,Uber Eats
+2026-10-23,17:12:00,SQ-48176,Loaded Fries,1,$7.00,Uber Eats
+2026-10-23,18:21:00,SQ-48177,Fountain Soda,1,$2.50,DoorDash
+2026-10-23,18:57:00,SQ-48178,Loaded Fries,2,$14.00,Counter
+2026-10-23,16:33:00,SQ-48179,Bacon Cheeseburger,1,$12.50,Uber Eats
+2026-10-23,16:33:00,SQ-48179,Fountain Soda,1,$2.50,Uber Eats
+2026-10-23,18:36:00,SQ-48180,Fries,1,$3.50,DoorDash
+2026-10-23,18:44:00,SQ-48181,Double Smash Burger,1,$11.50,DoorDash
+2026-10-23,18:44:00,SQ-48181,Onion Rings,2,$9.00,DoorDash
+2026-10-23,20:43:00,SQ-48182,Fries,1,$3.50,Counter
+2026-10-23,20:43:00,SQ-48182,Double Smash Burger,1,$11.50,Counter
+2026-10-23,19:15:00,SQ-48183,Single Smash Burger,2,$17.00,Counter
+2026-10-23,19:15:00,SQ-48183,Loaded Fries,1,$7.00,Counter
+2026-10-23,19:15:00,SQ-48183,Fries,1,$3.50,Counter
+2026-10-23,17:54:00,SQ-48184,Double Smash Burger,1,$11.50,Uber Eats
+2026-10-24,17:45:00,SQ-48185,Crispy Chicken Sandwich,1,$10.50,Uber Eats
+2026-10-24,17:45:00,SQ-48185,Loaded Fries,1,$7.00,Uber Eats
+2026-10-24,17:45:00,SQ-48185,Fries,1,$3.50,Uber Eats
+2026-10-24,19:38:00,SQ-48186,Fries,1,$3.50,DoorDash
+2026-10-24,19:38:00,SQ-48186,Double Smash Burger,1,$11.50,DoorDash
+2026-10-24,18:56:00,SQ-48187,Bacon Cheeseburger,1,$12.50,Counter
+2026-10-24,19:39:00,SQ-48188,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-10-24,17:39:00,SQ-48189,Loaded Fries,1,$7.00,DoorDash
+2026-10-24,17:39:00,SQ-48189,Crispy Chicken Sandwich,1,$10.50,DoorDash
+2026-10-24,20:32:00,SQ-48190,Fries,2,$7.00,DoorDash
+2026-10-24,20:32:00,SQ-48190,Onion Rings,1,$4.50,DoorDash
+2026-10-24,18:32:00,SQ-48191,Crispy Chicken Sandwich,1,$10.50,DoorDash
+2026-10-24,18:32:00,SQ-48191,Single Smash Burger,2,$17.00,DoorDash
+2026-10-24,17:58:00,SQ-48192,"Wings, 10 pc",1,$13.00,DoorDash
+2026-10-24,18:54:00,SQ-48193,Fries,1,$3.50,Counter
+2026-10-24,20:16:00,SQ-48194,Double Smash Burger,2,$23.00,Counter
+2026-10-24,20:16:00,SQ-48194,"Wings, 10 pc",1,$13.00,Counter
+2026-10-24,20:16:00,SQ-48194,Onion Rings,1,$4.50,Counter
+2026-10-24,18:40:00,SQ-48195,Single Smash Burger,2,$17.00,Uber Eats
+2026-10-24,18:40:00,SQ-48195,Double Smash Burger,1,$11.50,Uber Eats
+2026-10-25,20:14:00,SQ-48196,Onion Rings,1,$4.50,Uber Eats
+2026-10-25,20:14:00,SQ-48196,Crispy Chicken Sandwich,1,$10.50,Uber Eats
+2026-10-25,20:14:00,SQ-48196,"Wings, 10 pc",1,$13.00,Uber Eats
+2026-10-25,19:02:00,SQ-48197,"Wings, 10 pc",1,$13.00,Uber Eats
+2026-10-25,19:02:00,SQ-48197,Fries,1,$3.50,Uber Eats
+2026-10-25,19:54:00,SQ-48198,Double Smash Burger,1,$11.50,Uber Eats
+2026-10-25,18:30:00,SQ-48199,Fries,1,$3.50,Counter
+2026-10-25,18:30:00,SQ-48199,"Wings, 10 pc",1,$13.00,Counter
+2026-10-25,18:20:00,SQ-48200,Vanilla Shake,1,$5.50,Counter
+2026-10-25,18:20:00,SQ-48200,Loaded Fries,1,$7.00,Counter
+2026-10-25,18:36:00,SQ-48201,Vanilla Shake,1,$5.50,DoorDash
+2026-10-25,18:36:00,SQ-48201,Fountain Soda,1,$2.50,DoorDash
+2026-10-25,20:21:00,SQ-48202,Double Smash Burger,1,$11.50,Counter
+2026-10-25,20:21:00,SQ-48202,Garden Salad,1,$7.50,Counter
+2026-10-26,18:51:00,SQ-48203,Crispy Chicken Sandwich,1,$10.50,Uber Eats
+2026-10-26,18:22:00,SQ-48204,Single Smash Burger,1,$8.50,DoorDash
+2026-10-26,17:26:00,SQ-48205,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-10-26,17:26:00,SQ-48205,Fountain Soda,1,$2.50,Counter
+2026-10-26,17:24:00,SQ-48206,Loaded Fries,1,$7.00,DoorDash
+2026-10-26,17:24:00,SQ-48206,Fries,1,$3.50,DoorDash
+2026-10-26,19:44:00,SQ-48207,Crispy Chicken Sandwich,2,$21.00,DoorDash
+2026-10-26,19:44:00,SQ-48207,Fountain Soda,1,$2.50,DoorDash
+2026-10-26,19:44:00,SQ-48207,Single Smash Burger,1,$8.50,DoorDash
+2026-10-26,19:20:00,SQ-48208,"Wings, 10 pc",1,$13.00,Counter
+2026-10-26,19:20:00,SQ-48208,Fries,1,$3.50,Counter
+2026-10-26,19:23:00,SQ-48209,Fountain Soda,1,$2.50,Counter
+2026-10-26,19:03:00,SQ-48210,Onion Rings,1,$4.50,DoorDash
+2026-10-26,19:03:00,SQ-48210,"Wings, 20 pc",1,$24.00,DoorDash
+2026-10-26,20:24:00,SQ-48211,Single Smash Burger,1,$8.50,Counter
+2026-10-26,20:24:00,SQ-48211,Fountain Soda,1,$2.50,Counter
+2026-10-26,20:24:00,SQ-48211,Double Smash Burger,1,$11.50,Counter
+2026-10-27,18:25:00,SQ-48212,"Wings, 10 pc",1,$13.00,Uber Eats
+2026-10-27,16:52:00,SQ-48213,Bacon Cheeseburger,2,$25.00,Counter
+2026-10-27,16:52:00,SQ-48213,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-10-27,18:32:00,SQ-48214,Loaded Fries,1,$7.00,DoorDash
+2026-10-27,18:32:00,SQ-48214,"Wings, 20 pc",1,$24.00,DoorDash
+2026-10-27,18:41:00,SQ-48215,Double Smash Burger,1,$11.50,DoorDash
+2026-10-27,19:10:00,SQ-48216,"Wings, 10 pc",1,$13.00,Phone
+2026-10-27,19:05:00,SQ-48217,Fries,1,$3.50,Phone
+2026-10-27,19:05:00,SQ-48217,"Wings, 10 pc",1,$13.00,Phone
+2026-10-27,17:38:00,SQ-48218,Onion Rings,1,$4.50,Counter
+2026-10-27,17:38:00,SQ-48218,Fries,1,$3.50,Counter
+2026-10-27,17:38:00,SQ-48218,Fountain Soda,1,$2.50,Counter
+2026-10-28,18:09:00,SQ-48219,Fries,1,$3.50,Uber Eats
+2026-10-28,18:09:00,SQ-48219,Fountain Soda,1,$2.50,Uber Eats
+2026-10-28,18:52:00,SQ-48220,Bacon Cheeseburger,1,$12.50,Uber Eats
+2026-10-28,18:41:00,SQ-48221,"Wings, 10 pc",1,$13.00,Counter
+2026-10-28,20:09:00,SQ-48222,Loaded Fries,1,$7.00,DoorDash
+2026-10-28,20:09:00,SQ-48222,Bacon Cheeseburger,1,$12.50,DoorDash
+2026-10-28,20:35:00,SQ-48223,"Wings, 10 pc",1,$13.00,DoorDash
+2026-10-28,17:54:00,SQ-48224,Double Smash Burger,1,$11.50,Counter
+2026-10-28,17:54:00,SQ-48224,Onion Rings,1,$4.50,Counter
+2026-10-28,19:22:00,SQ-48225,Fountain Soda,2,$5.00,DoorDash
+2026-10-28,19:22:00,SQ-48225,Fries,2,$7.00,DoorDash
+2026-10-29,19:33:00,SQ-48226,Double Smash Burger,2,$23.00,Uber Eats
+2026-10-29,20:16:00,SQ-48227,Fries,1,$3.50,DoorDash
+2026-10-29,17:51:00,SQ-48228,Crispy Chicken Sandwich,1,$10.50,DoorDash
+2026-10-29,17:51:00,SQ-48228,Double Smash Burger,2,$23.00,DoorDash
+2026-10-29,19:04:00,SQ-48229,Crispy Chicken Sandwich,2,$21.00,DoorDash
+2026-10-29,19:04:00,SQ-48229,Double Smash Burger,1,$11.50,DoorDash
+2026-10-29,20:53:00,SQ-48230,Fries,1,$3.50,Phone
+2026-10-29,20:53:00,SQ-48230,Fountain Soda,1,$2.50,Phone
+2026-10-29,19:28:00,SQ-48231,Fries,1,$3.50,Counter
+2026-10-29,19:28:00,SQ-48231,Garden Salad,1,$7.50,Counter
+2026-10-29,19:27:00,SQ-48232,Fountain Soda,1,$2.50,Counter
+2026-10-30,17:47:00,SQ-48233,Fries,1,$3.50,DoorDash
+2026-10-30,18:32:00,SQ-48234,Fries,1,$3.50,DoorDash
+2026-10-30,19:11:00,SQ-48235,Fries,1,$3.50,Uber Eats
+2026-10-30,19:08:00,SQ-48236,Double Smash Burger,1,$11.50,DoorDash
+2026-10-30,17:03:00,SQ-48237,Garden Salad,1,$7.50,Uber Eats
+2026-10-30,17:29:00,SQ-48238,Double Smash Burger,1,$11.50,Counter
+2026-10-30,17:29:00,SQ-48238,Fountain Soda,1,$2.50,Counter
+2026-10-30,19:00:00,SQ-48239,Double Smash Burger,2,$23.00,DoorDash
+2026-10-30,19:00:00,SQ-48239,Fries,1,$3.50,DoorDash
+2026-10-30,19:05:00,SQ-48240,Fountain Soda,1,$2.50,DoorDash
+2026-10-30,19:05:00,SQ-48240,Crispy Chicken Sandwich,2,$21.00,DoorDash
+2026-10-30,20:01:00,SQ-48241,Fries,1,$3.50,Counter
+2026-10-30,20:01:00,SQ-48241,Single Smash Burger,1,$8.50,Counter
+2026-10-30,18:34:00,SQ-48242,"Wings, 10 pc",1,$13.00,DoorDash
+2026-10-30,18:34:00,SQ-48242,Loaded Fries,1,$7.00,DoorDash
+2026-10-30,20:46:00,SQ-48243,Single Smash Burger,1,$8.50,Uber Eats
+2026-10-30,20:46:00,SQ-48243,Bacon Cheeseburger,1,$12.50,Uber Eats
+2026-10-30,17:17:00,SQ-48244,Onion Rings,1,$4.50,Uber Eats
+2026-10-30,17:17:00,SQ-48244,Double Smash Burger,1,$11.50,Uber Eats
+2026-10-30,19:10:00,SQ-48245,Vanilla Shake,1,$5.50,DoorDash
+2026-10-30,19:10:00,SQ-48245,Single Smash Burger,2,$17.00,DoorDash
+2026-10-30,19:14:00,SQ-48246,Fountain Soda,1,$2.50,Uber Eats
+2026-10-30,19:14:00,SQ-48246,Crispy Chicken Sandwich,1,$10.50,Uber Eats
+2026-10-30,19:43:00,SQ-48247,Fries,1,$3.50,DoorDash
+2026-10-30,19:43:00,SQ-48247,Single Smash Burger,1,$8.50,DoorDash
+2026-10-31,18:17:00,SQ-48248,Single Smash Burger,1,$8.50,Phone
+2026-10-31,18:17:00,SQ-48249,"Wings, 20 pc",1,$24.00,DoorDash
+2026-10-31,19:27:00,SQ-48250,Double Smash Burger,2,$23.00,Counter
+2026-10-31,19:27:00,SQ-48250,"Wings, 20 pc",1,$24.00,Counter
+2026-10-31,17:13:00,SQ-48251,Bacon Cheeseburger,1,$12.50,DoorDash
+2026-10-31,18:03:00,SQ-48252,Bacon Cheeseburger,1,$12.50,Uber Eats
+2026-10-31,18:03:00,SQ-48252,Fries,1,$3.50,Uber Eats
+2026-10-31,19:15:00,SQ-48253,Loaded Fries,1,$7.00,Uber Eats
+2026-10-31,18:17:00,SQ-48254,Fountain Soda,2,$5.00,Counter
+2026-10-31,20:22:00,SQ-48255,Fries,1,$3.50,DoorDash
+2026-10-31,20:35:00,SQ-48256,Double Smash Burger,1,$11.50,DoorDash
+2026-10-31,17:53:00,SQ-48257,"Wings, 10 pc",1,$13.00,Counter
+2026-11-01,18:56:00,SQ-48258,Bacon Cheeseburger,1,$12.50,Uber Eats
+2026-11-01,19:26:00,SQ-48259,Fries,2,$7.00,Uber Eats
+2026-11-01,19:26:00,SQ-48259,Loaded Fries,1,$7.00,Uber Eats
+2026-11-01,19:16:00,SQ-48260,Garden Salad,1,$7.50,Counter
+2026-11-01,18:57:00,SQ-48261,Loaded Fries,1,$7.00,Counter
+2026-11-01,18:57:00,SQ-48261,Fries,1,$3.50,Counter
+2026-11-01,18:19:00,SQ-48262,Loaded Fries,1,$7.00,Phone
+2026-11-01,18:19:00,SQ-48262,"Wings, 10 pc",1,$13.00,Phone
+2026-11-01,18:19:00,SQ-48262,Single Smash Burger,1,$8.50,Phone
+2026-11-01,19:29:00,SQ-48263,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-11-01,19:42:00,SQ-48264,Bacon Cheeseburger,2,$25.00,Counter
+2026-11-02,19:50:00,SQ-48265,Bacon Cheeseburger,1,$12.50,Uber Eats
+2026-11-02,18:39:00,SQ-48266,Single Smash Burger,1,$8.50,Uber Eats
+2026-11-02,18:39:00,SQ-48266,Double Smash Burger,1,$11.50,Uber Eats
+2026-11-02,17:29:00,SQ-48267,Fountain Soda,1,$2.50,DoorDash
+2026-11-02,17:29:00,SQ-48267,Crispy Chicken Sandwich,2,$21.00,DoorDash
+2026-11-02,19:14:00,SQ-48268,Fountain Soda,1,$2.50,Counter
+2026-11-02,19:14:00,SQ-48268,Vanilla Shake,1,$5.50,Counter
+2026-11-02,20:43:00,SQ-48269,Single Smash Burger,1,$8.50,Phone
+2026-11-02,19:03:00,SQ-48270,Fountain Soda,1,$2.50,Uber Eats
+2026-11-02,19:03:00,SQ-48270,Loaded Fries,2,$14.00,Uber Eats
+2026-11-02,17:35:00,SQ-48271,Fries,1,$3.50,Phone
+2026-11-03,17:22:00,SQ-48272,Vanilla Shake,1,$5.50,Uber Eats
+2026-11-03,17:22:00,SQ-48272,Double Smash Burger,1,$11.50,Uber Eats
+2026-11-03,19:41:00,SQ-48273,Double Smash Burger,1,$11.50,DoorDash
+2026-11-03,19:41:00,SQ-48273,Fountain Soda,1,$2.50,DoorDash
+2026-11-03,17:47:00,SQ-48274,Loaded Fries,1,$7.00,Counter
+2026-11-03,19:01:00,SQ-48275,Fries,1,$3.50,Counter
+2026-11-03,20:23:00,SQ-48276,Fountain Soda,1,$2.50,Counter
+2026-11-03,19:15:00,SQ-48277,Fries,1,$3.50,Counter
+2026-11-03,19:15:00,SQ-48277,Bacon Cheeseburger,2,$25.00,Counter
+2026-11-03,19:50:00,SQ-48278,Double Smash Burger,2,$23.00,DoorDash
+2026-11-03,19:50:00,SQ-48278,Fries,1,$3.50,DoorDash
+2026-11-03,20:32:00,SQ-48279,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-11-04,20:43:00,SQ-48280,Double Smash Burger,1,$11.50,Counter
+2026-11-04,19:32:00,SQ-48281,Vanilla Shake,1,$5.50,Counter
+2026-11-04,19:32:00,SQ-48281,Double Smash Burger,1,$11.50,Counter
+2026-11-04,19:52:00,SQ-48282,Single Smash Burger,1,$8.50,DoorDash
+2026-11-04,19:52:00,SQ-48282,Garden Salad,1,$7.50,DoorDash
+2026-11-04,19:52:00,SQ-48282,Fountain Soda,1,$2.50,DoorDash
+2026-11-04,20:19:00,SQ-48283,Fries,1,$3.50,DoorDash
+2026-11-04,17:35:00,SQ-48284,Fries,1,$3.50,DoorDash
+2026-11-04,19:34:00,SQ-48285,"Wings, 20 pc",1,$24.00,DoorDash
+2026-11-04,19:34:00,SQ-48285,Single Smash Burger,1,$8.50,DoorDash
+2026-11-05,17:43:00,SQ-48286,Double Smash Burger,1,$11.50,Uber Eats
+2026-11-05,17:43:00,SQ-48286,Loaded Fries,2,$14.00,Uber Eats
+2026-11-05,17:43:00,SQ-48286,Fountain Soda,1,$2.50,Uber Eats
+2026-11-05,20:01:00,SQ-48287,Fries,2,$7.00,DoorDash
+2026-11-05,20:01:00,SQ-48287,Double Smash Burger,1,$11.50,DoorDash
+2026-11-05,18:54:00,SQ-48288,Double Smash Burger,1,$11.50,Uber Eats
+2026-11-05,19:35:00,SQ-48289,"Wings, 10 pc",1,$13.00,Phone
+2026-11-05,18:02:00,SQ-48290,Fries,1,$3.50,Counter
+2026-11-05,18:02:00,SQ-48290,Single Smash Burger,1,$8.50,Counter
+2026-11-05,20:06:00,SQ-48291,Fries,1,$3.50,Counter
+2026-11-05,20:34:00,SQ-48292,"Wings, 20 pc",1,$24.00,Counter
+2026-11-06,19:25:00,SQ-48293,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-11-06,19:25:00,SQ-48293,Fries,2,$7.00,Counter
+2026-11-06,19:12:00,SQ-48294,Fountain Soda,1,$2.50,Counter
+2026-11-06,19:12:00,SQ-48294,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-11-06,17:11:00,SQ-48295,Single Smash Burger,1,$8.50,Phone
+2026-11-06,17:11:00,SQ-48295,"Wings, 10 pc",1,$13.00,Phone
+2026-11-06,21:01:00,SQ-48296,Double Smash Burger,2,$23.00,Counter
+2026-11-06,17:57:00,SQ-48297,Loaded Fries,1,$7.00,Counter
+2026-11-06,17:57:00,SQ-48297,Double Smash Burger,1,$11.50,Counter
+2026-11-06,20:06:00,SQ-48298,Fries,2,$7.00,Counter
+2026-11-06,21:27:00,SQ-48299,Double Smash Burger,2,$23.00,Uber Eats
+2026-11-06,16:59:00,SQ-48300,"Wings, 10 pc",1,$13.00,DoorDash
+2026-11-06,19:35:00,SQ-48301,Loaded Fries,1,$7.00,Counter
+2026-11-06,19:35:00,SQ-48301,Single Smash Burger,1,$8.50,Counter
+2026-11-06,20:03:00,SQ-48302,Crispy Chicken Sandwich,1,$10.50,Counter
+2026-11-06,20:03:00,SQ-48302,Double Smash Burger,1,$11.50,Counter
+2026-11-06,20:41:00,SQ-48303,Single Smash Burger,1,$8.50,Counter
+2026-11-06,20:41:00,SQ-48303,Fries,1,$3.50,Counter
+2026-11-06,18:45:00,SQ-48304,Vanilla Shake,1,$5.50,DoorDash
+2026-11-06,18:45:00,SQ-48304,Double Smash Burger,2,$23.00,DoorDash
+2026-11-06,18:45:00,SQ-48304,Fountain Soda,1,$2.50,DoorDash

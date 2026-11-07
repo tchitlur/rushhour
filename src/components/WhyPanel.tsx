@@ -7,12 +7,14 @@ import { fmtMoney } from "./Counters";
 
 // desaturated cause sequence: ink, plan blue, warn, good, muted, bad
 const COLORS = ["#16191D", "#1D5FA8", "#B7791F", "#2F855A", "#8A93A0", "#C2410C"];
-const STATION_NAME: Record<string, string> = { grill: "Grill", fryer: "Fryer", cold: "Cold station", pack: "Pack / Expo", counter: "Counter" };
+const STATION_FALLBACK: Record<string, string> = { grill: "Grill", fryer: "Fryer", cold: "Cold station", pack: "Pack / Expo", counter: "Counter" };
 
 function WhyPanel() {
-  const { attribution, whyLoading, whyMetric, runWhy, setHighlight, highlightStation, tonightMC, normalMC } = useApp(useShallow(s => ({
-    attribution: s.attribution, whyLoading: s.whyLoading, whyMetric: s.whyMetric, runWhy: s.runWhy, setHighlight: s.setHighlight, highlightStation: s.highlightStation, tonightMC: s.tonightMC, normalMC: s.normalMC,
+  const { attribution, whyLoading, whyMetric, runWhy, setHighlight, highlightStation, tonightMC, normalMC, stations } = useApp(useShallow(s => ({
+    attribution: s.attribution, whyLoading: s.whyLoading, whyMetric: s.whyMetric, runWhy: s.runWhy, setHighlight: s.setHighlight, highlightStation: s.highlightStation, tonightMC: s.tonightMC, normalMC: s.normalMC, stations: s.tonight.stations,
   })));
+  // station names come from the restaurant's own equipment list (e.g. "Wok line"), with generic fallbacks
+  const STATION_NAME: Record<string, string> = { ...STATION_FALLBACK, ...Object.fromEntries(stations.map(st => [st.id, st.name])) };
   const a = attribution;
   const shares = a ? a.shares.map(s => ({ ...s, pos: Math.max(0, s.value) })) : [];
   const posTotal = shares.reduce((x, s) => x + s.pos, 0) || 1;

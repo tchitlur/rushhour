@@ -1,26 +1,23 @@
 "use client";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { useApp } from "@/store/app";
 import { useShallow } from "zustand/react/shallow";
-import { CURVEBALLS, LIKELY_QUESTIONS } from "@/data/ask-cache";
+import { curveballs, likelyQuestions } from "@/data/ask-cache";
+import type { AskReply } from "@/plan/ask";
 import { fmtMoney } from "./Counters";
 
-const VIEWS: { id: "before" | "after" | "race"; label: string }[] = [
-  { id: "before", label: "Before" },
-  { id: "after", label: "After" },
-  { id: "race", label: "Side-by-side" },
-];
-
-/** Unsupported-question examples: each one is a click away from running. */
-const EXAMPLES = ["2 extra cooks come at 6", "The fryer breaks at 7", "Ana leaves at 8", "Add a second fryer", "Snow keeps people home", "Wings take longer to cook tonight"];
-
 function AskPanel() {
-  const { askResult, askLoading, askStatus, runAsk, playAskNight, askNightActive, askView, setAskView } = useApp(useShallow(s => ({ askResult: s.askResult, askLoading: s.askLoading, askStatus: s.askStatus, runAsk: s.runAsk, playAskNight: s.playAskNight, askNightActive: s.viewportSource === "ask", askView: s.askView, setAskView: s.setAskView })));
+  const { askResult, askLoading, askStatus, runAsk, playAskNight, askNightActive, tonight } = useApp(useShallow(s => ({ askResult: s.askResult, askLoading: s.askLoading, askStatus: s.askStatus, runAsk: s.runAsk, playAskNight: s.playAskNight, askNightActive: s.viewportSource === "ask", tonight: s.tonight })));
+  // Presets, examples and "Try next" are generated from the ACTIVE scenario (real staff, equipment and menu names).
+  const CURVEBALLS = useMemo(() => curveballs(tonight), [tonight]);
+  const LIKELY_QUESTIONS = useMemo(() => likelyQuestions(tonight), [tonight]);
   const [q, setQ] = useState("");
   const submit = (question: string) => { if (!question.trim() || askLoading) return; setQ(question); void runAsk(question); };
   const r = askResult;
   const b = r?.baseline.mean, a = r?.patched.mean;
   const unsupported = !!r && !!r.patch.unsupported && r.chips.length === 0;
+  const suggestions = (r as AskReply | null)?.suggestions ?? LIKELY_QUESTIONS.slice(0, 6).map(p => p.question);
+  const note = (r as AskReply | null)?.note;
   const sourceLabel = r ? (r.source === "llm" ? "AI-translated" : r.source === "cache" ? "preset" : "rule-translated") : "";
   return (
     <div className="flex flex-col gap-5">
@@ -48,7 +45,7 @@ function AskPanel() {
               <div className="rounded border border-line border-l-[3px] border-l-warn p-3 text-sm leading-relaxed">{r.patch.unsupported}</div>
               <div className="text-xs text-fg-2">Try one of these:</div>
               <div className="flex flex-wrap gap-1.5">
-                {EXAMPLES.map(ex => <button key={ex} className="btn !py-1 !px-2.5 text-xs" onClick={() => submit(ex)} disabled={askLoading}>{ex}</button>)}
+                {suggestions.map(ex => <button key={ex} className="btn !py-1 !px-2.5 text-xs" onClick={() => submit(ex)} disabled={askLoading}>{ex}</button>)}
               </div>
             </div>
           ) : b && a ? (
@@ -70,15 +67,16 @@ function AskPanel() {
                 <div className="text-xs text-fg-3 mt-1.5"><span className="num">{r.patched.nights}</span> nights, same random draws as the baseline.</div>
               </div>
               {/* show it in the kitchen */}
+              {note && <div className="rounded border border-line border-l-[3px] border-l-warn p-3 text-sm leading-relaxed">{note}</div>}
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button className={`btn text-xs ${askNightActive ? "!border-plan text-plan" : "btn-primary"}`} onClick={() => { if (!askNightActive) void playAskNight(); }} disabled={askNightActive}>{askNightActive ? "Showing in kitchen" : "Show in kitchen"}</button>
-                  <div className="inline-flex rounded border border-line overflow-hidden" role="tablist" aria-label="What-if view">
-                    {VIEWS.map(v => (
-                      <button key={v.id} role="tab" aria-selected={askView === v.id} className={`px-2.5 py-1 text-xs border-r border-line last:border-r-0 ${askView === v.id ? "bg-plan text-white font-semibold" : "bg-bg-2 text-fg-2 hover:text-fg"}`} onClick={() => setAskView(v.id)}>{v.label}</button>
-                    ))}
+                {askNightActive ? (
+                  <div className="flex items-center gap-2 flex-wrap text-xs">
+                    <span className="inline-flex items-center gap-1.5 text-fg"><span className="inline-block w-2 h-2 rounded-full bg-plan" aria-hidden="true" />Showing in the kitchen</span>
+                    <button type="button" className="underline text-fg-2 hover:text-fg" onClick={() => void playAskNight()}>Back to tonight</button>
                   </div>
-                </div>
+                ) : (
+                  <div><button className="btn text-xs btn-primary" onClick={() => void playAskNight()}>Show in kitchen</button></div>
+                )}
                 {askNightActive && <div className="text-xs text-fg-3">The kitchen is playing this what-if with tonight&apos;s customers and luck. Press 3 for the 3D view.</div>}
               </div>
               {/* 3. what changed, and where the translation came from */}
