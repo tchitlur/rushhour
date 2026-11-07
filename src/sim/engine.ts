@@ -268,7 +268,7 @@ export function simulateNight(sc: Scenario, opts: SimOptions): NightResult {
       const isDelivery = DELIVERY.has(o.channel);
       if (isDelivery && o.dasherArrivesAt! > t) continue; // waiting for dasher
       o.handedAt = t; o.status = "handed";
-      if (isDelivery) o.dasherWait = Math.max(0, t - o.dasherArrivesAt!);
+      if (isDelivery) o.dasherWait = Math.max(0, (o.readyAt ?? t) - o.dasherArrivesAt!);
       // cold?
       for (const it of o.items) {
         const m = menuById.get(it.itemId)!;
@@ -364,9 +364,11 @@ function buildSnapshot(
     const load = s.id === "pack" || s.id === "counter" ? Math.min(1.5, (busy + queue) / 6) : (busy + queue) / Math.max(1, cap);
     return { id: s.id, x: s.x, y: s.y, busy, capacity: cap, queue, load, saturated: load >= 1 };
   });
-  const ws: WorkerSnapshot[] = workers.map(w => {
+  const ws: WorkerSnapshot[] = workers.map((w, wi) => {
     const d = workerDef.get(w.id)!;
-    return { id: w.id, name: d.name, color: d.color, x: w.onShift ? w.x : -2, y: w.onShift ? w.y : -2, station: w.station, onShift: w.onShift, busy: w.busyUntil > t };
+    // spread workers sharing a station so they don't overlap visually
+    const off = w.station ? (wi - 1.5) * 0.45 : 0;
+    return { id: w.id, name: d.name, color: d.color, x: w.onShift ? w.x + off : -2, y: w.onShift ? w.y : -2, station: w.station, onShift: w.onShift, busy: w.busyUntil > t };
   });
   const tokens: TokenSnapshot[] = [];
   const dashers: DasherSnapshot[] = [];
@@ -381,9 +383,10 @@ function buildSnapshot(
       let warmth = 0;
       for (const it of o.items) { const m = menuById.get(it.itemId)!; if (it.doneAt != null) warmth = Math.max(warmth, (t - it.doneAt) / m.holdMin); }
       const k = readyCount++;
-      tokens.push({ orderId: o.id, channel: o.channel, warmth, x: pack.x + 1.2 + (k % 6) * 0.35, y: pack.y - 0.6 + Math.floor(k / 6) * 0.35, stage: "ready" });
+      tokens.push({ orderId: o.id, itemIdx: -1, channel: o.channel, warmth, x: pack.x + 1.2 + (k % 6) * 0.35, y: pack.y - 0.6 + Math.floor(k / 6) * 0.35, stage: "ready" });
     } else {
-      for (const it of o.items) {
+      for (let ii = 0; ii < o.items.length; ii++) {
+        const it = o.items[ii];
         if (it.stationIdx >= 98) continue;
         const m = menuById.get(it.itemId)!;
         const stId = m.stations[it.stationIdx];
@@ -391,10 +394,10 @@ function buildSnapshot(
         const cooking = inProgress.some(p => p.item === it);
         if (cooking) {
           const k = perStationC.get(stId) ?? 0; perStationC.set(stId, k + 1);
-          tokens.push({ orderId: o.id, channel: o.channel, warmth: 0, x: sp.x - 0.6 + (k % 4) * 0.4, y: sp.y + 0.55, stage: "cooking" });
+          tokens.push({ orderId: o.id, itemIdx: ii, channel: o.channel, warmth: 0, x: sp.x - 0.6 + (k % 4) * 0.4, y: sp.y + 0.55, stage: "cooking" });
         } else {
           const k = perStationQ.get(stId) ?? 0; perStationQ.set(stId, k + 1);
-          tokens.push({ orderId: o.id, channel: o.channel, warmth: 0, x: sp.x - 1.1 + (k % 5) * 0.3, y: sp.y + 1.0 + Math.floor(k / 5) * 0.3, stage: "queue" });
+          tokens.push({ orderId: o.id, itemIdx: ii, channel: o.channel, warmth: 0, x: sp.x - 1.1 + (k % 5) * 0.3, y: sp.y + 1.0 + Math.floor(k / 5) * 0.3, stage: "queue" });
         }
       }
     }

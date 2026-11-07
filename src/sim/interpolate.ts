@@ -6,15 +6,11 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 export function lerpSnapshot(a: Snapshot, b: Snapshot | undefined, alpha: number): Snapshot {
   if (!b || alpha <= 0) return a;
   if (alpha >= 1) return b;
-  const bTok = new Map<number, TokenSnapshot[]>();
-  for (const tk of b.tokens) { const arr = bTok.get(tk.orderId) ?? []; arr.push(tk); bTok.set(tk.orderId, arr); }
-  const used = new Map<number, number>();
+  const bTok = new Map<string, TokenSnapshot>();
+  for (const tk of b.tokens) bTok.set(`${tk.orderId}:${tk.itemIdx}`, tk);
   const tokens: TokenSnapshot[] = a.tokens.map(tk => {
-    const arr = bTok.get(tk.orderId);
-    const idx = used.get(tk.orderId) ?? 0;
-    const target = arr?.[idx];
+    const target = bTok.get(`${tk.orderId}:${tk.itemIdx}`);
     if (!target) return tk;
-    used.set(tk.orderId, idx + 1);
     return { ...tk, x: lerp(tk.x, target.x, alpha), y: lerp(tk.y, target.y, alpha), warmth: lerp(tk.warmth, target.warmth, alpha), stage: alpha > 0.5 ? target.stage : tk.stage };
   });
   const bD = new Map(b.dashers.map(d => [d.orderId, d]));

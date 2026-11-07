@@ -1,5 +1,6 @@
 // Server-only: merges Ticketmaster + Open-Meteo + web search into TonightData, with per-source
 // fallback to the committed cache and an in-memory memo (Vercel's filesystem is read-only at runtime).
+import "server-only";
 import { RESTAURANT, type EventFact, type TonightData, type WeatherFacts } from "./intake-types";
 import { fetchTicketmasterEvents } from "./ticketmaster";
 import { fetchWeather } from "./weather";

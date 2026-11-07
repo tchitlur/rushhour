@@ -1,13 +1,14 @@
 "use client";
 import { useRef } from "react";
 import { useApp } from "@/store/app";
+import { useShallow } from "zustand/react/shallow";
 import { SERVICE_START, SERVICE_END, fmtClock, fmtClockShort } from "@/sim/types";
 import type { BinMetrics } from "@/sim/types";
 
 const SPEEDS = [1, 30, 60, 240, 720];
 
 export default function Timeline({ bins, t }: { bins: BinMetrics[] | null; t: number }) {
-  const { playing, togglePlay, speed, setSpeed, seekTime, reset, night } = useApp();
+  const { playing, togglePlay, speed, setSpeed, seekTime, reset, hasNight } = useApp(useShallow(s => ({ playing: s.playing, togglePlay: s.togglePlay, speed: s.speed, setSpeed: s.setSpeed, seekTime: s.seekTime, reset: s.reset, hasNight: !!s.night })));
   const ref = useRef<HTMLDivElement>(null);
   const frac = (t - SERVICE_START) / (SERVICE_END - SERVICE_START);
   const onScrub = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -20,7 +21,7 @@ export default function Timeline({ bins, t }: { bins: BinMetrics[] | null; t: nu
     <div className="flex items-center gap-4 h-full">
       <div className="flex items-center gap-2">
         <button className="btn" onClick={reset} title="Reset (R)">⟲</button>
-        <button className="btn btn-primary w-24 justify-center" onClick={togglePlay} disabled={!night} title="Play/Pause (P)">{playing ? "Pause" : "▶ Play"}</button>
+        <button className="btn btn-primary w-24 justify-center" onClick={togglePlay} disabled={!hasNight} title="Play/Pause (P)">{playing ? "Pause" : "▶ Play"}</button>
         <div className="flex items-center rounded-lg border border-line overflow-hidden">
           {SPEEDS.map(s => (
             <button key={s} onClick={() => setSpeed(s)} className={`px-2 py-1.5 text-xs num ${speed === s ? "bg-accent text-black font-bold" : "text-fg-2 hover:bg-bg-3"}`}>{s}×</button>

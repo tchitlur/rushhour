@@ -1,20 +1,21 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useApp, snapshotAt, TABS } from "@/store/app";
 import Kitchen2D from "@/components/Kitchen2D";
 import Counters from "@/components/Counters";
 import Timeline from "@/components/Timeline";
+import TonightPanel from "@/components/TonightPanel";
 import { SERVICE_START } from "@/sim/types";
 
 const Kitchen3D = dynamic(() => import("@/components/Kitchen3D"), { ssr: false, loading: () => <div className="h-full w-full flex items-center justify-center text-fg-3 text-sm">Loading 3D kitchen…</div> });
 
 export default function App() {
   const s = useApp();
-  const { tab, setTab, view, setView, night, tIdx, loadNight, advance, playing, highlightStation } = s;
+  const { tab, setTab, view, setView, night, tIdx, loadTonight, advance, playing, highlightStation } = s;
   const [intro, setIntro] = useState(true);
 
-  useEffect(() => { void loadNight(); }, [loadNight]);
+  useEffect(() => { void loadTonight(); }, [loadTonight]);
   useEffect(() => { const id = setTimeout(() => setIntro(false), 1800); return () => clearTimeout(id); }, []);
 
   // playback loop
@@ -33,8 +34,11 @@ export default function App() {
   // hotkeys
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement;
+      const tag = el?.tagName;
+      if (/INPUT|TEXTAREA|SELECT/.test(tag) || el?.isContentEditable) return;
+      if (tag === "BUTTON" && e.key === " ") return;
       const st = useApp.getState();
       switch (e.key.toLowerCase()) {
         case "p": st.togglePlay(); break;
@@ -85,9 +89,7 @@ export default function App() {
       </header>
       <main className="flex-1 grid grid-cols-[300px_1fr_380px] gap-3 p-3 min-h-0">
         <aside className="panel p-4 overflow-y-auto scroll-thin">
-          <div className="panel-title">Tonight</div>
-          <div className="mt-2 text-sm text-fg-2">Real events &amp; weather load next (M2).</div>
-          <ul className="mt-3 text-sm space-y-1 text-fg-2">{s.tonight.notes?.map(n => <li key={n}>• {n}</li>)}</ul>
+          <TonightPanel />
         </aside>
         <section className="panel relative overflow-hidden flex flex-col">
           <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
@@ -112,7 +114,7 @@ export default function App() {
           <div className="panel-title mb-2">Hotkeys</div>
           <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
             {[["R", "reset"], ["P", "play / pause"], ["W", "why"], ["Space", "rehearse"], ["S", "split race"], ["C", "curveball menu"], ["A", "focus Ask"], ["2 / 3", "2D / 3D"], ["D", "demo mode"], ["?", "this legend"]].map(([k, v]) => (
-              <><kbd key={k} className="font-mono text-fg bg-bg-3 border border-line rounded px-1.5">{k}</kbd><span key={v}>{v}</span></>
+              <Fragment key={k}><kbd className="font-mono text-fg bg-bg-3 border border-line rounded px-1.5">{k}</kbd><span>{v}</span></Fragment>
             ))}
           </div>
         </div>

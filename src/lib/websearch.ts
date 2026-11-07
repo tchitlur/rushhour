@@ -8,7 +8,7 @@ import { weekdayName } from "./intake-utils";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const MODEL = "openai/gpt-4o-mini";
-const TIMEOUT_MS = 20_000;
+const TIMEOUT_MS = 7_000;
 const MAX_CONFIDENCE = 0.6;
 
 const WebEvent = z.object({

@@ -61,13 +61,13 @@ function makeSnapshot(time: number, stations: Station[]): Snapshot {
     const spread = stage === "ready" ? 1.2 : 0.7;
     const x = home.x + ((k * 7919) % 100) / 100 * spread - spread / 2;
     const y = home.y + ((k * 104729) % 100) / 100 * 0.5 - 0.25 + (stage === "queue" ? -0.9 : 0);
-    tokens.push({ orderId: 1000 + k, channel, warmth: stage === "ready" ? (age - 0.9) * 2.2 : 0, x, y, stage });
+    tokens.push({ orderId: 1000 + k, itemIdx: 0, channel, warmth: stage === "ready" ? (age - 0.9) * 2.2 : 0, x, y, stage });
   }
 
   const dashers: DasherSnapshot[] = Array.from({ length: 5 }, (_, i) => {
     const slot = dasherSlot(i);
     const chs: Channel[] = ["doordash", "ubereats", "doordash", "ubereats", "doordash"];
-    return { orderId: 2000 + i, channel: chs[i], waitMin: Math.max(0, 1 + i * 1.3 + Math.sin(t + i) * 1.2), x: slot.x, y: slot.y };
+    return { orderId: 2000 + i, itemIdx: 0, channel: chs[i], waitMin: Math.max(0, 1 + i * 1.3 + Math.sin(t + i) * 1.2), x: slot.x, y: slot.y };
   });
 
   return {

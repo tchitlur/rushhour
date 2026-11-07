@@ -5,6 +5,7 @@ import { RESTAURANT } from "@/lib/intake-types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;

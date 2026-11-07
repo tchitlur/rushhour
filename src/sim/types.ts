@@ -127,6 +127,8 @@ export interface WorkerSnapshot {
 
 export interface TokenSnapshot {
   orderId: number;
+  /** index of the item within the order; -1 for a packed/ready order token */
+  itemIdx: number;
   channel: Channel;
   /** 0 = fresh, 1 = at hold limit, >1 cold */
   warmth: number;

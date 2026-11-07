@@ -45,6 +45,7 @@ export interface Plan {
   combined: MonteCarloSummary;  // all enabled accepted cards applied together
   combinedEvidence: Evidence;
   scenario: Scenario;           // baseline scenario with enabled cards applied
+  baseScenario: Scenario;       // the untouched baseline (for re-evaluation after toggles)
   bottleneck: BottleneckReport;
   generatedAt: number;
 }
