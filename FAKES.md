@@ -29,3 +29,12 @@ Nothing here invents real-world facts. Events and weather are real and sourced. 
 | **Ask: 14 cached translations + aliases** | Likely questions (e.g. "2 extra cooks come at 6", "the fryer breaks at 7", "Ana leaves at 8", "add a second fryer", "short one person all night", "snow keeps people home") map to hand-written patches; everything else goes to the LLM live with a keyword parser as fallback (one rule per clause; the LLM handles richer combinations). | "Presets are instant; type anything else and the chip says 'AI-translated' vs 'preset'." |
 | **Ask visibility limits** | Broken equipment shows OUT, added capacity "+N", extra staff "+" badges, catering stacks are visible. Paused channels are not drawable (those orders are never placed). Extra cooks are generic "Extra cook N" figures with all skills at 1.0. | "Everything that exists in the simulation is drawn; paused channels simply never generate tickets." |
 | **Seasonal weather beyond ~15 days** | Open-Meteo forecast where available; otherwise a monthly Pittsburgh normals table labeled "Seasonal average". 15 dates (Nov 7–21) are pre-fetched and committed so date switching is instant. | "Real forecast when it exists; clearly labeled climatology otherwise." |
+
+## V3 shortcuts (coherence, Primanti demo, menu step, history)
+
+| What | How it's done | How to explain it |
+|---|---|---|
+| **Primanti Bros. demo restaurant** | Menu, prices, prep times, staffing, wages and volumes are estimates (the UI says so: "Demo uses estimated menu, staffing and volumes, not Primanti Bros. data"). Every sandwich routes fryer → grill so the fryer bottleneck is intuitive. Calibrated so Nov 13 melts down at the fryer (12.4 min Dasher wait, $401 at risk) and the plan recovers it (2.7 min, −68%). | "A realistic stand-in built from public menu knowledge, not their data." |
+| **Staff names** | A fixed common-name pool (Mike, Sarah, Chris, Jess, Dave, Amy, Matt, Katie); the "calls out" worker per template is hand-picked (`restaurant.demoAbsent`). | "Fictional staff." |
+| **Ask on other restaurants** | Presets and suggestions are generated from the active roster and the lowest-capacity equipment; generic quantities split by menu popularity; free text goes to the LLM with the restaurant context, with a scenario-aware keyword parser as fallback. | "Nothing is hard-coded to one restaurant anymore." |
+| **Event impact %** | "+N% orders est." is the event's magnitude × 35, a display approximation of the same formula the demand curve uses. | "A rough per-event share; the curve is the real model." |
