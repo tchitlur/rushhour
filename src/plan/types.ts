@@ -4,11 +4,11 @@ import type { Channel, StationId, MonteCarloSummary, Scenario } from "@/sim/type
 
 // ---------- Interventions ----------
 export const InterventionSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("add_shift"), worker: z.enum(["maria", "jake", "ana", "sam"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
+  z.object({ type: z.literal("add_shift"), worker: z.string().min(1), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
   z.object({ type: z.literal("prep_batch"), item: z.string().min(1), qty: z.number().int().min(1).max(200), time: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
   z.object({ type: z.literal("quote_prep_time"), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), minutes: z.number().int().min(8).max(45), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
   z.object({ type: z.literal("throttle_channel"), channel: z.enum(["doordash", "ubereats", "phone", "counter"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
-  z.object({ type: z.literal("reassign_worker"), worker: z.enum(["maria", "jake", "ana", "sam"]), station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
+  z.object({ type: z.literal("reassign_worker"), worker: z.string().min(1), station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
   z.object({ type: z.literal("move_station"), station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), x: z.number().min(0.5).max(11.5), y: z.number().min(0.5).max(7.5), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
 ]);
 export type Intervention = z.infer<typeof InterventionSchema>;

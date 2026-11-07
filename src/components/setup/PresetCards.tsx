@@ -6,7 +6,7 @@ import { PRESETS, SAVED_KEY, listSavedRestaurants, deleteSavedRestaurant, getCui
 
 export function PresetCards() {
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-5 gap-3">
       {PRESETS.map(p => (
         <Link key={p.id} href={`/app?r=${p.id}`} className="panel p-4 flex flex-col gap-2 hover:border-[#C3C8CF] transition-colors min-h-[128px]">
           <div className="flex items-start justify-between gap-2">
@@ -15,6 +15,7 @@ export function PresetCards() {
           </div>
           <div className="sub">{getCuisine(p.cuisine).name} · {p.neighborhood}</div>
           <div className="text-[12px] text-fg-2 leading-snug mt-auto">{p.tagline}</div>
+          {p.disclaimer && <div className="text-[11px] text-fg-3 leading-snug">{p.disclaimer}</div>}
         </Link>
       ))}
     </div>

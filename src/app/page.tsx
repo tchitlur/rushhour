@@ -1,5 +1,5 @@
 "use client";
-// Homepage = restaurant setup. /?demo=1 or pressing D opens Maria's demo (/app?r=maria).
+// Homepage = restaurant setup. /?demo=1 or pressing D opens the Primanti Bros. demo (/app?r=primanti).
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PresetCards, SavedList } from "@/components/setup/PresetCards";
@@ -9,13 +9,13 @@ function Home() {
   const router = useRouter();
   const params = useSearchParams();
   useEffect(() => {
-    if (params.get("demo") === "1") router.replace("/app?r=maria");
+    if (params.get("demo") === "1") router.replace("/app?r=primanti");
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const el = e.target as HTMLElement | null;
       const tag = el?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el?.isContentEditable) return;
-      if (e.key.toLowerCase() === "d") router.push("/app?r=maria");
+      if (e.key.toLowerCase() === "d") router.push("/app?r=primanti");
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -30,7 +30,7 @@ function Home() {
         </div>
         <div className="flex items-center gap-2 text-[12px] text-fg-2">
           <span>Press <kbd className="num text-fg bg-bg-3 border border-line rounded px-1.5">D</kbd> for the demo</span>
-          <a href="/app?r=maria" className="btn !py-1 !px-2.5 text-xs">Open Maria&apos;s demo</a>
+          <a href="/app?r=primanti" className="btn !py-1 !px-2.5 text-xs">Open the demo</a>
         </div>
       </header>
 

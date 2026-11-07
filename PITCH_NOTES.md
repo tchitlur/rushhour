@@ -1,8 +1,26 @@
 # PITCH_NOTES.md — numbers and lines for the slides
 
-All numbers are what the deployed app computes for the demo night (Fri Nov 13, 2026; 300 simulated nights unless noted). They are deterministic. The LLM's proposal list can vary a little between runs; the simulator's verdicts on the staple fixes don't.
+## Primanti Bros. demo (Nov 13)
+Preset `primanti` ("Primanti Bros. — Strip District", `/app?r=primanti`, also `D` / `/?demo=1`). **Demo uses estimated menu, staffing and volumes, not Primanti Bros. data** (shown on the card and in `restaurant.disclaimer`).
+Real intake for Fri Nov 13 (Pitt–FSU at Acrisure 7 PM, Gym Class Heroes at Stage AE 8 PM, fog/snow chance) applied to the Primanti kitchen; **Chris, the fry cook (6–10 PM, fryer skill 1.25), calls out** (`restaurant.demoAbsent = "chris"`). Fries go on every sandwich, so every sandwich crosses the fryer (5 baskets) before the flat-top.
+Line at the 7 PM peak: Mike, Sarah, Chris (normal) → Mike, Sarah (tonight). Dave is on call. Plan = call in Dave 6–9 PM + par-cook 60 fries at 7.
 
-## Headline (Rehearse card, 300 nights)
+| Metric (300 nights, seeds 1000+) | Normal night | Tonight as planned | With the plan |
+|---|---|---|---|
+| Avg Dasher wait | 2.2 min | **12.5 min** | **3.4 min** |
+| Cold orders | 0.4 | 5.2 | 1.0 |
+| Late orders | 7 | 63 | 23 |
+| Dollars at risk | $74 | **$401** | **$162** (−60%) |
+| Dashers who gave up | 0 | ~30 | ~4 |
+| Worst 10% nights, $ at risk | $185 | $681 | $365 |
+
+Bottleneck: **the fryer saturates 7:15–8:15 PM** (load 4.5× capacity) on the as-planned night; with the plan it stays near 1.4× around 6:30–7:30. Calling in Dave alone: 3.8 min / $188. Par-cooking fries alone: 10.9 min / $343 (fries help cold orders, not the wait).
+Calibration script: `scratchpad/calib.ts` (vitest; `PRESETS.find(p => p.id === "primanti").build()` → `buildTonightScenario(nov13, { absentWorker: "chris" })` → `runMonteCarlo`). Tuned: baseline orders = Maria's curve × 0.9 (~92 orders/night), fryer 5 baskets, sandwiches 6 min per stage, Jess leaves at 6, Dave on call.
+
+## Maria's Burgers & Wings (regular example, `/app?r=maria`)
+All numbers below are what the deployed app computes for Maria's demo night (Fri Nov 13, 2026; 300 simulated nights unless noted). They are deterministic. The LLM's proposal list can vary a little between runs; the simulator's verdicts on the staple fixes don't.
+
+### Headline (Rehearse card, 300 nights)
 | Metric | Tonight as planned | With the plan |
 |---|---|---|
 | Avg Dasher wait | **12.8 min** | **2.6 min** |

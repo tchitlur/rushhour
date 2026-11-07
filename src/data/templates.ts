@@ -237,12 +237,12 @@ export const CUISINES: CuisineTemplate[] = [
 /** Primanti Bros. demo kitchen. Estimated menu, staffing and volumes; not Primanti Bros. data. Not a setup-form template. */
 export const PRIMANTI: CuisineTemplate = {
   id: "primanti", demoAbsent: "chris", name: "Pittsburgh sandwiches", tagline: "Fries and slaw go ON the sandwich, so every sandwich crosses the fryer before the flat-top.",
-  stations: { grill: { name: "Flat-top grill", kind: "flattop", capacity: 6 }, fryer: { name: "Fryer", kind: "fryer", capacity: 4 }, cold: { name: "Cold / chili", kind: "cold", capacity: 4 }, pack: { name: "Pass / wrap", kind: "pack", capacity: 99 }, counter: COUNTER },
+  stations: { grill: { name: "Flat-top grill", kind: "flattop", capacity: 6 }, fryer: { name: "Fryer", kind: "fryer", capacity: 5 }, cold: { name: "Cold / chili", kind: "cold", capacity: 4 }, pack: { name: "Pass / wrap", kind: "pack", capacity: 99 }, counter: COUNTER },
   menu: [
-    { id: "pittsburger", name: "Pitts-burger & Cheese", price: 13.5, foodCost: 4.2, stations: ["fryer", "grill"], prepMin: 7, prepSd: 1.0, holdMin: 10, popularity: 30, fryerBaskets: 0.5 },
-    { id: "capicola", name: "Capicola & Cheese", price: 12.5, foodCost: 3.8, stations: ["fryer", "grill"], prepMin: 6.5, prepSd: 0.9, holdMin: 10, popularity: 26, fryerBaskets: 0.5 },
-    { id: "kielbasa", name: "Kielbasa & Cheese", price: 12.5, foodCost: 3.6, stations: ["fryer", "grill"], prepMin: 6.5, prepSd: 0.9, holdMin: 10, popularity: 14, fryerBaskets: 0.5 },
-    { id: "pastrami", name: "Pastrami & Cheese", price: 13, foodCost: 4.1, stations: ["fryer", "grill"], prepMin: 6.5, prepSd: 0.9, holdMin: 10, popularity: 16, fryerBaskets: 0.5 },
+    { id: "pittsburger", name: "Pitts-burger & Cheese", price: 13.5, foodCost: 4.2, stations: ["fryer", "grill"], prepMin: 6, prepSd: 0.9, holdMin: 10, popularity: 30, fryerBaskets: 0.5 },
+    { id: "capicola", name: "Capicola & Cheese", price: 12.5, foodCost: 3.8, stations: ["fryer", "grill"], prepMin: 6, prepSd: 0.9, holdMin: 10, popularity: 26, fryerBaskets: 0.5 },
+    { id: "kielbasa", name: "Kielbasa & Cheese", price: 12.5, foodCost: 3.6, stations: ["fryer", "grill"], prepMin: 6, prepSd: 0.9, holdMin: 10, popularity: 14, fryerBaskets: 0.5 },
+    { id: "pastrami", name: "Pastrami & Cheese", price: 13, foodCost: 4.1, stations: ["fryer", "grill"], prepMin: 6, prepSd: 0.9, holdMin: 10, popularity: 16, fryerBaskets: 0.5 },
     { id: "wings", name: "Wings (10)", price: 15, foodCost: 5.1, stations: ["fryer"], prepMin: 11, prepSd: 1.0, holdMin: 12, popularity: 14, fryerBaskets: 1 },
     { id: "fries", name: "Fries", price: 4.5, foodCost: 0.9, stations: ["fryer"], prepMin: 3.5, prepSd: 0.5, holdMin: 9, popularity: 20, fryerBaskets: 0.5 },
     { id: "chili", name: "Chili", price: 5.5, foodCost: 1.3, stations: ["cold"], prepMin: 1.5, prepSd: 0.3, holdMin: 30, popularity: 12 },
@@ -251,13 +251,14 @@ export const PRIMANTI: CuisineTemplate = {
     { id: "ironcity", name: "Iron City beer", price: 5, foodCost: 1.2, stations: ["cold"], prepMin: 0.5, prepSd: 0.1, holdMin: 60, popularity: 16 },
   ],
   staff: [
+    // Calibrated (see PITCH_NOTES.md): three on the line at the 7 PM peak; Chris is the fry cook who calls out; Dave is on call (no shift).
     { name: "Mike", wage: 22, skills: { grill: 1.25, fryer: 1.0, cold: 1.0, pack: 1.1, counter: 1.0 }, shift: [H(16), H(22)] },
     { name: "Sarah", wage: 18, skills: { grill: 1.1, fryer: 1.0, cold: 1.1, pack: 1.0, counter: 1.0 }, shift: [H(17), H(22)] },
-    { name: "Chris", wage: 19, skills: { grill: 0.9, fryer: 1.3, cold: 0.9, pack: 1.0, counter: 0.8 }, shift: [H(18), H(22)] },
-    { name: "Jess", wage: 16, skills: { grill: 0.7, fryer: 0.9, cold: 1.1, pack: 1.1, counter: 1.2 }, shift: [H(16), H(22)] },
-    { name: "Dave", wage: 16, skills: { grill: 0.8, fryer: 0.9, cold: 1.0, pack: 1.2, counter: 1.1 }, shift: [H(17), H(21)] },
+    { name: "Chris", wage: 19, skills: { grill: 0.9, fryer: 1.25, cold: 0.9, pack: 1.0, counter: 0.8 }, shift: [H(18), H(22)] },
+    { name: "Jess", wage: 16, skills: { grill: 0.7, fryer: 1.0, cold: 1.1, pack: 1.1, counter: 1.2 }, shift: [H(16), H(18)] },
+    { name: "Dave", wage: 16, skills: { grill: 0.8, fryer: 1.0, cold: 1.0, pack: 1.2, counter: 1.1 }, shift: null },
   ],
-  channelMix: { doordash: 0.35, ubereats: 0.15, phone: 0.1, counter: 0.4 }, demand: [...BASELINE_OPH], quotedPrepMin: 15, hours: { open: H(10), close: H(24) },
+  channelMix: { doordash: 0.35, ubereats: 0.15, phone: 0.1, counter: 0.4 }, demand: BASELINE_OPH.map(v => Math.max(1, Math.round(v * 0.9))), quotedPrepMin: 15, hours: { open: H(10), close: H(24) },
 };
 
 export function getCuisine(id: string | undefined | null): CuisineTemplate {

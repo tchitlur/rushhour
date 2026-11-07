@@ -7,8 +7,8 @@ const clamp = (t: number) => Math.max(SERVICE_START, Math.min(SERVICE_END, t));
 const onShift = (sc: Scenario, id: string, start: number, end: number) =>
   sc.workers.find(w => w.id === id)?.shifts.some(s => s.start <= start && s.end >= end) ?? false;
 
-type WorkerId = "maria" | "jake" | "ana" | "sam";
-const isWorkerId = (id: string): id is WorkerId => ["maria", "jake", "ana", "sam"].includes(id);
+type WorkerId = string;
+const isWorkerId = (id: string): id is WorkerId => id.length > 0;
 
 export function ruleBasedProposals(sc: Scenario, report: BottleneckReport): Intervention[] {
   const out: Intervention[] = [];

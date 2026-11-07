@@ -19,11 +19,11 @@ export async function POST(req: Request) {
     try {
       const out = await chatJSON(InterventionListSchema,
         `You are the planning brain of "Rush Rehearsal", a restaurant rush simulator. Propose up to 6 interventions for tonight at a small burger & wings restaurant. A simulator will TEST every proposal over 300 simulated nights; you only propose. Times are minutes since midnight (960 = 4:00 PM, 1140 = 7:00 PM, 1320 = 10:00 PM). Allowed types and fields (all required):
-- {"type":"add_shift","worker":"ana"|"sam"|"jake"|"maria","start":int,"end":int}  (only workers who are OFF or have gaps; wages given)
+- {"type":"add_shift","worker":<a worker id from context.workers>,"start":int,"end":int}  (only workers who are OFF or have gaps; wages given)
 - {"type":"prep_batch","item":<menu item id>,"qty":int 5..80,"time":int}  (par-cook before the rush; waste if unsold)
 - {"type":"quote_prep_time","start":int,"end":int,"minutes":int 10..35}  (longer quote => Dashers arrive later but conversion drops)
 - {"type":"throttle_channel","channel":"doordash"|"ubereats"|"phone"|"counter","start":int,"end":int}  (pause a channel; lost orders)
-- {"type":"reassign_worker","worker":...,"station":"grill"|"fryer"|"cold"|"pack"|"counter","start":int,"end":int}
+- {"type":"reassign_worker","worker":<worker id from context.workers>,"station":"grill"|"fryer"|"cold"|"pack"|"counter","start":int,"end":int}
 - {"type":"move_station","station":...,"x":0.5..11.5,"y":0.5..7.5}
 Each with a "rationale" (max 15 words). Be concrete and diverse: staffing, prep, quoted time, channel. Return {"interventions":[...]}.`,
         JSON.stringify(body.context).slice(0, 6000), { model: MODEL_SMART, timeoutMs: 12000, maxTokens: 900 });
