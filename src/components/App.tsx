@@ -19,10 +19,14 @@ export default function App() {
   const s = useApp();
   const { tab, setTab, view, setView, night, tIdx, loadTonight, advance, playing, highlightStation, askNight, viewportSource } = s;
   const viewStations = viewportSource === "ask" && s.askScenario ? s.askScenario.stations : s.tonight.stations;
-  const [intro, setIntro] = useState(true);
+  const [intro, setIntro] = useState<"on" | "out" | "off">("on");
 
   useEffect(() => { void loadTonight(); }, [loadTonight]);
-  useEffect(() => { const id = setTimeout(() => setIntro(false), 1800); return () => clearTimeout(id); }, []);
+  useEffect(() => {
+    const a = setTimeout(() => setIntro("out"), 1200);
+    const b = setTimeout(() => setIntro("off"), 1350);
+    return () => { clearTimeout(a); clearTimeout(b); };
+  }, []);
 
   // playback loop
   const last = useRef<number | null>(null);
@@ -73,50 +77,52 @@ export default function App() {
 
   return (
     <div className="h-full flex flex-col relative">
-      {intro && (
-        <div className="absolute inset-0 z-50 bg-bg flex flex-col items-center justify-center fade-up" style={{ animation: "fadeUp .4s ease-out" }}>
-          <div className="text-accent text-5xl font-bold tracking-tight">Rush Rehearsal</div>
-          <div className="text-fg-2 mt-3 text-lg">Rehearse tonight&apos;s rush before it happens.</div>
-          <div className="text-fg-3 mt-8 text-xs uppercase tracking-[.2em]">The AI proposes · the simulator proves</div>
+      {intro !== "off" && (
+        <div className={`absolute inset-0 z-50 bg-bg flex items-center justify-center ${intro === "out" ? "intro-out" : ""}`}>
+          <div className="panel px-10 py-8 min-w-[420px]">
+            <div className="text-fg text-[28px] font-semibold tracking-tight leading-none">Rush Rehearsal</div>
+            <div className="text-fg-2 mt-3 text-base">Rehearse tonight&apos;s rush before it happens.</div>
+            <div className="text-fg-3 mt-6 text-xs">AI proposes. The simulator proves.</div>
+          </div>
         </div>
       )}
-      <header className="h-14 shrink-0 flex items-center gap-5 px-5 border-b border-line bg-bg-2">
+      <header className="h-12 shrink-0 flex items-center gap-6 px-4 border-b border-line bg-bg-2 no-print">
         <div className="flex items-baseline gap-2">
-          <span className="text-accent font-bold tracking-tight text-lg">Rush Rehearsal</span>
+          <span className="text-fg font-semibold tracking-tight text-[15px]">Rush Rehearsal</span>
         </div>
-        <nav className="flex gap-1">
+        <nav className="flex h-full">
           {TABS.map(tb => (
-            <button key={tb} onClick={() => setTab(tb)} className={`btn btn-ghost !px-3 ${tab === tb ? "!bg-bg-3 !border-line text-fg" : "!border-transparent text-fg-2"}`}>{tb}</button>
+            <button key={tb} onClick={() => setTab(tb)} className={`px-3 h-full text-[13px] border-b-2 -mb-px transition-colors ${tab === tb ? "border-fg text-fg font-semibold" : "border-transparent text-fg-2 hover:text-fg"}`}>{tb}</button>
           ))}
         </nav>
-        <div className="ml-auto flex items-center gap-3 text-xs text-fg-3">
-          <span className="hidden xl:inline">Maria&apos;s Burgers &amp; Wings · North Shore, Pittsburgh · {s.tonight.date}</span>
-          <div className="flex rounded-lg border border-line overflow-hidden">
-            <button onClick={() => setView("2d")} className={`px-2.5 py-1 ${view === "2d" ? "bg-bg-3 text-fg" : "text-fg-3"}`}>2D</button>
-            <button onClick={() => setView("3d")} className={`px-2.5 py-1 ${view === "3d" ? "bg-bg-3 text-fg" : "text-fg-3"}`}>3D</button>
+        <div className="ml-auto flex items-center gap-3 text-xs text-fg-2">
+          <span className="hidden xl:inline">Maria&apos;s Burgers &amp; Wings · North Shore, Pittsburgh · <span className="num">{s.tonight.date}</span></span>
+          <div className="flex rounded border border-line overflow-hidden text-xs">
+            <button onClick={() => setView("2d")} className={`px-2.5 py-1 ${view === "2d" ? "bg-fg text-white" : "text-fg-2 hover:bg-bg-3"}`}>2D</button>
+            <button onClick={() => setView("3d")} className={`px-2.5 py-1 border-l border-line ${view === "3d" ? "bg-fg text-white" : "text-fg-2 hover:bg-bg-3"}`}>3D</button>
           </div>
-          <button className="btn !py-1 !px-2 text-xs" onClick={s.toggleHotkeys} title="Hotkeys (?)">?</button>
+          <button className="btn !py-1 !px-2 text-xs" onClick={s.toggleHotkeys} title="Hotkeys (?)">Keys</button>
         </div>
       </header>
-      <main className={`flex-1 grid gap-3 p-3 min-h-0 ${tab === "Race" ? "grid-cols-[1fr_380px]" : "grid-cols-[300px_1fr_380px]"}`}>
+      <main className={`flex-1 grid gap-2 p-2 min-h-0 ${tab === "Race" ? "grid-cols-[1fr_380px]" : "grid-cols-[300px_1fr_380px]"}`}>
         {tab !== "Race" && (
-          <aside className="panel p-4 overflow-y-auto scroll-thin">
+          <aside className="panel p-4 overflow-y-auto scroll-thin no-print">
             <TonightPanel />
           </aside>
         )}
-        <section className="panel relative overflow-hidden flex flex-col">
-          <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
-            {tab !== "Race" && <span className={`chip ${viewportSource === "ask" ? "!text-accent !border-accent/40" : ""}`}>{viewportSource === "ask" ? `What-if: ${s.askResult?.patch.summary ?? ""}` : s.tonight.label}</span>}
+        <section className="panel relative overflow-hidden flex flex-col no-print">
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-2 text-xs">
+            {tab !== "Race" && <span className={`chip ${viewportSource === "ask" ? "!text-plan !border-plan" : ""}`}>{viewportSource === "ask" ? `What-if: ${s.askResult?.patch.summary ?? ""}` : s.tonight.label}</span>}
             {s.loadingNight && <span className="chip">Simulating tonight…</span>}
-            {playing && tab !== "Race" && <span className="chip !border-accent/40 text-accent">● LIVE {s.speed}×</span>}
+            {playing && tab !== "Race" && <span className="chip"><span className="text-bad font-semibold">Live</span> <span className="num">{s.speed}×</span></span>}
           </div>
           <div className="flex-1 min-h-0 p-3">
             {tab === "Race" ? <RaceView /> : view === "3d" ? <Kitchen3D snapshot={snap} stations={viewStations} highlightStation={highlightStation} onMoveStation={(id, x, y) => void s.moveStation(id, x, y)} className="w-full h-full" /> : <Kitchen2D snapshot={snap} stations={viewStations} highlightStation={highlightStation} />}
           </div>
         </section>
-        <aside className="panel p-4 overflow-y-auto scroll-thin flex flex-col gap-5">
-          {(tab === "Tonight" || tab === "Watch") && (<div><div className="panel-title">{viewportSource === "ask" ? "Live · what-if scenario" : "Live · tonight as planned"}</div><div className="mt-3"><Counters live={snap?.live ?? null} compact /></div></div>)}
-          {tab === "Rehearse" && <><RehearsePanel /><OutputsPanel /></>}
+        <aside className="panel p-4 overflow-y-auto scroll-thin flex flex-col gap-5 print-only-grow">
+          {(tab === "Tonight" || tab === "Watch") && (<div><div className="panel-title">{viewportSource === "ask" ? "Live: what-if scenario" : "Live: tonight as planned"}</div><div className="sub mt-0.5">Updates as the night plays.</div><div className="mt-3"><Counters live={snap?.live ?? null} compact /></div></div>)}
+          {tab === "Rehearse" && <><div className="no-print"><RehearsePanel /></div><OutputsPanel /></>}
           {tab === "Why" && <WhyPanel />}
           {tab === "Ask" && <AskPanel />}
           {tab === "Race" && <><RehearsePanel /></>}
@@ -126,17 +132,17 @@ export default function App() {
         <Timeline bins={snap?.bins ?? null} t={t} />
       </footer>
       {s.showHotkeys && (
-        <div className="absolute bottom-28 right-4 z-40 panel p-3 text-xs text-fg-2 fade-up shadow-xl">
-          <div className="panel-title mb-2">Hotkeys</div>
+        <div className="absolute bottom-28 right-4 z-40 panel p-3 text-xs text-fg-2 shadow-lg">
+          <div className="panel-title mb-2">Keys</div>
           <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
             {[["R", "reset"], ["P", "play / pause"], ["W", "why"], ["Space", "rehearse"], ["S", "split race"], ["C", "curveball menu"], ["A", "focus Ask"], ["2 / 3", "2D / 3D"], ["D", "demo mode"], ["?", "this legend"]].map(([k, v]) => (
-              <Fragment key={k}><kbd className="font-mono text-fg bg-bg-3 border border-line rounded px-1.5">{k}</kbd><span>{v}</span></Fragment>
+              <Fragment key={k}><kbd className="num text-fg bg-bg-3 border border-line rounded px-1.5">{k}</kbd><span>{v}</span></Fragment>
             ))}
           </div>
         </div>
       )}
       {s.toast && (
-        <div className={`absolute bottom-28 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-lg border text-sm font-medium fade-up shadow-xl ${s.toast.kind === "ok" ? "bg-ok/15 border-ok/40 text-ok" : s.toast.kind === "bad" ? "bg-bad/15 border-bad/40 text-bad" : "bg-bg-3 border-line text-fg"}`}>{s.toast.text}</div>
+        <div className={`absolute bottom-28 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded border bg-bg-2 text-sm font-medium shadow-lg border-l-4 ${s.toast.kind === "ok" ? "border-line border-l-ok text-fg" : s.toast.kind === "bad" ? "border-line border-l-bad text-fg" : "border-line border-l-fg text-fg"}`}>{s.toast.text}</div>
       )}
     </div>
   );

@@ -1,22 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0b0d12;
-  --bg-2: #11141c;
-  --bg-3: #171b25;
-  --line: #242938;
-  --fg: #eef0f5;
-  --fg-2: #a9b0c2;
-  --fg-3: #6b7388;
-  --accent: #ff7a1a;
-  --accent-2: #ffb86b;
-  --ok: #3ddc84;
-  --warn: #ffc84a;
-  --bad: #ff4d5e;
-  --ch-doordash: #ff3008;
-  --ch-ubereats: #06c167;
-  --ch-phone: #4da3ff;
-  --ch-counter: #ffb020;
+  --bg: #F3F4F6;
+  --bg-2: #FFFFFF;
+  --bg-3: #F7F8FA;
+  --line: #DADDE2;
+  --fg: #16191D;
+  --fg-2: #5A6370;
+  --fg-3: #8A93A0;
+  --accent: #16191D;
+  --accent-2: #1D5FA8;
+  --ok: #2F855A;
+  --warn: #B7791F;
+  --bad: #C2410C;
+  --plan: #1D5FA8;
+  --ch-doordash: #B83227;
+  --ch-ubereats: #1E7A4C;
+  --ch-phone: #2F6DB5;
+  --ch-counter: #9A6B12;
 }
 
 @theme inline {
@@ -29,6 +30,7 @@
   --color-fg-3: var(--fg-3);
   --color-accent: var(--accent);
   --color-accent-2: var(--accent-2);
+  --color-plan: var(--plan);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
@@ -36,8 +38,8 @@
   --color-ubereats: var(--ch-ubereats);
   --color-phone: var(--ch-phone);
   --color-counter: var(--ch-counter);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
 html, body { height: 100%; }
@@ -45,29 +47,47 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);
+  font-size: 14px;
   overflow: hidden;
 }
 
-.num { font-variant-numeric: tabular-nums; }
-.panel { background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; }
-.panel-title { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-3); font-weight: 600; }
-.btn { display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .8rem; border-radius:8px; border:1px solid var(--line); background: var(--bg-3); color: var(--fg); font-size:13px; font-weight:500; cursor:pointer; transition: background .15s, border-color .15s, transform .05s; }
-.btn:hover { background:#1e2330; border-color:#2f3650; }
-.btn:active { transform: translateY(1px); }
-.btn-primary { background: var(--accent); border-color: var(--accent); color:#1a0d02; font-weight:600; }
-.btn-primary:hover { background: #ff8a36; border-color:#ff8a36; }
-.btn-ghost { background: transparent; }
-.chip { display:inline-flex; align-items:center; gap:.3rem; padding:.15rem .55rem; border-radius:999px; font-size:11px; font-weight:600; border:1px solid var(--line); background: var(--bg-3); color: var(--fg-2); }
-.scroll-thin { scrollbar-width: thin; scrollbar-color: #2a3042 transparent; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.panel { background: var(--bg-2); border: 1px solid var(--line); border-radius: 6px; }
+.panel-title { font-size: 14px; font-weight: 600; color: var(--fg); line-height: 1.3; }
+.sub { font-size: 12px; color: var(--fg-2); }
+.btn { display:inline-flex; align-items:center; gap:.4rem; padding:.4rem .75rem; border-radius:4px; border:1px solid var(--line); background: var(--bg-2); color: var(--fg); font-size:13px; font-weight:500; line-height:1.25; cursor:pointer; transition: background .15s ease-out, border-color .15s ease-out; }
+.btn:hover { background: var(--bg-3); border-color:#C3C8CF; }
+.btn:disabled { opacity:.55; cursor:default; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color:#fff; font-weight:600; }
+.btn-primary:hover { background:#2A2F36; border-color:#2A2F36; }
+.btn-ghost { background: transparent; border-color: transparent; }
+.btn-ghost:hover { background: var(--bg-3); border-color: transparent; }
+.chip { display:inline-flex; align-items:center; gap:.3rem; padding:.1rem .4rem; border-radius:4px; font-size:11px; font-weight:500; border:1px solid var(--line); background: transparent; color: var(--fg-2); line-height:1.4; white-space:nowrap; }
+.tag { display:inline-block; padding:0 .35rem; border-radius:3px; font-size:11px; font-weight:600; line-height:1.5; border:1px solid currentColor; }
+.scroll-thin { scrollbar-width: thin; scrollbar-color: #C3C8CF transparent; }
 .scroll-thin::-webkit-scrollbar { width: 6px; }
-.scroll-thin::-webkit-scrollbar-thumb { background: #2a3042; border-radius: 3px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: #C3C8CF; border-radius: 3px; }
 
-@keyframes fadeUp { from { opacity:0; transform: translateY(6px);} to { opacity:1; transform:none; } }
-.fade-up { animation: fadeUp .35s ease-out both; }
-@keyframes pulseRed { 0%,100% { box-shadow: 0 0 0 0 rgba(255,77,94,.0);} 50% { box-shadow: 0 0 0 6px rgba(255,77,94,.18);} }
-.pulse-bad { animation: pulseRed 1.2s ease-in-out infinite; }
+table.data { width:100%; border-collapse: collapse; font-size:12px; }
+table.data th { text-align:left; font-weight:500; color: var(--fg-2); padding: 4px 6px; border-bottom:1px solid var(--line); white-space:nowrap; }
+table.data td { padding: 6px 6px; border-bottom:1px solid var(--line); vertical-align: top; }
+table.data tr:last-child td { border-bottom:none; }
+table.data th.r, table.data td.r { text-align:right; }
+
+@keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+.intro-out { animation: fadeOut .15s ease-out both; }
+.fade-up { }
+
+.prep-sheet { font-size: 13px; }
+.prep-sheet .sheet-head { border-bottom: 1px solid var(--fg); padding-bottom: 6px; display:flex; justify-content:space-between; align-items:baseline; }
+.prep-sheet .sheet-section { padding: 8px 0; border-bottom: 1px dashed var(--line); }
+.prep-sheet .sheet-section:last-child { border-bottom: none; }
+.prep-sheet .sheet-title { font-size: 12px; font-weight: 600; color: var(--fg-2); margin-bottom: 4px; }
 
 @media print {
-  body { overflow: visible; background: #fff; color: #111; }
+  html, body { height: auto; overflow: visible; background: #fff; color: #111; }
   .no-print { display: none !important; }
+  .panel { border: none; }
+  .print-only-grow { overflow: visible !important; height: auto !important; }
+  main { display: block !important; padding: 0 !important; }
 }

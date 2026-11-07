@@ -20,34 +20,37 @@ function TonightPanel() {
   const w = tonightData?.weather;
   const evening = w?.hourly.filter(h => { const hh = parseInt(h.time.slice(11, 13)); return hh >= 16 && hh <= 22; }) ?? [];
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <div>
         <div className="flex items-center justify-between">
           <div className="panel-title">Tonight</div>
-          {tonightSource && <span className={`chip ${tonightSource === "live" ? "!text-ok !border-ok/40" : ""}`} title={tonightSource === "live" ? "Fetched live just now" : "Served from committed cache of real data"}>{tonightSource === "live" ? "live data" : tonightSource === "mixed" ? "live + cached" : "cached"}</span>}
+          {tonightSource && <span className={`chip ${tonightSource === "live" ? "!text-ok !border-ok" : ""}`} title={tonightSource === "live" ? "Fetched live just now" : "Served from committed cache of real data"}>{tonightSource === "live" ? "live data" : tonightSource === "mixed" ? "live + cached" : "cached"}</span>}
         </div>
-        <div className="mt-1 text-lg font-semibold">{tonightData ? fmtDate(tonightData.date) : "Loading…"}</div>
-        <div className="text-xs text-fg-3">Maria&apos;s Burgers &amp; Wings · North Shore, Pittsburgh</div>
-        <div className="text-[10px] text-fg-3 mt-1">Demo restaurant · synthetic history · real events &amp; weather</div>
+        <div className="mt-1 text-xl font-semibold leading-tight">{tonightData ? fmtDate(tonightData.date) : "Loading…"}</div>
+        <div className="sub mt-0.5">Maria&apos;s Burgers &amp; Wings · North Shore, Pittsburgh</div>
+        <div className="text-xs text-fg-3 mt-1">Demo restaurant. Synthetic history, real events and weather.</div>
       </div>
 
-      {tonightLoading && !tonightData && <div className="text-sm text-fg-2 animate-pulse">Pulling real events (Ticketmaster), weather (Open-Meteo) and local happenings (web search)…</div>}
+      {tonightLoading && !tonightData && <div className="text-sm text-fg-2">Pulling real events (Ticketmaster), weather (Open-Meteo) and local happenings (web search)…</div>}
 
       {w && (
-        <div className="rounded-lg border border-line bg-bg-3 p-3">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">{w.summary}</div>
-            <a href={w.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] text-fg-3 hover:text-fg-2">Open-Meteo ↗</a>
+        <div className="border-t border-line pt-3">
+          <div className="flex items-baseline justify-between">
+            <div className="panel-title">Weather</div>
+            <a href={w.sourceUrl} target="_blank" rel="noreferrer" className="text-xs text-fg-2 underline underline-offset-2 hover:text-fg">Open-Meteo</a>
           </div>
-          <div className="mt-2 flex gap-1">
+          <div className="text-sm mt-1">{w.summary}</div>
+          <div className="mt-2 grid gap-px" style={{ gridTemplateColumns: `repeat(${evening.length || 1}, minmax(0, 1fr))` }}>
             {evening.map(h => {
               const wet = h.precipIn >= 0.02 || (h.precipProb ?? 0) >= 60;
               const snowish = h.code >= 71 && h.code <= 77;
+              const fog = h.code >= 45 && h.code <= 48;
+              const cond = snowish ? "snow" : wet ? "rain" : fog ? "fog" : "";
               return (
-                <div key={h.time} className="flex-1 text-center">
-                  <div className={`h-6 rounded-sm flex items-end justify-center text-[9px] ${wet ? "bg-phone/40" : snowish ? "bg-phone/20" : (h.code >= 45 && h.code <= 48) ? "bg-fg-3/20" : "bg-counter/20"}`}>{snowish ? "❄" : wet ? "☂" : (h.code >= 45 && h.code <= 48) ? "≈" : ""}</div>
-                  <div className="text-[10px] text-fg-3 num mt-0.5">{Math.round(h.tempF)}°</div>
-                  <div className="text-[9px] text-fg-3">{fmtClockShort(parseInt(h.time.slice(11, 13)) * 60)}</div>
+                <div key={h.time} className="text-center border border-line rounded-sm py-1 bg-bg-2">
+                  <div className="text-[11px] text-fg-3 num">{fmtClockShort(parseInt(h.time.slice(11, 13)) * 60)}</div>
+                  <div className="text-[13px] text-fg num font-medium">{Math.round(h.tempF)}°</div>
+                  <div className={`text-[10px] h-3 leading-3 ${wet || snowish ? "text-phone font-medium" : "text-fg-3"}`}>{cond}</div>
                 </div>
               );
             })}
@@ -55,22 +58,23 @@ function TonightPanel() {
         </div>
       )}
 
-      <div>
-        <div className="panel-title mb-2">Events nearby ({events.length})</div>
-        <div className="flex flex-col gap-2">
+      <div className="border-t border-line pt-3">
+        <div className="panel-title mb-2">Events nearby <span className="num text-fg-2 font-normal">({events.length})</span></div>
+        <div className="flex flex-col divide-y divide-line border-y border-line">
           {events.slice(0, 6).map(e => {
             const m = eventMagnitude(e);
+            const size = m > 0.5 ? "major" : m > 0.05 ? "minor" : "tiny";
             return (
-              <div key={e.id} className={`rounded-lg border p-2.5 ${m > 0.5 ? "border-accent/50 bg-accent/5" : "border-line bg-bg-3"}`}>
+              <div key={e.id} className={`py-2 pl-2.5 border-l-[3px] ${m > 0.5 ? "border-l-bad" : "border-l-transparent"}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="text-sm font-semibold leading-snug">{e.name}</div>
-                  <span className={`chip shrink-0 ${m > 0.5 ? "!text-accent !border-accent/40" : ""}`}>{m > 0.5 ? "major" : m > 0.05 ? "minor" : "tiny"}</span>
+                  <span className={`tag shrink-0 ${m > 0.5 ? "text-bad" : "text-fg-3"}`}>{size}</span>
                 </div>
-                <div className="text-[11px] text-fg-3 mt-0.5">{e.type} · {fmtT(isoToMin(e.start))} · {e.venue.split(",")[0]} · {e.distanceMiles.toFixed(1)} mi · ~{e.attendance.toLocaleString()} people</div>
-                <div className="text-xs text-fg-2 mt-1">{explanations[e.id] ?? templateLine(e)}</div>
-                <div className="flex items-center justify-between mt-1">
-                  <span className="text-[10px] text-fg-3">{e.impact === "both" ? "delivery ↑ walk-in ↓" : e.impact === "delivery_up" ? "delivery ↑" : e.impact === "dine_in_down" ? "walk-in ↓" : "neutral"} · conf {Math.round(e.confidence * 100)}%</span>
-                  <a href={e.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] text-fg-3 hover:text-fg-2">{e.source === "web_search" ? "web" : e.source === "cache" ? "cached" : "Ticketmaster"} ↗</a>
+                <div className="text-xs text-fg-2 mt-0.5">{e.type} · <span className="num">{fmtT(isoToMin(e.start))}</span> · {e.venue.split(",")[0]} · <span className="num">{e.distanceMiles.toFixed(1)}</span> mi · ~<span className="num">{e.attendance.toLocaleString()}</span> people</div>
+                <div className="text-xs text-fg mt-1">{explanations[e.id] ?? templateLine(e)}</div>
+                <div className="flex items-center justify-between mt-1 text-xs text-fg-2">
+                  <span>{e.impact === "both" ? "delivery up, walk-in down" : e.impact === "delivery_up" ? "delivery up" : e.impact === "dine_in_down" ? "walk-in down" : "neutral"} · confidence <span className="num">{Math.round(e.confidence * 100)}%</span></span>
+                  <a href={e.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-fg">{e.source === "web_search" ? "web" : e.source === "cache" ? "cached" : "Ticketmaster"}</a>
                 </div>
               </div>
             );
@@ -78,28 +82,28 @@ function TonightPanel() {
         </div>
       </div>
 
-      <div>
-        <div className="panel-title mb-1">Staffing tonight</div>
+      <div className="border-t border-line pt-3">
+        <div className="panel-title mb-2">Staffing tonight</div>
         <label className="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox" checked={jakeOut} onChange={e => setToggles({ jakeOut: e.target.checked })} className="accent-accent" />
-          <span>Jake called out <span className="text-fg-3 text-xs">(6–10 PM shift)</span></span>
+          <input type="checkbox" checked={jakeOut} onChange={e => setToggles({ jakeOut: e.target.checked })} className="accent-[#16191D]" />
+          <span>Jake called out <span className="text-fg-2 text-xs">(6–10 PM shift)</span></span>
         </label>
-        <label className="flex items-center gap-2 text-sm cursor-pointer mt-1">
-          <input type="checkbox" checked={rainWhatIf} onChange={e => setToggles({ rainWhatIf: e.target.checked })} className="accent-accent" />
-          <span>What-if: rain 6–9 PM <span className="text-fg-3 text-xs">(not in the real forecast)</span></span>
+        <label className="flex items-center gap-2 text-sm cursor-pointer mt-1.5">
+          <input type="checkbox" checked={rainWhatIf} onChange={e => setToggles({ rainWhatIf: e.target.checked })} className="accent-[#16191D]" />
+          <span>What-if: rain 6–9 PM <span className="text-fg-2 text-xs">(not in the real forecast)</span></span>
         </label>
       </div>
 
       {demand && (
-        <div>
-          <div className="panel-title mb-1">Demand tonight</div>
-          <div className="text-sm font-semibold text-accent-2">{demand.peakLabel}</div>
-          <div className="text-[11px] text-fg-3">{Math.round(demand.deliveryShare * 100)}% of orders by delivery (normally {Math.round((tonight.channelMix.doordash + tonight.channelMix.ubereats) * 100)}%)</div>
+        <div className="border-t border-line pt-3">
+          <div className="panel-title">Demand tonight</div>
+          <div className="text-sm font-medium mt-1">{demand.peakLabel}</div>
+          <div className="text-xs text-fg-2"><span className="num">{Math.round(demand.deliveryShare * 100)}%</span> of orders by delivery (normally <span className="num">{Math.round((tonight.channelMix.doordash + tonight.channelMix.ubereats) * 100)}%</span>)</div>
           <DemandCurve />
-          <div className="text-[10px] text-fg-3 mt-1">Deterministic formula: event size × proximity × timing, plus weather. Capped 0.7×–1.8×.</div>
+          <div className="text-xs text-fg-3 mt-1">Deterministic formula: event size × proximity × timing, plus weather. Capped 0.7×–1.8×.</div>
         </div>
       )}
-      <div className="text-[10px] text-fg-3">Baseline from {normal.label.toLowerCase()} history (synthetic).</div>
+      <div className="text-xs text-fg-3">Baseline from {normal.label.toLowerCase()} history (synthetic).</div>
     </div>
   );
 }
@@ -113,14 +117,15 @@ function DemandCurve() {
   const max = Math.max(...tonightOph, ...base) * 1.1;
   const pt = (v: number, i: number) => `${(i / (n - 1)) * W},${H - (v / max) * H}`;
   return (
-    <svg viewBox={`0 0 ${W} ${H + 14}`} className="w-full mt-1">
-      <path d={`M0,${H} ` + base.map((v, i) => "L" + pt(v, i)).join(" ") + ` L${W},${H} Z`} fill="#6b7388" opacity={0.25} />
-      <polyline points={base.map(pt).join(" ")} fill="none" stroke="#a9b0c2" strokeWidth={1.5} strokeDasharray="3 3" />
-      <path d={`M0,${H} ` + tonightOph.map((v, i) => "L" + pt(v, i)).join(" ") + ` L${W},${H} Z`} fill="#ff7a1a" opacity={0.18} />
-      <polyline points={tonightOph.map(pt).join(" ")} fill="none" stroke="#ff7a1a" strokeWidth={2} />
-      {[16, 18, 20, 22].map(h => <text key={h} x={((h * 60 - SERVICE_START) / (SERVICE_END - SERVICE_START)) * W} y={H + 11} fontSize={9} fill="#6b7388" textAnchor={h === 22 ? "end" : h === 16 ? "start" : "middle"}>{fmtClockShort(h * 60)}</text>)}
-      <text x={W} y={10} fontSize={9} fill="#ff7a1a" textAnchor="end">tonight</text>
-      <text x={W} y={20} fontSize={9} fill="#a9b0c2" textAnchor="end">baseline</text>
+    <svg viewBox={`0 0 ${W} ${H + 14}`} className="w-full mt-2" style={{ fontFamily: "var(--font-mono)" }}>
+      {[0.25, 0.5, 0.75, 1].map(f => <line key={f} x1={0} x2={W} y1={H - f * H} y2={H - f * H} stroke="#E5E7EB" strokeWidth={1} />)}
+      <line x1={0} x2={W} y1={H} y2={H} stroke="#DADDE2" strokeWidth={1} />
+      <path d={`M0,${H} ` + tonightOph.map((v, i) => "L" + pt(v, i)).join(" ") + ` L${W},${H} Z`} fill="#C2410C" opacity={0.08} />
+      <polyline points={base.map(pt).join(" ")} fill="none" stroke="#8A93A0" strokeWidth={1.25} strokeDasharray="3 3" />
+      <polyline points={tonightOph.map(pt).join(" ")} fill="none" stroke="#C2410C" strokeWidth={1.5} />
+      {[16, 18, 20, 22].map(h => <text key={h} x={((h * 60 - SERVICE_START) / (SERVICE_END - SERVICE_START)) * W} y={H + 11} fontSize={9} fill="#5A6370" textAnchor={h === 22 ? "end" : h === 16 ? "start" : "middle"}>{fmtClockShort(h * 60)}</text>)}
+      <text x={W} y={10} fontSize={9} fill="#C2410C" textAnchor="end" fontFamily="var(--font-sans)">tonight</text>
+      <text x={W} y={20} fontSize={9} fill="#5A6370" textAnchor="end" fontFamily="var(--font-sans)">baseline</text>
     </svg>
   );
 }

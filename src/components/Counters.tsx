@@ -19,14 +19,17 @@ export const COUNTERS: CounterSpec[] = [
 export default function Counters({ live, compact = false, keys }: { live: LiveCounters | null; compact?: boolean; keys?: (keyof LiveCounters)[] }) {
   const specs = keys ? COUNTERS.filter(c => keys.includes(c.key)) : COUNTERS;
   return (
-    <div className={`grid ${compact ? "grid-cols-2 gap-2" : "grid-flow-col auto-cols-fr gap-3"}`}>
+    <div className={`grid ${compact ? "grid-cols-2 gap-2" : "grid-flow-col auto-cols-fr gap-2"}`}>
       {specs.map(c => {
         const v = live ? live[c.key] : 0;
         const bad = c.bad?.(v) ?? false;
         return (
-          <div key={c.key} className={`rounded-lg px-3 py-2 border ${bad ? "border-bad/50 bg-bad/10" : "border-line bg-bg-3"}`}>
-            <div className="text-[10px] uppercase tracking-wider text-fg-3 font-semibold truncate">{c.label}</div>
-            <div className={`num font-bold leading-tight ${compact ? "text-xl" : "text-2xl"} ${bad ? "text-bad" : "text-fg"}`}>{c.fmt(v)}</div>
+          <div key={c.key} className={`rounded px-3 py-2 border border-line bg-bg-2 border-l-[3px] ${bad ? "border-l-bad" : "border-l-line"}`}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-xs text-fg-2 truncate">{c.label}</div>
+              {bad && <span className="tag text-bad">high</span>}
+            </div>
+            <div className={`num font-medium leading-none mt-1 ${compact ? "text-[28px]" : "text-[36px]"} ${bad ? "text-bad" : "text-fg"}`}>{c.fmt(v)}</div>
           </div>
         );
       })}

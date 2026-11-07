@@ -12,56 +12,68 @@ function AskPanel() {
   const r = askResult;
   const b = r?.baseline.mean, a = r?.patched.mean;
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <div>
         <div className="panel-title">Ask anything</div>
-        <div className="text-xs text-fg-3 mt-1">Type a what-if. The AI turns it into an experiment; the simulator answers with numbers.</div>
+        <div className="sub mt-0.5">Type a what-if. The AI turns it into an experiment; the simulator answers with numbers.</div>
       </div>
       <form onSubmit={e => { e.preventDefault(); submit(q); }} className="flex gap-2">
-        <input id="ask-input" value={q} onChange={e => setQ(e.target.value)} placeholder="e.g. the fryer breaks at 7" className="flex-1 rounded-lg bg-bg border border-line px-3 py-2 text-sm outline-none focus:border-accent" />
+        <input id="ask-input" value={q} onChange={e => setQ(e.target.value)} placeholder="e.g. the fryer breaks at 7" className="flex-1 rounded bg-bg-2 border border-line px-3 py-2 text-sm outline-none focus:border-fg placeholder:text-fg-3" />
         <button type="submit" className="btn btn-primary" disabled={askLoading || !q.trim()}>Run</button>
       </form>
       <div>
-        <div className="text-[10px] uppercase tracking-wider text-fg-3 font-semibold mb-1">Curveballs</div>
+        <div className="text-xs text-fg-2 mb-1.5">Curveballs</div>
         <div className="flex flex-wrap gap-1.5">
           {CURVEBALLS.map(p => <button key={p.label} className="btn !py-1 !px-2.5 text-xs" onClick={() => submit(p.question)} disabled={askLoading}>{p.label}</button>)}
-          {LIKELY_QUESTIONS.slice(0, 3).map(p => <button key={p.label} className="btn btn-ghost !py-1 !px-2.5 text-xs" onClick={() => submit(p.question)} disabled={askLoading}>{p.label}</button>)}
+          {LIKELY_QUESTIONS.slice(0, 3).map(p => <button key={p.label} className="btn btn-ghost !py-1 !px-2.5 text-xs text-fg-2" onClick={() => submit(p.question)} disabled={askLoading}>{p.label}</button>)}
         </div>
       </div>
-      {askLoading && <div className="text-sm text-fg-2 animate-pulse">{askStatus || "Working…"}</div>}
+      {askLoading && <div className="text-sm text-fg-2">{askStatus || "Working…"}</div>}
       {r && !askLoading && (
-        <div className="flex flex-col gap-3 fade-up">
-          <div className="text-xs text-fg-3">“{r.question}”</div>
+        <div className="flex flex-col gap-3 border-t border-line pt-3">
+          <div className="text-sm text-fg">“{r.question}”</div>
           {r.chips.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {r.chips.map((c, i) => <span key={`${i}-${c}`} className="chip !text-accent-2 !border-accent/40">{c}</span>)}
-              <span className="chip">{r.source === "llm" ? "AI-translated" : r.source === "cache" ? "preset" : "rule-translated"} · {(r.ms / 1000).toFixed(1)}s</span>
+            <div className="flex flex-wrap gap-1.5 items-center">
+              {r.chips.map((c, i) => <span key={`${i}-${c}`} className="chip !text-fg !border-fg-3">{c}</span>)}
+              <span className="text-xs text-fg-3">{r.source === "llm" ? "AI-translated" : r.source === "cache" ? "preset" : "rule-translated"} · <span className="num">{(r.ms / 1000).toFixed(1)}s</span></span>
             </div>
           )}
           {r.patch.unsupported && r.chips.length === 0 ? (
-            <div className="rounded-lg border border-warn/40 bg-warn/10 p-3 text-sm">{r.patch.unsupported}</div>
+            <div className="rounded border border-line border-l-[3px] border-l-warn p-3 text-sm">{r.patch.unsupported}</div>
           ) : b && a ? (
             <>
-              <div className="rounded-lg border border-line bg-bg-3 p-3">
-                <div className="text-[10px] uppercase tracking-wider text-fg-3 font-semibold mb-1">{r.patch.summary}</div>
-                <div className="grid grid-cols-3 gap-2">
-                  <D label="Dasher wait" b={b.avgDasherWait} a={a.avgDasherWait} fmt={v => `${v.toFixed(1)}m`} />
-                  <D label="Cold" b={b.coldOrders} a={a.coldOrders} fmt={v => v.toFixed(0)} />
-                  <D label="At risk" b={b.dollarsAtRisk} a={a.dollarsAtRisk} fmt={fmtMoney} />
-                </div>
-                <div className="text-[10px] text-fg-3 mt-1">{r.patched.nights} nights, same random draws as the baseline.</div>
-                <button className={`btn text-xs mt-2 ${askNightActive ? "!border-accent/50 text-accent" : ""}`} onClick={playAskNight}>{askNightActive ? "Showing this scenario in the kitchen" : "Watch this scenario"}</button>
+              <div>
+                <div className="text-sm font-semibold mb-1.5">{r.patch.summary}</div>
+                <table className="data">
+                  <thead><tr><th>Metric</th><th className="r">Before</th><th className="r">After</th><th className="r">Change</th></tr></thead>
+                  <tbody>
+                    <D label="Dasher wait" b={b.avgDasherWait} a={a.avgDasherWait} fmt={v => `${v.toFixed(1)}m`} />
+                    <D label="Cold orders" b={b.coldOrders} a={a.coldOrders} fmt={v => v.toFixed(0)} />
+                    <D label="At risk" b={b.dollarsAtRisk} a={a.dollarsAtRisk} fmt={fmtMoney} />
+                  </tbody>
+                </table>
+                <div className="text-xs text-fg-3 mt-1.5"><span className="num">{r.patched.nights}</span> nights, same random draws as the baseline.</div>
+                <button className={`btn text-xs mt-2 ${askNightActive ? "!border-plan text-plan" : ""}`} onClick={playAskNight}>{askNightActive ? "Showing this scenario in the kitchen" : "Watch this scenario"}</button>
               </div>
               <div className="text-sm leading-relaxed">{r.answer}</div>
               {r.recovery && r.recovery.length > 0 && (
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-fg-3 font-semibold mb-1">Recovery plan · quick test on 60 nights</div>
-                  {r.recovery.map(c => (
-                    <div key={c.id} className="rounded-md border border-ok/30 bg-ok/5 p-2 mb-1.5">
-                      <div className="text-sm font-semibold">{c.title}</div>
-                      <div className="text-[11px] text-fg-2 num">wait {c.evidence.before.avgDasherWait.toFixed(1)}→<b className="text-fg">{c.evidence.after.avgDasherWait.toFixed(1)}m</b> · risk {fmtMoney(c.evidence.before.dollarsAtRisk)}→<b className="text-fg">{fmtMoney(c.evidence.after.dollarsAtRisk)}</b> · {c.costLabel} · helped {c.evidence.nightsHelped}/{c.evidence.nights}</div>
-                    </div>
-                  ))}
+                <div className="border-t border-line pt-3">
+                  <div className="panel-title">Recovery plan</div>
+                  <div className="sub mb-1.5">Quick test on <span className="num">60</span> nights</div>
+                  <table className="data">
+                    <thead><tr><th>Fix</th><th className="r">Wait</th><th className="r">At risk</th><th className="r">Cost</th><th className="r">Helped</th></tr></thead>
+                    <tbody>
+                      {r.recovery.map(c => (
+                        <tr key={c.id}>
+                          <td className="text-[13px] font-semibold text-fg">{c.title}</td>
+                          <td className="r num whitespace-nowrap">{c.evidence.after.avgDasherWait.toFixed(1)}m<div className="text-fg-3 text-[11px]">{c.evidence.before.avgDasherWait.toFixed(1)}</div></td>
+                          <td className="r num whitespace-nowrap">{fmtMoney(c.evidence.after.dollarsAtRisk)}<div className="text-fg-3 text-[11px]">{fmtMoney(c.evidence.before.dollarsAtRisk)}</div></td>
+                          <td className="r num whitespace-nowrap">{c.costLabel}</td>
+                          <td className="r num whitespace-nowrap">{c.evidence.nightsHelped}/{c.evidence.nights}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </>
@@ -74,11 +86,14 @@ function AskPanel() {
 
 function D({ label, b, a, fmt }: { label: string; b: number; a: number; fmt: (v: number) => string }) {
   const worse = a > b + 1e-6;
+  const same = Math.abs(a - b) < 1e-6;
   return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wider text-fg-3">{label}</div>
-      <div className="num text-sm"><span className="text-fg-3">{fmt(b)}</span> → <span className={`font-bold text-lg ${worse ? "text-bad" : "text-ok"}`}>{fmt(a)}</span></div>
-    </div>
+    <tr>
+      <td className="text-[13px]">{label}</td>
+      <td className="r num text-fg-2">{fmt(b)}</td>
+      <td className={`r num text-[13px] font-semibold ${worse ? "text-bad" : same ? "text-fg" : "text-ok"}`}>{fmt(a)}</td>
+      <td className={`r text-[11px] ${worse ? "text-bad" : same ? "text-fg-3" : "text-ok"}`}>{worse ? "worse" : same ? "same" : "better"}</td>
+    </tr>
   );
 }
 
