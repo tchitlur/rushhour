@@ -18,7 +18,9 @@ export function ruleBasedProposals(sc: Scenario, report: BottleneckReport): Inte
   // 1. Call in an off-shift worker for 3 hours around the bottleneck (prefer Ana).
   const shiftStart = clamp(Math.floor((mid - 90) / 60) * 60);
   const shiftEnd = clamp(shiftStart + 180);
-  const off = [...sc.workers].sort((a, b) => (a.id === "ana" ? -1 : b.id === "ana" ? 1 : 0)).find(w => isWorkerId(w.id) && !onShift(sc, w.id, shiftStart, shiftEnd));
+  // never propose calling in the person who called out tonight
+  const calledOut = (id: string) => (sc.notes ?? []).some(n => { const w = sc.workers.find(x => x.id === id); return !!w && n.startsWith(`${w.name} called out`); });
+  const off = [...sc.workers].sort((a, b) => (a.id === "ana" ? -1 : b.id === "ana" ? 1 : 0)).find(w => isWorkerId(w.id) && !calledOut(w.id) && !onShift(sc, w.id, shiftStart, shiftEnd));
   if (off && isWorkerId(off.id)) {
     out.push({ type: "add_shift", worker: off.id, start: shiftStart, end: shiftEnd, rationale: `Extra hands through the ${fmtClockShort(ws)}–${fmtClockShort(we)} crunch at ${report.station}.` });
   }
