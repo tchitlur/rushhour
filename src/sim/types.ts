@@ -78,7 +78,7 @@ export interface Scenario {
   /** one-off large orders */
   bigOrders: { time: number; items: { item: string; qty: number }[]; channel: Channel }[];
   /** restaurant identity (templates / customizer) */
-  restaurant?: { name: string; cuisine: string; neighborhood: string; lat: number; lon: number; hours?: { open: number; close: number } };
+  restaurant?: { name: string; cuisine: string; neighborhood: string; lat: number; lon: number; hours?: { open: number; close: number }; /** worker id who "calls out" in the demo story (replaces the Maria-specific Jake toggle) */ demoAbsent?: string; /** one-line honesty note shown in the UI */ disclaimer?: string };
   /** weather effect multiplier (already folded into demand, kept for attribution) */
   notes?: string[];
 }
