@@ -60,16 +60,17 @@ export default function Kitchen2D({ snapshot, stations, highlightStation, classN
         const hl = highlightStation === st.id;
         return (
           <g key={st.id}>
+            <clipPath id={`clip-${st.id}`}><rect x={x} y={y} width={w * S - 26} height={h * S} /></clipPath>
             {(sat || hl) && <rect x={x - 4} y={y - 4} width={w * S + 8} height={h * S + 8} rx={6} fill="none" stroke={hl ? PALETTE.plan : PALETTE.bad} strokeWidth={2} />}
             <rect x={x} y={y} width={w * S} height={h * S} rx={4} fill="#FFFFFF" stroke={PALETTE.border} strokeWidth={1} />
             <rect x={x} y={y} width={w * S} height={4} rx={1} fill={STATION_STRIPE[st.id]} />
             <text x={x + 12} y={y + 26} fill={PALETTE.ink} fontSize={15} fontWeight={600}>{st.name}</text>
             {sat && <text x={x + 12 + st.name.length * 9 + 8} y={y + 26} fill={PALETTE.bad} fontSize={11} fontWeight={600}>saturated</text>}
             {ss && st.id !== "pack" && st.id !== "counter" && (
-              <text x={x + 12} y={y + 46} fill={PALETTE.text2} fontSize={12} className="num">{ss.busy % 1 ? ss.busy.toFixed(1) : ss.busy}/{ss.capacity} busy{ss.queue > 0 ? ` · ${ss.queue} queued` : ""}</text>
+              <text x={x + 12} y={y + 46} fill={PALETTE.text2} fontSize={11} className="num" clipPath={`url(#clip-${st.id})`}>{ss.busy % 1 ? ss.busy.toFixed(1) : ss.busy}/{ss.capacity} busy{ss.queue > 0 ? ` · ${ss.queue} queued` : ""}</text>
             )}
             {ss && (st.id === "pack" || st.id === "counter") && (
-              <text x={x + 12} y={y + 46} fill={PALETTE.text2} fontSize={12} className="num">{st.id === "pack" ? `${ss.busy} packing${ss.queue > 0 ? ` · ${ss.queue} waiting` : ""}` : "walk-in & phone pickup"}</text>
+              <text x={x + 12} y={y + 46} fill={PALETTE.text2} fontSize={11} className="num" clipPath={`url(#clip-${st.id})`}>{st.id === "pack" ? `${ss.busy} packing${ss.queue > 0 ? ` · ${ss.queue} waiting` : ""}` : "walk-in & phone pickup"}</text>
             )}
             {/* load bar */}
             {st.id !== "counter" && (

@@ -111,12 +111,11 @@ function Row({ c, line, onToggle, busy }: { c: PlanCard; line?: string; onToggle
           <span className={`absolute top-[2px] w-3 h-3 rounded-sm transition-all ${c.enabled ? "left-[16px] bg-white" : "left-[2px] bg-fg-3"}`} />
         </button>
       </div>
-      <div className="grid grid-cols-6 gap-1 mt-1.5">
+      <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 mt-1.5">
         {cells.map(([k, v, was]) => (
           <div key={k} className="min-w-0">
             <div className="text-[11px] text-fg-2 truncate">{k}</div>
-            <div className={`num text-xs font-semibold truncate ${k === "Protects" ? "text-ok" : "text-fg"}`}>{v}</div>
-            {was && <div className="num text-[11px] text-fg-3 truncate">{was === "nights" ? "nights" : `was ${was}`}</div>}
+            <div className={`num text-xs font-semibold ${k === "Protects" ? "text-ok" : "text-fg"}`}>{v}{was && <span className="text-fg-3 font-normal text-[11px]"> {was === "nights" ? "nights" : `was ${was}`}</span>}</div>
           </div>
         ))}
       </div>
