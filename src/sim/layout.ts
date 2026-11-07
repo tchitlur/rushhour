@@ -21,10 +21,10 @@ export const DEFAULT_STATIONS: Station[] = [
 ];
 
 export const CHANNEL_COLOR: Record<Channel, string> = {
-  doordash: "#ff3008",
-  ubereats: "#06c167",
-  phone: "#4da3ff",
-  counter: "#ffb020",
+  doordash: "#B83227",
+  ubereats: "#1E7A4C",
+  phone: "#2F6DB5",
+  counter: "#9A6B12",
 };
 export const CHANNEL_LABEL: Record<Channel, string> = {
   doordash: "DoorDash",
