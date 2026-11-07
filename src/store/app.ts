@@ -17,8 +17,8 @@ import { tonightFactors } from "@/lib/demand";
 import { runAsk } from "@/plan/ask";
 import { applyPatch } from "@/plan/apply";
 
-export type Tab = "Tonight" | "Watch" | "Why" | "Rehearse" | "Race" | "Ask";
-export const TABS: Tab[] = ["Tonight", "Watch", "Why", "Rehearse", "Race", "Ask"];
+export type Tab = "Tonight" | "Watch" | "Why" | "Rehearse" | "Race" | "Ask" | "Kitchen";
+export const TABS: Tab[] = ["Tonight", "Watch", "Why", "Rehearse", "Race", "Ask", "Kitchen"];
 export const DEMO_SEED = 1042;
 /** Pick the night whose dollars-at-risk is closest to the Monte Carlo mean: a representative night, not a cherry-picked one. */
 export function representativeSeed(mc: MonteCarloSummary): number {
@@ -33,6 +33,14 @@ interface AppState {
   view: "2d" | "3d";
   showHotkeys: boolean;
   demoMode: boolean;
+  // v2: date, restaurant base, ask view
+  date: string;
+  setDate: (date: string) => Promise<void>;
+  restaurantBase: Scenario | null;          // template/customized restaurant (null = Maria's defaults)
+  setRestaurant: (base: Scenario | null) => void;
+  updateRestaurant: (mutate: (base: Scenario) => void) => void;
+  askView: "before" | "after" | "race";
+  setAskView: (v: "before" | "after" | "race") => void;
   // tonight intake (REAL events & weather)
   tonightData: TonightData | null;
   tonightLoading: boolean;
@@ -106,6 +114,21 @@ export const useApp = create<AppState>((set, get) => ({
   view: "2d",
   showHotkeys: false,
   demoMode: true,
+  date: DEFAULT_DATE,
+  setDate: async (date) => { set({ date }); await get().loadTonight(date); },
+  restaurantBase: null,
+  setRestaurant: (base) => {
+    set({ restaurantBase: base, normal: base ? { ...cloneScenario(base), label: "Normal night" } : baseScenario(get().date) });
+    const d = get().tonightData;
+    if (d) { const { jakeOut, rainWhatIf } = get(); get().setTonight(buildTonightScenario(d, { jakeOut, rainWhatIf }, base ?? undefined)); }
+  },
+  updateRestaurant: (mutate) => {
+    const base = cloneScenario(get().restaurantBase ?? baseScenario(get().date));
+    mutate(base);
+    get().setRestaurant(base);
+  },
+  askView: "after",
+  setAskView: (askView) => set({ askView }),
   tonightData: null,
   tonightLoading: false,
   tonightSource: null,
@@ -117,10 +140,11 @@ export const useApp = create<AppState>((set, get) => ({
     set({ tonightLoading: true });
     // 1) cached real data first, so the kitchen simulates instantly
     const cached = CACHED_TONIGHT[date] ?? null;
+    const rb = get().restaurantBase ?? undefined;
     if (cached) {
       const { jakeOut, rainWhatIf } = get();
-      const tonight = buildTonightScenario(cached, { jakeOut, rainWhatIf });
-      set({ tonightData: cached, tonightSource: "cache", demand: computeDemand(cached.events, cached.weather, tonight.channelMix), normal: baseScenario(date) });
+      const tonight = buildTonightScenario(cached, { jakeOut, rainWhatIf }, rb);
+      set({ tonightData: cached, tonightSource: "cache", demand: computeDemand(cached.events, cached.weather, tonight.channelMix), normal: rb ? { ...cloneScenario(rb), label: "Normal night" } : baseScenario(date) });
       get().setTonight(tonight);
     }
     // 2) then live fetch; only re-simulate if the live facts change the scenario
@@ -136,10 +160,10 @@ export const useApp = create<AppState>((set, get) => ({
     if (!data || (!data.events.length && !data.weather)) { data = CACHED_TONIGHT[date] ?? null; source = "cache"; }
     if (!data) { set({ tonightLoading: false }); return; }
     const { jakeOut, rainWhatIf } = get();
-    const tonight = buildTonightScenario(data, { jakeOut, rainWhatIf });
+    const tonight = buildTonightScenario(data, { jakeOut, rainWhatIf }, rb);
     const demand = computeDemand(data.events, data.weather, tonight.channelMix);
     const same = JSON.stringify({ d: tonight.demand, n: tonight.notes }) === JSON.stringify({ d: get().tonight.demand, n: get().tonight.notes });
-    set({ tonightData: data, tonightSource: source, demand, tonightLoading: false, normal: baseScenario(date) });
+    set({ tonightData: data, tonightSource: source, demand, tonightLoading: false, normal: rb ? { ...cloneScenario(rb), label: "Normal night" } : baseScenario(date) });
     if (!same || !get().night) get().setTonight(tonight);
     // one-line explanations (LLM, from facts only); silent fallback
     try {
@@ -157,7 +181,7 @@ export const useApp = create<AppState>((set, get) => ({
     const { tonightData, jakeOut, rainWhatIf } = get();
     if (!tonightData) return;
     get().showToast(`Re-simulating tonight${get().plan ? " · plan reset, run Rehearse again" : ""}`, "info");
-    const tonight = buildTonightScenario(tonightData, { jakeOut, rainWhatIf });
+    const tonight = buildTonightScenario(tonightData, { jakeOut, rainWhatIf }, get().restaurantBase ?? undefined);
     get().setTonight(tonight);
   },
   tonight: demoScenario(DEFAULT_DATE),
@@ -233,7 +257,7 @@ export const useApp = create<AppState>((set, get) => ({
     if (!tonightData) return;
     set({ whyLoading: true, whyMetric: metric });
     try {
-      const { base, factors } = tonightFactors(tonightData, { jakeOut, rainWhatIf });
+      const { base, factors } = tonightFactors(tonightData, { jakeOut, rainWhatIf }, get().restaurantBase ?? undefined);
       const attribution = await attribute(base, factors, metric, evaluator, 60);
       if (get().tonight !== tonight) { set({ whyLoading: false }); return; }
       if (get().whyMetric !== metric) return;

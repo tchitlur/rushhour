@@ -87,7 +87,7 @@ export function simulateNight(sc: Scenario, opts: SimOptions): NightResult {
   };
   const stationCapacityAt = (id: StationId, t: number) => {
     let cap = stationById.get(id)!.capacity;
-    for (const o of sc.outages) if (o.station === id && t >= o.start && t < o.end) cap = Math.min(cap, o.capacity);
+    for (const o of sc.outages) if (o.station === id && t >= o.start && t < o.end) cap = o.capacity; // override (outage or added capacity); last wins
     return cap;
   };
   const channelPaused = (ch: Channel, t: number) => sc.channelPauses.some(p => p.channel === ch && t >= p.start && t < p.end);
@@ -395,7 +395,7 @@ function buildSnapshot(
     const d = workerDef.get(w.id)!;
     // spread workers sharing a station so they don't overlap visually
     const off = w.station ? (wi - 1.5) * 0.45 : 0;
-    return { id: w.id, name: d.name, color: d.color, x: w.onShift ? w.x + off : -2, y: w.onShift ? w.y : -2, station: w.station, onShift: w.onShift, busy: w.busyUntil > t };
+    return { id: w.id, name: d.name, color: d.color, extra: w.id.startsWith("extra") || undefined, x: w.onShift ? w.x + off : -2, y: w.onShift ? w.y : -2, station: w.station, onShift: w.onShift, busy: w.busyUntil > t };
   });
   const tokens: TokenSnapshot[] = [];
   const dashers: DasherSnapshot[] = [];
@@ -410,7 +410,7 @@ function buildSnapshot(
       let warmth = 0;
       for (const it of o.items) { const m = menuById.get(it.itemId)!; if (it.doneAt != null) warmth = Math.max(warmth, (t - it.doneAt) / m.holdMin); }
       const k = readyCount++;
-      tokens.push({ orderId: o.id, itemIdx: -1, channel: o.channel, warmth, x: pack.x + 1.2 + (k % 6) * 0.35, y: pack.y - 0.6 + Math.floor(k / 6) * 0.35, stage: "ready" });
+      tokens.push({ orderId: o.id, itemIdx: -1, big: o.isBig || undefined, channel: o.channel, warmth, x: pack.x + 1.2 + (k % 6) * 0.35, y: pack.y - 0.6 + Math.floor(k / 6) * 0.35, stage: "ready" });
     } else {
       for (let ii = 0; ii < o.items.length; ii++) {
         const it = o.items[ii];
@@ -421,10 +421,10 @@ function buildSnapshot(
         const cooking = inProgress.some(p => p.item === it);
         if (cooking) {
           const k = perStationC.get(stId) ?? 0; perStationC.set(stId, k + 1);
-          tokens.push({ orderId: o.id, itemIdx: ii, channel: o.channel, warmth: 0, x: sp.x - 0.6 + (k % 4) * 0.4, y: sp.y + 0.55, stage: "cooking" });
+          tokens.push({ orderId: o.id, itemIdx: ii, big: o.isBig || undefined, channel: o.channel, warmth: 0, x: sp.x - 0.6 + (k % 4) * 0.4, y: sp.y + 0.55, stage: "cooking" });
         } else {
           const k = perStationQ.get(stId) ?? 0; perStationQ.set(stId, k + 1);
-          tokens.push({ orderId: o.id, itemIdx: ii, channel: o.channel, warmth: 0, x: sp.x - 1.2 + (k % 9) * 0.3, y: sp.y + 1.0 + Math.floor(k / 9) * 0.3, stage: "queue" });
+          tokens.push({ orderId: o.id, itemIdx: ii, big: o.isBig || undefined, channel: o.channel, warmth: 0, x: sp.x - 1.2 + (k % 9) * 0.3, y: sp.y + 1.0 + Math.floor(k / 9) * 0.3, stage: "queue" });
         }
       }
     }

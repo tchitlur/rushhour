@@ -98,8 +98,8 @@ export function computeDemand(events: EventFact[], weather: WeatherFacts | null,
 export interface TonightOptions { jakeOut?: boolean; rainWhatIf?: boolean }
 
 /** Build tonight's scenario from real facts (+ the synthetic staffing story). */
-export function buildTonightScenario(data: TonightData, opts: TonightOptions = {}): Scenario {
-  const sc = baseScenario(data.date, "Tonight (as planned)");
+export function buildTonightScenario(data: TonightData, opts: TonightOptions = {}, base?: Scenario): Scenario {
+  const sc = base ? { ...cloneScenario(base), date: data.date, label: "Tonight (as planned)" } : baseScenario(data.date, "Tonight (as planned)");
   sc.id = "tonight";
   const d = computeDemand(data.events, data.weather, sc.channelMix);
   sc.demand = d.bins.map(b => ({ start: b.start, mult: { ...b.mult } }));
@@ -109,7 +109,7 @@ export function buildTonightScenario(data: TonightData, opts: TonightOptions = {
   for (const e of top.slice(0, 3)) notes.push(`${e.name.length > 48 ? e.name.slice(0, 46) + "…" : e.name} · ${fmtT(isoToMin(e.start))}`);
   if (data.weather) notes.push(data.weather.summary);
   if (opts.rainWhatIf) notes.push("What-if: rain 6–9 PM");
-  if (opts.jakeOut !== false) { removeWorker(sc, "jake"); notes.push("Jake called out (6–10 PM shift)"); }
+  if (opts.jakeOut !== false && sc.workers.some(w => w.id === "jake" && w.shifts.length)) { removeWorker(sc, "jake"); notes.push("Jake called out (6–10 PM shift)"); }
   sc.notes = notes;
   return sc;
 }
@@ -119,8 +119,8 @@ export function fmtT(m: number) { const h = Math.floor(m / 60), mm = m % 60; ret
 /** Factor definitions for "Why": each one toggles a real cause on/off. Baseline = all off. */
 export interface FactorDef { id: string; label: string; station?: StationId; apply: (sc: Scenario) => Scenario }
 
-export function tonightFactors(data: TonightData, opts: TonightOptions = {}): { base: Scenario; factors: FactorDef[] } {
-  const base = baseScenario(data.date, "Without tonight's causes");
+export function tonightFactors(data: TonightData, opts: TonightOptions = {}, restaurantBase?: Scenario): { base: Scenario; factors: FactorDef[] } {
+  const base = restaurantBase ? { ...cloneScenario(restaurantBase), date: data.date, label: "Without tonight's causes" } : baseScenario(data.date, "Without tonight's causes");
   const sorted = [...data.events].filter(e => eventMagnitude(e) > 0.01).sort((a, b) => eventMagnitude(b) - eventMagnitude(a));
   const major = sorted.slice(0, 2);
   const rest = sorted.slice(2);
@@ -133,7 +133,7 @@ export function tonightFactors(data: TonightData, opts: TonightOptions = {}): { 
   if (rest.length) factors.push(mkEventFactor("events_other", `${rest.length} smaller events`, rest));
   if (data.weather) factors.push({ id: "weather", label: weatherLabel(data.weather), station: "pack", apply: (sc) => { const c = cloneScenario(sc); const d = computeDemand([], data.weather, c.channelMix); for (let i = 0; i < c.demand.length; i++) for (const ch of CHANNELS) c.demand[i].mult[ch] = Math.min(MULT_MAX, Math.max(MULT_MIN, c.demand[i].mult[ch] * d.bins[i].mult[ch])); return c; } });
   if (opts.rainWhatIf) factors.push({ id: "rain", label: "Rain (what-if)", station: "pack", apply: (sc) => { const c = cloneScenario(sc); for (const b of c.demand) if (b.start >= 18 * 60 && b.start < 21 * 60) { b.mult.doordash = Math.min(MULT_MAX, b.mult.doordash * 1.12); b.mult.ubereats = Math.min(MULT_MAX, b.mult.ubereats * 1.12); b.mult.counter = Math.max(MULT_MIN, b.mult.counter * 0.85); } return c; } });
-  if (opts.jakeOut !== false) factors.push({ id: "jake_absent", label: "Jake called out", station: "grill", apply: (sc) => { const c = cloneScenario(sc); removeWorker(c, "jake"); return c; } });
+  if (opts.jakeOut !== false && base.workers.some(w => w.id === "jake" && w.shifts.length)) factors.push({ id: "jake_absent", label: "Jake called out", station: "grill", apply: (sc) => { const c = cloneScenario(sc); removeWorker(c, "jake"); return c; } });
   return { base, factors: factors.slice(0, 5) };
 }
 

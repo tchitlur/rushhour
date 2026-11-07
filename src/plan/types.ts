@@ -80,9 +80,13 @@ const win = { start: z.number().int().min(960).max(1320), end: z.number().int().
 export const ScenarioPatchSchema = z.object({
   summary: z.string().transform(s => s.slice(0, 140)).describe("plain-English restatement of the experiment"),
   demand: z.array(z.object({ ...win, channel: z.enum(["doordash", "ubereats", "phone", "counter", "all"]), factor: z.number().min(0).max(3) })).max(6).optional(),
-  staff: z.array(z.object({ worker: z.enum(["maria", "jake", "ana", "sam"]), action: z.enum(["absent", "add", "late"]), start: z.number().int().min(960).max(1320).optional(), end: z.number().int().min(960).max(1320).optional() })).max(4).optional(),
+  staff: z.array(z.object({ worker: z.string().min(1), action: z.enum(["absent", "add", "late", "leave"]), start: z.number().int().min(960).max(1320).optional(), end: z.number().int().min(960).max(1320).optional() })).max(6).optional(),
+  /** unnamed extra staff ("2 extra cooks arrive at 6"); negative count = short-staffed */
+  extraStaff: z.array(z.object({ count: z.number().int().min(-4).max(6), ...win, station: z.enum(["grill", "fryer", "cold", "pack", "counter"]).optional() })).max(3).optional(),
+  /** add equipment / capacity ("add a second fryer") from `time` (default: all night) */
+  addEquipment: z.array(z.object({ station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), capacity: z.number().int().min(1).max(12), time: z.number().int().min(960).max(1320).optional() })).max(3).optional(),
   equipment: z.array(z.object({ station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), ...win, capacity: z.number().int().min(0).max(12) })).max(4).optional(),
-  menu: z.array(z.object({ item: z.string(), action: z.enum(["remove", "boost", "reduce"]), factor: z.number().min(0).max(5).optional() })).max(6).optional(),
+  menu: z.array(z.object({ item: z.string(), action: z.enum(["remove", "boost", "reduce", "slower"]), factor: z.number().min(0).max(5).optional() })).max(6).optional(),
   channelPauses: z.array(z.object({ channel: z.enum(["doordash", "ubereats", "phone", "counter"]), ...win })).max(4).optional(),
   quotedPrep: z.array(z.object({ ...win, minutes: z.number().int().min(8).max(60) })).max(4).optional(),
   layout: z.array(z.object({ station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), x: z.number().min(0.5).max(11.5), y: z.number().min(0.5).max(7.5) })).max(5).optional(),

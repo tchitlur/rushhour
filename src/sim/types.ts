@@ -20,9 +20,13 @@ export interface MenuItem {
   fryerBaskets?: number; // baskets consumed if station includes fryer (default 1)
 }
 
+/** Rendering kind for equipment (templates reuse the 5 engine slots with different labels/shapes). */
+export type StationKind = "grill" | "fryer" | "flattop" | "pizza_oven" | "oven" | "wok" | "rice" | "espresso" | "cold" | "pack" | "counter";
+
 export interface Station {
   id: StationId;
   name: string;
+  kind?: StationKind;
   x: number; // meters on floor grid
   y: number;
   capacity: number; // concurrent items (fryer: baskets)
@@ -73,6 +77,8 @@ export interface Scenario {
   prepBatches: { item: string; qty: number; time: number }[];
   /** one-off large orders */
   bigOrders: { time: number; items: { item: string; qty: number }[]; channel: Channel }[];
+  /** restaurant identity (templates / customizer) */
+  restaurant?: { name: string; cuisine: string; neighborhood: string; lat: number; lon: number; hours?: { open: number; close: number } };
   /** weather effect multiplier (already folded into demand, kept for attribution) */
   notes?: string[];
 }
@@ -119,6 +125,8 @@ export interface StationSnapshot {
 
 export interface WorkerSnapshot {
   id: string;
+  /** true for staff added by a what-if ("+" badge) */
+  extra?: boolean;
   name: string;
   color: string;
   x: number; y: number;
@@ -129,6 +137,8 @@ export interface WorkerSnapshot {
 
 export interface TokenSnapshot {
   orderId: number;
+  /** part of a one-off large (catering) order */
+  big?: boolean;
   /** index of the item within the order; -1 for a packed/ready order token */
   itemIdx: number;
   channel: Channel;
