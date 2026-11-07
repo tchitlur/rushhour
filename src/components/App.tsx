@@ -150,7 +150,7 @@ function AppInner() {
             {playing && tab !== "Race" && <span className="chip"><span className="text-bad font-semibold">Live</span> <span className="num">{s.speed}×</span></span>}
           </div>
           <div className="flex-1 min-h-0 p-3">
-            {tab === "Race" ? <RaceView /> : showAskRace ? <RaceView /> : /* TODO: pass mode="ask" once RaceView accepts it */ view === "3d" ? <Kitchen3D snapshot={snap} stations={viewStations} highlightStation={highlightStation} onMoveStation={(id, x, y) => void s.moveStation(id, x, y)} className="w-full h-full" /> : <Kitchen2D snapshot={snap} stations={viewStations} highlightStation={highlightStation} />}
+            {tab === "Race" ? <RaceView /> : showAskRace ? <RaceView mode="ask" /> : view === "3d" ? <Kitchen3D snapshot={snap} stations={viewStations} highlightStation={highlightStation} onMoveStation={(id, x, y) => void s.moveStation(id, x, y)} className="w-full h-full" /> : <Kitchen2D snapshot={snap} stations={viewStations} highlightStation={highlightStation} />}
           </div>
         </section>
         <aside className="panel p-4 overflow-y-auto scroll-thin flex flex-col gap-5 print-only-grow">
