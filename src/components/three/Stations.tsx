@@ -177,7 +177,7 @@ export function StationBox({ station, snap, highlighted, dragging, dragTarget, o
     m.emissiveIntensity = damp(m.emissiveIntensity, amount, 14, dt);
   });
 
-  const showDetail = hover || highlighted;
+  const showDetail = hover || highlighted || queue > 0 || busy > 0;
   const detail =
     snap && showDetail
       ? station.capacity >= 99
@@ -276,11 +276,11 @@ export function StationBox({ station, snap, highlighted, dragging, dragTarget, o
         )}
         {station.id === "pack" && <PassShelf w={st.w} h={st.h} />}
         <LoadBar load={load} w={st.w} y={st.h + (station.id === "pack" ? 1.2 : 0.75)} />
-        <Label position={[0, st.h + (station.id === "pack" ? 1.55 : 1.1), 0]} size={0.32}>
+        <Label position={[0, st.h + (station.id === "pack" ? 1.55 : 1.1), 0]} size={0.4}>
           {station.name}
         </Label>
         {detail && (
-          <Label position={[0, st.h + (station.id === "pack" ? 1.95 : 1.5), 0]} size={0.2} color={PALETTE.fg2}>
+          <Label position={[0, st.h + (station.id === "pack" ? 2.0 : 1.55), 0]} size={0.26} color={PALETTE.fg2}>
             {detail}
           </Label>
         )}

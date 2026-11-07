@@ -7,7 +7,7 @@ export const FLOOR_H = 8;
 export const DOOR = { x: 10.5, y: 7.5 };
 /** Dasher queue slots: a line along the front wall, starting at the door. */
 export function dasherSlot(i: number): { x: number; y: number } {
-  return { x: DOOR.x - 0.9 * i, y: DOOR.y - 0.2 };
+  return { x: DOOR.x - 0.9 * (i + 1), y: DOOR.y - 0.2 };
 }
 /** Where a worker stands when idle (break spot). */
 export const IDLE_SPOT = { x: 6, y: 4.2 };

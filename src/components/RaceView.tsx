@@ -7,7 +7,7 @@ import type { LiveCounters } from "@/sim/types";
 import { fmtMoney } from "./Counters";
 
 const KEYS: { key: keyof LiveCounters; label: string; fmt: (v: number) => string; bad: (v: number) => boolean }[] = [
-  { key: "avgDasherWait", label: "Dasher wait", fmt: v => `${v.toFixed(1)}m`, bad: v => v > 3.4 },
+  { key: "avgDasherWait", label: "Wait", fmt: v => `${v.toFixed(1)}m`, bad: v => v > 3.4 },
   { key: "dashersGaveUp", label: "Gave up", fmt: v => `${Math.round(v)}`, bad: v => v >= 1 },
   { key: "coldOrders", label: "Cold", fmt: v => `${Math.round(v)}`, bad: v => v >= 5 },
   { key: "dollarsAtRisk", label: "At risk", fmt: fmtMoney, bad: v => v >= 150 },

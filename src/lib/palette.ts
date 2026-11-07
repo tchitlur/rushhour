@@ -23,7 +23,7 @@ export const CHANNEL_COLORS = {
 export const WORKER_COLORS: Record<string, string> = {
   maria: "#C2410C",
   jake: "#2F6DB5",
-  ana: "#7A4FA3",
+  ana: "#2A7F8F",
   sam: "#2F855A",
 };
 

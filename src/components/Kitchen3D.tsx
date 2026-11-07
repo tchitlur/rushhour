@@ -59,7 +59,7 @@ function CameraRig({ dragging, focus, resetKey }: RigProps) {
   const camRef = useRef<THREE.OrthographicCamera>(null);
   const controls = useRef<OrbitControlsImpl>(null);
   // Diagonal footprint of a 12x8 floor seen from the corner plus label headroom.
-  const fitZoom = useMemo(() => Math.max(16, Math.min(size.width / 19, size.height / 12.5)), [size.width, size.height]);
+  const fitZoom = useMemo(() => Math.max(16, Math.min(size.width / 14.5, size.height / 10)), [size.width, size.height]);
 
   useEffect(() => {
     const cam = camRef.current;

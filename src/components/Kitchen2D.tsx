@@ -6,7 +6,7 @@ import { PALETTE } from "@/lib/palette";
 const S = 64; // px per meter (viewBox units)
 // thin colored top stripe per station type (desaturated, meaningful: heat = warm, cold = cool, pass = neutral)
 const STATION_STRIPE: Record<StationId, string> = { grill: "#B83227", fryer: "#B7791F", cold: "#2F6DB5", pack: "#5A6370", counter: "#9A6B12" };
-const STATION_SIZE: Record<StationId, [number, number]> = { grill: [2.6, 1.1], fryer: [2.6, 1.1], cold: [2.6, 1.1], pack: [3.2, 1.0], counter: [3.6, 0.9] };
+const STATION_SIZE: Record<StationId, [number, number]> = { grill: [3.0, 1.1], fryer: [3.0, 1.1], cold: [3.0, 1.1], pack: [3.2, 1.0], counter: [3.6, 0.9] };
 
 export interface Kitchen2DProps {
   snapshot: Snapshot | null;

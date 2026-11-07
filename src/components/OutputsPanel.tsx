@@ -24,7 +24,7 @@ export function buildGamePlan(plan: Plan, tonight: Scenario): GamePlan {
   const shifts = ivs.filter(i => i.type === "add_shift");
   const drivers = (tonight.notes ?? []).filter(n => !/called out/i.test(n)).slice(0, 2).map(n => n.split(" · ")[0]).join(" + ");
   const peak = fmtClockShort(plan.bottleneck.window.start);
-  const staffText = shifts.length ? shifts.map(s => s.type === "add_shift" ? `Hey ${WNAME[s.worker]}, can you cover ${fmtClockShort(s.start)}–${fmtClockShort(s.end)} tonight? ${drivers || "Big night"}; we're projected to slam at ${peak}. Simulator says you'd be the difference. 🙏 —Maria` : "").join("\n\n") : null;
+  const staffText = shifts.length ? shifts.map(s => s.type === "add_shift" ? `Hey ${WNAME[s.worker]}, can you cover ${fmtClockShort(s.start)}–${fmtClockShort(s.end)} tonight? ${drivers || "Big night"}; we're projected to slam at ${peak}. The simulator says you'd be the difference. —Maria` : "").join("\n\n") : null;
   const quoteSchedule = plan.scenario.quotedPrep.map(q => ({ ...q }));
   const layout = ivs.filter(i => i.type === "move_station").map(i => i.type === "move_station" ? { station: i.station, x: i.x, y: i.y } : null!).filter(Boolean);
   const channelPauses = ivs.filter(i => i.type === "throttle_channel").map(i => i.type === "throttle_channel" ? { channel: CNAME[i.channel], start: i.start, end: i.end } : null!).filter(Boolean);

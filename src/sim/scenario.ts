@@ -25,7 +25,7 @@ export const WALK_SPEED = 1.2;    // m/s
 export const WORKERS: Worker[] = [
   { id: "maria", name: "Maria", wage: 0, skills: { grill: 1.25, fryer: 1.1, cold: 1.0, pack: 1.1, counter: 1.0 }, shifts: [{ start: 16 * 60, end: 22 * 60 }], color: "#C2410C" },
   { id: "jake", name: "Jake", wage: 19, skills: { grill: 1.0, fryer: 1.15, cold: 0.9, pack: 1.0, counter: 0.8 }, shifts: [{ start: 18 * 60, end: 22 * 60 }], color: "#2F6DB5" },
-  { id: "ana", name: "Ana", wage: 18, skills: { grill: 0.9, fryer: 1.0, cold: 1.15, pack: 1.2, counter: 1.1 }, shifts: [], color: "#7A4FA3" },
+  { id: "ana", name: "Ana", wage: 18, skills: { grill: 0.9, fryer: 1.0, cold: 1.15, pack: 1.2, counter: 1.1 }, shifts: [], color: "#2A7F8F" },
   { id: "sam", name: "Sam", wage: 16, skills: { grill: 0.7, fryer: 0.9, cold: 1.0, pack: 1.1, counter: 1.2 }, shifts: [{ start: 16 * 60, end: 22 * 60 }], color: "#2F855A" },
 ];
 
