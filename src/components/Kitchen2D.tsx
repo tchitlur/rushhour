@@ -33,7 +33,7 @@ export default function Kitchen2D({ snapshot, stations, highlightStation, classN
   const W = FLOOR_W * S, H = FLOOR_H * S;
   const stSnap = new Map(snapshot?.stations.map(s => [s.id, s]) ?? []);
   return (
-    <svg viewBox={`-20 -20 ${W + 40} ${H + 70}`} className={className ?? "w-full h-full"} style={{ display: "block" }}>
+    <svg viewBox={`-20 -20 ${W + 40} ${H + 70}`} preserveAspectRatio="xMidYMin meet" className={className ?? "w-full h-full"} style={{ display: "block" }}>
       <defs>
         <pattern id="grid" width={S} height={S} patternUnits="userSpaceOnUse">
           <path d={`M ${S} 0 L 0 0 0 ${S}`} fill="none" stroke="#1b2030" strokeWidth="1" />

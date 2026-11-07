@@ -13,7 +13,7 @@ export const CURVEBALLS: Preset[] = [
   {
     label: "Game goes to overtime",
     question: "The game goes to overtime",
-    patch: { summary: "Overtime: the post-game surge comes late and bigger, 9–10 PM.", demand: [{ start: 1260, end: 1320, channel: "all", factor: 1.25 }, { start: 1260, end: 1320, channel: "doordash", factor: 1.3 }] },
+    patch: { summary: "Overtime: the post-game surge comes late and bigger, 9–10 PM.", demand: [{ start: 1260, end: 1320, channel: "all", factor: 1.5 }, { start: 1260, end: 1320, channel: "doordash", factor: 1.2 }] },
   },
   {
     label: "Sudden rain",

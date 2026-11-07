@@ -7,6 +7,7 @@ import { bottleneckReport } from "./bottleneck";
 import { ruleBasedProposals } from "./rules";
 import { buildPlan, reevaluatePlan, type Evaluator } from "./evaluate";
 import { interventionTitle } from "./apply";
+import planCache from "@/data/plan-cache.json";
 
 export const evaluator: Evaluator = (sc, nights) => sim.runMC(sc, nights);
 
@@ -18,7 +19,14 @@ export interface RunOptions {
   llmTimeoutMs?: number;
 }
 
-export interface RunResult { plan: Plan; proposalSource: "llm" | "rules" | "llm+rules" }
+export interface RunResult { plan: Plan; proposalSource: "llm" | "rules" | "llm+rules" | "cached-llm" }
+
+/** Pre-cached AI proposals for the demo night (a real earlier OpenRouter response), used when the live call is slow or down. */
+export function cachedProposals(base: Scenario): Intervention[] {
+  if (planCache.date !== base.date) return [];
+  const parsed = InterventionListSchema.safeParse({ interventions: planCache.interventions });
+  return parsed.success ? parsed.data.interventions : [];
+}
 
 export async function runPlanner(base: Scenario, opts: RunOptions = {}): Promise<RunResult> {
   const nights = opts.nights ?? 300, screenNights = opts.screenNights ?? 120;
@@ -33,22 +41,47 @@ export async function runPlanner(base: Scenario, opts: RunOptions = {}): Promise
     status("AI is proposing fixes…");
     const llm = await proposeViaLLM(base, report, opts.llmTimeoutMs ?? 14000);
     if (llm.length) { candidates = llm; proposalSource = "llm"; }
+    else { const c = cachedProposals(base); if (c.length) { candidates = c; proposalSource = "cached-llm"; } }
   }
   // Make sure the candidate set has the staple ideas the rules know about (dedupe by title).
   const seen = new Set(candidates.map(c => interventionTitle(c, base)));
   for (const r of rules) { const t = interventionTitle(r, base); if (!seen.has(t)) { candidates.push(r); seen.add(t); } }
-  if (proposalSource === "llm" && candidates.length > (rules.length)) proposalSource = "llm+rules";
+  if (proposalSource === "llm" && candidates.length > rules.length) proposalSource = "llm+rules";
   candidates = candidates.slice(0, 9);
   status(`Testing ${candidates.length} fixes on ${screenNights} versions of tonight…`);
   const plan = await buildPlan(base, candidates, evaluator, nights, { screenNights });
   return { plan, proposalSource };
 }
 
+/** Fire-and-forget: ask the server for proposals now so the later Rehearse click gets a memoized, instant LLM answer. */
+export async function prewarmProposals(base: Scenario): Promise<void> {
+  try {
+    const baseline = await evaluator(base, 300);
+    const report = bottleneckReport(baseline, base);
+    await proposeViaLLM(base, report, 20000);
+  } catch { /* best effort */ }
+}
+
+function buildContext(base: Scenario, report: ReturnType<typeof bottleneckReport>) {
+  return {
+    date: base.date,
+    drivers: base.notes,
+    bottleneck: report,
+    workers: base.workers.map(w => ({ id: w.id, wage: w.wage, shifts: w.shifts, bestStations: Object.entries(w.skills).filter(([, v]) => (v ?? 0) >= 1.1).map(([k]) => k) })),
+    menu: base.menu.map(m => ({ id: m.id, name: m.name, stations: m.stations, prepMin: m.prepMin, foodCost: m.foodCost })),
+    quotedPrep: base.quotedPrep,
+    stations: base.stations.map(s => ({ id: s.id, x: s.x, y: s.y })),
+    channelMix: base.channelMix,
+    peakWindow: report.window,
+  };
+}
+
 async function proposeViaLLM(base: Scenario, report: ReturnType<typeof bottleneckReport>, timeoutMs: number): Promise<Intervention[]> {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-    const context = {
+    const context = buildContext(base, report);
+    const unused = {
       date: base.date,
       drivers: base.notes,
       bottleneck: report,
@@ -59,6 +92,7 @@ async function proposeViaLLM(base: Scenario, report: ReturnType<typeof bottlenec
       channelMix: base.channelMix,
       peakWindow: report.window,
     };
+    void unused;
     const res = await fetch("/api/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "propose", context }), signal: ctrl.signal });
     clearTimeout(timer);
     if (!res.ok) return [];

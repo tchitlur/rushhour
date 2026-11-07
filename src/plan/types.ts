@@ -4,12 +4,12 @@ import type { Channel, StationId, MonteCarloSummary, Scenario } from "@/sim/type
 
 // ---------- Interventions ----------
 export const InterventionSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("add_shift"), worker: z.enum(["maria", "jake", "ana", "sam"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().max(200).optional() }),
-  z.object({ type: z.literal("prep_batch"), item: z.string().min(1), qty: z.number().int().min(1).max(200), time: z.number().int().min(960).max(1320), rationale: z.string().max(200).optional() }),
-  z.object({ type: z.literal("quote_prep_time"), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), minutes: z.number().int().min(8).max(45), rationale: z.string().max(200).optional() }),
-  z.object({ type: z.literal("throttle_channel"), channel: z.enum(["doordash", "ubereats", "phone", "counter"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().max(200).optional() }),
-  z.object({ type: z.literal("reassign_worker"), worker: z.enum(["maria", "jake", "ana", "sam"]), station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().max(200).optional() }),
-  z.object({ type: z.literal("move_station"), station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), x: z.number().min(0.5).max(11.5), y: z.number().min(0.5).max(7.5), rationale: z.string().max(200).optional() }),
+  z.object({ type: z.literal("add_shift"), worker: z.enum(["maria", "jake", "ana", "sam"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
+  z.object({ type: z.literal("prep_batch"), item: z.string().min(1), qty: z.number().int().min(1).max(200), time: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
+  z.object({ type: z.literal("quote_prep_time"), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), minutes: z.number().int().min(8).max(45), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
+  z.object({ type: z.literal("throttle_channel"), channel: z.enum(["doordash", "ubereats", "phone", "counter"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
+  z.object({ type: z.literal("reassign_worker"), worker: z.enum(["maria", "jake", "ana", "sam"]), station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
+  z.object({ type: z.literal("move_station"), station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), x: z.number().min(0.5).max(11.5), y: z.number().min(0.5).max(7.5), rationale: z.string().transform(s => s.slice(0, 200)).optional() }),
 ]);
 export type Intervention = z.infer<typeof InterventionSchema>;
 export const InterventionListSchema = z.object({ interventions: z.array(InterventionSchema).max(8) });
@@ -78,7 +78,7 @@ export interface Attribution {
 // ---------- Ask anything: ScenarioPatch ----------
 const win = { start: z.number().int().min(960).max(1320), end: z.number().int().min(960).max(1320) };
 export const ScenarioPatchSchema = z.object({
-  summary: z.string().max(140).describe("plain-English restatement of the experiment"),
+  summary: z.string().transform(s => s.slice(0, 140)).describe("plain-English restatement of the experiment"),
   demand: z.array(z.object({ ...win, channel: z.enum(["doordash", "ubereats", "phone", "counter", "all"]), factor: z.number().min(0).max(3) })).max(6).optional(),
   staff: z.array(z.object({ worker: z.enum(["maria", "jake", "ana", "sam"]), action: z.enum(["absent", "add", "late"]), start: z.number().int().min(960).max(1320).optional(), end: z.number().int().min(960).max(1320).optional() })).max(4).optional(),
   equipment: z.array(z.object({ station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), ...win, capacity: z.number().int().min(0).max(12) })).max(4).optional(),
@@ -87,7 +87,7 @@ export const ScenarioPatchSchema = z.object({
   quotedPrep: z.array(z.object({ ...win, minutes: z.number().int().min(8).max(60) })).max(4).optional(),
   layout: z.array(z.object({ station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), x: z.number().min(0.5).max(11.5), y: z.number().min(0.5).max(7.5) })).max(5).optional(),
   bigOrders: z.array(z.object({ time: z.number().int().min(960).max(1320), channel: z.enum(["doordash", "ubereats", "phone", "counter"]), items: z.array(z.object({ item: z.string(), qty: z.number().int().min(1).max(100) })).max(8) })).max(3).optional(),
-  unsupported: z.string().max(200).optional().describe("set when the question cannot be modeled; explain what can be"),
+  unsupported: z.string().transform(s => s.slice(0, 200)).optional().describe("set when the question cannot be modeled; explain what can be"),
 });
 export type ScenarioPatch = z.infer<typeof ScenarioPatchSchema>;
 

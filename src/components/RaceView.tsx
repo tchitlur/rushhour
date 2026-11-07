@@ -63,7 +63,7 @@ function Side({ title, snap, stations, tone, loading }: { title: string; snap: R
             <div className={`num font-bold text-lg leading-tight ${bad ? "text-bad" : "text-fg"}`}>{k.fmt(v)}</div>
           </div>); })}
       </div>
-      <div className="flex-1 min-h-0 p-2"><Kitchen2D snapshot={snap} stations={stations} /></div>
+      <div className="flex-1 min-h-0 p-2"><Kitchen2D snapshot={snap} stations={stations} className="w-full h-full" /></div>
     </div>
   );
 }

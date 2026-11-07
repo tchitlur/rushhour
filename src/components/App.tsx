@@ -18,6 +18,7 @@ const Kitchen3D = dynamic(() => import("@/components/Kitchen3D"), { ssr: false, 
 export default function App() {
   const s = useApp();
   const { tab, setTab, view, setView, night, tIdx, loadTonight, advance, playing, highlightStation, askNight, viewportSource } = s;
+  const viewStations = viewportSource === "ask" && s.askScenario ? s.askScenario.stations : s.tonight.stations;
   const [intro, setIntro] = useState(true);
 
   useEffect(() => { void loadTonight(); }, [loadTonight]);
@@ -94,18 +95,20 @@ export default function App() {
           <button className="btn !py-1 !px-2 text-xs" onClick={s.toggleHotkeys} title="Hotkeys (?)">?</button>
         </div>
       </header>
-      <main className="flex-1 grid grid-cols-[300px_1fr_380px] gap-3 p-3 min-h-0">
-        <aside className="panel p-4 overflow-y-auto scroll-thin">
-          <TonightPanel />
-        </aside>
+      <main className={`flex-1 grid gap-3 p-3 min-h-0 ${tab === "Race" ? "grid-cols-[1fr_380px]" : "grid-cols-[300px_1fr_380px]"}`}>
+        {tab !== "Race" && (
+          <aside className="panel p-4 overflow-y-auto scroll-thin">
+            <TonightPanel />
+          </aside>
+        )}
         <section className="panel relative overflow-hidden flex flex-col">
           <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
             {tab !== "Race" && <span className={`chip ${viewportSource === "ask" ? "!text-accent !border-accent/40" : ""}`}>{viewportSource === "ask" ? `What-if: ${s.askResult?.patch.summary ?? ""}` : s.tonight.label}</span>}
             {s.loadingNight && <span className="chip">Simulating tonight…</span>}
-            {playing && <span className="chip !border-accent/40 text-accent">● LIVE {s.speed}×</span>}
+            {playing && tab !== "Race" && <span className="chip !border-accent/40 text-accent">● LIVE {s.speed}×</span>}
           </div>
           <div className="flex-1 min-h-0 p-3">
-            {tab === "Race" ? <RaceView /> : view === "3d" ? <Kitchen3D snapshot={snap} stations={s.tonight.stations} highlightStation={highlightStation} className="w-full h-full" /> : <Kitchen2D snapshot={snap} stations={s.tonight.stations} highlightStation={highlightStation} />}
+            {tab === "Race" ? <RaceView /> : view === "3d" ? <Kitchen3D snapshot={snap} stations={viewStations} highlightStation={highlightStation} onMoveStation={(id, x, y) => void s.moveStation(id, x, y)} className="w-full h-full" /> : <Kitchen2D snapshot={snap} stations={viewStations} highlightStation={highlightStation} />}
           </div>
         </section>
         <aside className="panel p-4 overflow-y-auto scroll-thin flex flex-col gap-5">

@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-13",
+  "model": "anthropic/claude-sonnet-4.5",
+  "fetchedAt": "2026-11-07T18:35:51.348Z",
+  "interventions": [
+    {
+      "type": "add_shift",
+      "worker": "ana",
+      "start": 1080,
+      "end": 1260,
+      "rationale": "Ana covers fryer/pack during peak; Jake called out tonight"
+    },
+    {
+      "type": "prep_batch",
+      "item": "wings",
+      "qty": 45,
+      "time": 1140,
+      "rationale": "Pre-cook wings before 7PM rush; fryer bottleneck at 4.6x load"
+    },
+    {
+      "type": "prep_batch",
+      "item": "fries",
+      "qty": 60,
+      "time": 1140,
+      "rationale": "Par-cook fries to reduce fryer load during peak window"
+    },
+    {
+      "type": "quote_prep_time",
+      "start": 1155,
+      "end": 1215,
+      "minutes": 28,
+      "rationale": "Extend quote during fryer saturation to spread Dasher arrivals"
+    },
+    {
+      "type": "reassign_worker",
+      "worker": "maria",
+      "station": "fryer",
+      "start": 1140,
+      "end": 1230,
+      "rationale": "Maria focuses fryer during peak; she's best at it"
+    },
+    {
+      "type": "move_station",
+      "station": "pack",
+      "x": 8,
+      "y": 2.5,
+      "rationale": "Move pack closer to fryer to reduce travel time"
+    }
+  ]
+}

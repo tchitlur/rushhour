@@ -34,7 +34,7 @@ function AskPanel() {
           <div className="text-xs text-fg-3">“{r.question}”</div>
           {r.chips.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {r.chips.map(c => <span key={c} className="chip !text-accent-2 !border-accent/40">{c}</span>)}
+              {r.chips.map((c, i) => <span key={`${i}-${c}`} className="chip !text-accent-2 !border-accent/40">{c}</span>)}
               <span className="chip">{r.source === "llm" ? "AI-translated" : r.source === "cache" ? "preset" : "rule-translated"} · {(r.ms / 1000).toFixed(1)}s</span>
             </div>
           )}

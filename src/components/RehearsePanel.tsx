@@ -39,7 +39,7 @@ function RehearsePanel() {
             <Delta label="Cold orders" before={ev.before.coldOrders} after={ev.after.coldOrders} fmt={v => v.toFixed(0)} />
             <Delta label="At risk" before={ev.before.dollarsAtRisk} after={ev.after.dollarsAtRisk} fmt={fmtMoney} />
           </div>
-          <div className="text-xs text-fg-2 mt-2">Costs <b className="text-fg">{fmtMoney(ev.cost)}</b>, protects <b className="text-fg">{fmtMoney(ev.protectedDollars)}</b> · helped on <b className="text-fg">{ev.nightsHelped}/{ev.nights}</b> nights · risk cut <b className="text-fg">{ev.before.dollarsAtRisk > 0 ? Math.round((1 - ev.after.dollarsAtRisk / ev.before.dollarsAtRisk) * 100) : 0}%</b></div>
+          <div className="text-xs text-fg-2 mt-2">Costs <b className="text-fg">{fmtMoney(ev.cost)}</b>, protects <b className="text-fg">{fmtMoney(ev.protectedDollars)}</b> · helped on <b className="text-fg">{ev.nightsHelped}/{ev.nights}</b> nights · risk cut <b className="text-fg">{ev.before.dollarsAtRisk > 0 ? Math.max(0, Math.round((1 - ev.after.dollarsAtRisk / ev.before.dollarsAtRisk) * 100)) : 0}%</b></div>
           <div className="flex gap-2 mt-2">
             <button className="btn btn-primary text-xs" onClick={() => setTab("Race")}>Watch the race →</button>
             <button className="btn text-xs" onClick={runRehearse} disabled={planLoading}>Re-run</button>
@@ -56,7 +56,7 @@ function RehearsePanel() {
       {accepted.length > 0 && (
         <div className="flex flex-col gap-2">
           <div className="panel-title">Tested fixes · {accepted.length}</div>
-          {accepted.map(c => <Card key={c.id} c={c} line={planExplanations[c.id]} onToggle={() => togglePlanCard(c.id)} />)}
+          {accepted.map(c => <Card key={c.id} c={c} line={planExplanations[c.id]} busy={!!planStatus} onToggle={() => togglePlanCard(c.id)} />)}
         </div>
       )}
       {rejected.length > 0 && (
@@ -80,7 +80,7 @@ function Delta({ label, before, after, fmt }: { label: string; before: number; a
   );
 }
 
-function Card({ c, line, onToggle }: { c: PlanCard; line?: string; onToggle?: () => void }) {
+function Card({ c, line, onToggle, busy }: { c: PlanCard; line?: string; onToggle?: () => void; busy?: boolean }) {
   const e = c.evidence;
   const rej = !c.accepted;
   return (
@@ -88,7 +88,7 @@ function Card({ c, line, onToggle }: { c: PlanCard; line?: string; onToggle?: ()
       <div className="flex items-start justify-between gap-2">
         <div className={`text-sm font-semibold leading-snug ${rej ? "line-through text-fg-2" : ""}`}>{c.title}</div>
         {rej ? <span className="chip shrink-0 !text-bad !border-bad/40">rejected</span> : (
-          <button onClick={onToggle} className={`shrink-0 w-9 h-5 rounded-full relative transition-colors ${c.enabled ? "bg-ok" : "bg-fg-3/40"}`} title="Toggle this fix and re-test the plan">
+          <button onClick={onToggle} disabled={busy} className={`shrink-0 w-9 h-5 rounded-full relative transition-colors ${c.enabled ? "bg-ok" : "bg-fg-3/40"} ${busy ? "opacity-60" : ""}`} title="Toggle this fix and re-test the plan">
             <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${c.enabled ? "left-4.5" : "left-0.5"}`} />
           </button>
         )}
