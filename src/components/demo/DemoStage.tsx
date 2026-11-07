@@ -123,9 +123,14 @@ export default function DemoStage() {
   const clickEl = async (el: HTMLElement | null, alive: () => boolean) => {
     if (!el) return false;
     el.scrollIntoView({ block: "nearest" });
-    await moveTo(center(el), alive);
+    await moveToEl(el, alive);
     setCursor(c => ({ ...c, ripple: c.ripple + 1 }));
     await wait(120, alive);
+    // verification: is the cursor tip inside the target's current on-screen box?
+    const r = el.getBoundingClientRect(); const sr = stageRef.current!.getBoundingClientRect();
+    const tipX = sr.left + cursorPos.current.x * scale, tipY = sr.top + cursorPos.current.y * scale;
+    const ok = tipX >= r.left && tipX <= r.right && tipY >= r.top && tipY <= r.bottom;
+    console.log(`[demo-click] ${ok ? "ok" : "MISS"} "${(el.textContent ?? "").trim().slice(0, 30)}"`);
     el.click();
     return true;
   };
@@ -138,7 +143,29 @@ export default function DemoStage() {
   const say = (t: string | null) => { setCaption(t); setCapKey(k => k + 1); };
   const cap = (n: string, name: string) => setChapter({ n, name });
   const camRef = useRef<Cam>({ s: 1, x: 0, y: 0, ms: 600 });
-  const zoom = (s: number, x: number, y: number, ms = 600) => { camRef.current = { s, x, y, ms }; setCam({ s, x, y, ms }); };
+  const lastZoomAt = useRef(0);
+  const pinnedEl = useRef<HTMLElement | null>(null);
+  const zoom = (s: number, x: number, y: number, ms = 600) => { camRef.current = { s, x, y, ms }; lastZoomAt.current = Date.now(); setCam({ s, x, y, ms }); };
+  /** wait until the camera transition has finished */
+  const settle = async (alive: () => boolean) => { const left = lastZoomAt.current + camRef.current.ms + 60 - Date.now(); if (left > 0) await wait(left, alive); };
+  /** move the cursor to an element, re-reading its on-screen center every frame (so zooms/pans/scrolls never leave it behind) */
+  const moveToEl = async (el: HTMLElement, alive: () => boolean, ms = 650) => {
+    await settle(alive);
+    pinnedEl.current = null;
+    const from = { ...cursorPos.current }; const t0 = Date.now();
+    setCursor(c => ({ ...c, visible: true }));
+    while (true) {
+      const p = center(el);
+      const u = Math.min(1, (Date.now() - t0) / ms); const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+      const dx = p.x - from.x, dy = p.y - from.y; const bow = Math.sin(u * Math.PI) * Math.min(40, Math.hypot(dx, dy) * 0.08);
+      const nx = from.x + dx * e - dy / (Math.hypot(dx, dy) || 1) * bow, ny = from.y + dy * e + dx / (Math.hypot(dx, dy) || 1) * bow;
+      cursorPos.current = { x: nx, y: ny }; setCursor(c => ({ ...c, x: nx, y: ny }));
+      if (u >= 1) break; await wait(16, alive);
+    }
+    const p = center(el); cursorPos.current = { ...p }; setCursor(c => ({ ...c, x: p.x, y: p.y }));
+    pinnedEl.current = el;
+    await wait(300, alive);
+  };
   /** element center in UNZOOMED stage coordinates (inverts the current camera transform) */
   const centerU = (el: HTMLElement) => { const c = center(el); const k = camRef.current; return { x: (c.x - W / 2 - k.x) / k.s + W / 2, y: (c.y - H / 2 - k.y) / k.s + H / 2 }; };
   const elZoom = (el: HTMLElement | null, s: number, dy = 0) => { if (!el) return; const c = centerU(el); zoom(s, (W / 2 - c.x) * s, (H / 2 - (c.y + dy)) * s); };
@@ -157,7 +184,7 @@ export default function DemoStage() {
     setView("home"); cap("01 / 10", "Set up any restaurant"); say("Describe any restaurant in one sentence and it builds the kitchen, menu and staff.");
     await wait(400, alive);
     const ta = q("textarea") as HTMLTextAreaElement | null;
-    if (ta) { ta.scrollIntoView({ block: "center" }); await moveTo(center(ta), alive); await typeInto(ta, DESCRIBE, alive); }
+    if (ta) { ta.scrollIntoView({ block: "center" }); await moveToEl(ta, alive); await typeInto(ta, DESCRIBE, alive); }
     await clickEl(q("button", "Fill from description"), alive);
     await until(() => !q("button", "Reading…") && !!q("aside, main, form, div", "taco"), 4000, alive);
     const menuHdr = q("h3", "Menu"); if (menuHdr) { menuHdr.scrollIntoView({ block: "start" }); elZoom(menuHdr, 1.15); }
@@ -168,7 +195,7 @@ export default function DemoStage() {
     const past = q("h3", "Past orders"); if (past) past.scrollIntoView({ block: "center" });
     const fileInput = q('input[type="file"]') as HTMLInputElement | null;
     const importBtn = q("button", "Choose") ?? q("button", "Import") ?? q("label", "CSV");
-    if (importBtn) await moveTo(center(importBtn), alive);
+    if (importBtn) await moveToEl(importBtn, alive);
     if (fileInput) {
       try {
         const csv = await (await fetch("/sample-orders.csv")).text();
@@ -184,22 +211,22 @@ export default function DemoStage() {
     zoom(1, 0, 0);
     window.scrollTo(0, 0); stageRef.current?.querySelector("main")?.scrollIntoView({ block: "start" });
     const card = q("a", "Primanti") ?? q("div", "Primanti");
-    if (card) { await moveTo(center(card), alive); setCursor(c => ({ ...c, ripple: c.ripple + 1 })); await wait(150, alive); }
+    if (card) { await moveToEl(card, alive); setCursor(c => ({ ...c, ripple: c.ripple + 1 })); await wait(150, alive); }
     setView("app"); st().setTab("Tonight");
     await at(20);
     // 04 kitchen customizer
     cap("04 / 10", "Kitchen customizer"); say("Every station, cook and dish is editable, down to prep times.");
     st().setTab("Kitchen"); await wait(300, alive);
     const aside = q("aside:last-of-type");
-    if (aside) { elZoom(aside, 1.25); await wait(600, alive); const eq = q("aside:last-of-type h3", "Equipment") ?? aside; await moveTo(center(eq), alive, 450); await wait(600, alive); const staff = q("aside:last-of-type h3", "Staff"); if (staff) { staff.scrollIntoView({ block: "center" }); await moveTo(center(staff), alive, 450); } await wait(600, alive); const menu = q("aside:last-of-type h3", "Menu"); if (menu) { menu.scrollIntoView({ block: "center" }); await moveTo(center(menu), alive, 500); } }
+    if (aside) { elZoom(aside, 1.25); await wait(600, alive); const eq = q("aside:last-of-type h3", "Equipment") ?? aside; await moveToEl(eq, alive, 450); await wait(600, alive); const staff = q("aside:last-of-type h3", "Staff"); if (staff) { staff.scrollIntoView({ block: "center" }); await moveToEl(staff, alive, 450); } await wait(600, alive); const menu = q("aside:last-of-type h3", "Menu"); if (menu) { menu.scrollIntoView({ block: "center" }); await moveToEl(menu, alive, 500); } }
     await at(25);
     // 05 any night
     cap("05 / 10", "Any night, real inputs"); say("Pick any date. Real events and weather set the demand.");
     zoom(1, 0, 0); st().setTab("Tonight"); await wait(300, alive);
-    { const nb = q("button", "Next game day"); if (nb) { await moveTo(center(nb), alive); setCursor(c => ({ ...c, ripple: c.ripple + 1 })); await wait(200, alive); } }
+    { const nb = q("button", "Next game day"); if (nb) { await moveToEl(nb, alive); setCursor(c => ({ ...c, ripple: c.ripple + 1 })); await wait(200, alive); } }
     await until(() => st().date === DEMO_DATE && !!st().night, 4000, alive);
     const pitt = q("aside:first-of-type button", "Pittsburgh Panthers") ?? q("aside:first-of-type *", "Florida State");
-    if (pitt) { pitt.scrollIntoView({ block: "center" }); elZoom(pitt, 1.35); await moveTo(center(pitt), alive); }
+    if (pitt) { pitt.scrollIntoView({ block: "center" }); elZoom(pitt, 1.35); await moveToEl(pitt, alive); }
     await wait(1200, alive);
     const chart = q("aside:first-of-type svg"); if (chart) { chart.scrollIntoView({ block: "center" }); elZoom(chart, 1.35); }
     await at(31);
@@ -233,13 +260,13 @@ export default function DemoStage() {
     // 08 rehearse
     zoom(1, 0, 0); cap("08 / 10", "Rehearse"); say("An AI suggests fixes and each one is tested on 300 nights.");
     st().setTab("Rehearse"); await wait(300, alive);
-    const rb = q("button", "Rehearse tonight"); if (rb) await clickEl(rb, alive); else await moveTo(center(q("aside:last-of-type")!), alive);
+    const rb = q("button", "Rehearse tonight"); if (rb) await clickEl(rb, alive); else await moveToEl(q("aside:last-of-type")!, alive);
     await until(() => !!st().plan, 15000, alive);
     const ev = st().plan?.combinedEvidence;
     const fixes = q("aside:last-of-type *", "Tested fixes") ?? q("aside:last-of-type");
     if (fixes) { fixes.scrollIntoView({ block: "start" }); elZoom(fixes, 1.2); }
     await wait(1000, alive);
-    const rej = q("aside:last-of-type button", "rejected"); if (rej) { await clickEl(rej, alive); await wait(300, alive); const crossed = q("aside:last-of-type s") ?? q("aside:last-of-type .line-through"); if (crossed) { crossed.scrollIntoView({ block: "center" }); await moveTo(center(crossed), alive); } }
+    const rej = q("aside:last-of-type button", "rejected"); if (rej) { await clickEl(rej, alive); await wait(300, alive); const crossed = q("aside:last-of-type s") ?? q("aside:last-of-type .line-through"); if (crossed) { crossed.scrollIntoView({ block: "center" }); await moveToEl(crossed, alive); } }
     if (ev) say(`Only fixes that pay off make the plan. It costs ${money(ev.cost)} and protects ${money(ev.protectedDollars)}.`);
     await at(59);
     // 09 race
@@ -255,7 +282,7 @@ export default function DemoStage() {
     zoom(1, 0, 0); cap("10 / 10", "Ask anything"); say("Ask anything and watch it play out in the kitchen.");
     st().pause(); st().setTab("Ask"); await wait(300, alive);
     const input = q("#ask-input") as HTMLInputElement | null;
-    if (input) { await moveTo(center(input), alive); await typeInto(input, ASK_Q, alive); }
+    if (input) { await moveToEl(input, alive); await typeInto(input, ASK_Q, alive); }
     // run the same pipeline the Ask panel uses, minus the recovery-plan pass (kept short and deterministic for the recording)
     useApp.setState({ askLoading: true, askStatus: "Running the experiment…", askResult: null, askNight: null, viewportSource: "tonight", playing: false });
     try { const r = await runAskPipeline(ASK_Q, st().tonight, { recovery: false, llmTimeoutMs: 6000 }); useApp.setState({ askResult: r, askLoading: false, askStatus: "" }); } catch { useApp.setState({ askLoading: false, askStatus: "" }); }
@@ -280,6 +307,13 @@ export default function DemoStage() {
   };
 
   useEffect(() => { if (phase !== "playing") return; const t = setInterval(() => setElapsed(e => e + 1), 1000); setElapsed(0); return () => clearInterval(t); }, [phase]);
+  useEffect(() => {
+    if (phase !== "playing") return;
+    let raf = 0;
+    const tick = () => { const el = pinnedEl.current; if (el && el.isConnected && stageRef.current) { const r = el.getBoundingClientRect(); const sr = stageRef.current.getBoundingClientRect(); const p = { x: (r.left + r.width / 2 - sr.left) / scale, y: (r.top + r.height / 2 - sr.top) / scale }; if (Math.abs(p.x - cursorPos.current.x) > 0.5 || Math.abs(p.y - cursorPos.current.y) > 0.5) { cursorPos.current = p; setCursor(c => ({ ...c, x: p.x, y: p.y })); } } raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [phase, scale]);
 
   const showApp = view === "app";
   const showHome = view === "home";
@@ -312,8 +346,8 @@ export default function DemoStage() {
         {/* fake cursor */}
         {cursor.visible && phase === "playing" && (
           <div className="absolute pointer-events-none" style={{ left: cursor.x, top: cursor.y, zIndex: 50 }}>
-            <div key={cursor.ripple} className="absolute rounded-full border-2 border-[#1D5FA8]" style={{ width: 36, height: 36, left: -18, top: -18, animation: cursor.ripple ? "demoRipple 450ms ease-out forwards" : "none", opacity: 0 }} />
-            <svg width="26" height="30" viewBox="0 0 26 30" style={{ marginLeft: -2, marginTop: -2, filter: "drop-shadow(0 1px 2px rgba(0,0,0,.35))" }}><path d="M2 2 L2 23 L8 17.5 L12 27 L16.5 25 L12.5 16 L21 16 Z" fill="#16191D" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" /></svg>
+            <div key={cursor.ripple} className="absolute rounded-full border-2 border-[#1D5FA8]" style={{ width: 36, height: 36, left: -18 + 2, top: -18 + 2, animation: cursor.ripple ? "demoRipple 450ms ease-out forwards" : "none", opacity: 0 }} />
+            <svg width="26" height="30" viewBox="0 0 26 30" style={{ marginLeft: 0, marginTop: 0, filter: "drop-shadow(0 1px 2px rgba(0,0,0,.35))" }}><path d="M2 2 L2 23 L8 17.5 L12 27 L16.5 25 L12.5 16 L21 16 Z" fill="#16191D" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" /></svg>
           </div>
         )}
         {phase === "countdown" && (
