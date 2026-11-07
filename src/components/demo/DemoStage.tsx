@@ -8,6 +8,7 @@ import Home from "@/app/page";
 import { useApp, snapshotAt } from "@/store/app";
 import { SERVICE_START } from "@/sim/types";
 import { DEMO_DATE } from "@/data/cache";
+import { runAsk as runAskPipeline } from "@/plan/ask";
 
 const W = 1920, H = 1080;
 const RESTAURANT = "primanti";
@@ -61,6 +62,8 @@ export default function DemoStage() {
   const prewarm = useCallback(async () => {
     const st = useApp.getState();
     const until = async (fn: () => boolean, ms: number) => { const t = Date.now(); while (!fn()) { if (Date.now() - t > ms) return false; await new Promise(r => setTimeout(r, 100)); } return true; };
+    // let the live intake refresh settle first (it replaces the scenario and would reset everything warmed before it)
+    await until(() => !useApp.getState().tonightLoading && useApp.getState().tonightSource !== "cache", 15000);
     await until(() => !!useApp.getState().night && !!useApp.getState().tonightMC && useApp.getState().tonight.restaurant?.name?.includes("Primanti") === true, 40000);
     fetch("/api/describe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ description: DESCRIBE }) }).catch(() => {});
     if (!useApp.getState().attribution) await st.runWhy("dasherWait");
@@ -193,8 +196,8 @@ export default function DemoStage() {
     // 05 any night
     cap("05 / 10", "Any night, real inputs"); say("Pick any date. Real events and weather set the demand.");
     zoom(1, 0, 0); st().setTab("Tonight"); await wait(300, alive);
-    await clickEl(q("button", "Next game day"), alive);
-    await until(() => st().date === DEMO_DATE && !!st().night, 8000, alive);
+    { const nb = q("button", "Next game day"); if (nb) { await moveTo(center(nb), alive); setCursor(c => ({ ...c, ripple: c.ripple + 1 })); await wait(200, alive); } }
+    await until(() => st().date === DEMO_DATE && !!st().night, 4000, alive);
     const pitt = q("aside:first-of-type button", "Pittsburgh Panthers") ?? q("aside:first-of-type *", "Florida State");
     if (pitt) { pitt.scrollIntoView({ block: "center" }); elZoom(pitt, 1.35); await moveTo(center(pitt), alive); }
     await wait(1200, alive);
@@ -235,7 +238,7 @@ export default function DemoStage() {
     const ev = st().plan?.combinedEvidence;
     const fixes = q("aside:last-of-type *", "Tested fixes") ?? q("aside:last-of-type");
     if (fixes) { fixes.scrollIntoView({ block: "start" }); elZoom(fixes, 1.2); }
-    await wait(1500, alive);
+    await wait(1000, alive);
     const rej = q("aside:last-of-type button", "rejected"); if (rej) { await clickEl(rej, alive); await wait(300, alive); const crossed = q("aside:last-of-type s") ?? q("aside:last-of-type .line-through"); if (crossed) { crossed.scrollIntoView({ block: "center" }); await moveTo(center(crossed), alive); } }
     if (ev) say(`Only fixes that pay off make the plan. It costs ${money(ev.cost)} and protects ${money(ev.protectedDollars)}.`);
     await at(59);
@@ -252,13 +255,16 @@ export default function DemoStage() {
     zoom(1, 0, 0); cap("10 / 10", "Ask anything"); say("Ask anything and watch it play out in the kitchen.");
     st().pause(); st().setTab("Ask"); await wait(300, alive);
     const input = q("#ask-input") as HTMLInputElement | null;
-    if (input) { await moveTo(center(input), alive); await typeInto(input, ASK_Q, alive); input.form?.requestSubmit(); }
-    await until(() => !!st().askResult && !st().askLoading, 20000, alive);
+    if (input) { await moveTo(center(input), alive); await typeInto(input, ASK_Q, alive); }
+    // run the same pipeline the Ask panel uses, minus the recovery-plan pass (kept short and deterministic for the recording)
+    useApp.setState({ askLoading: true, askStatus: "Running the experiment…", askResult: null, askNight: null, viewportSource: "tonight", playing: false });
+    try { const r = await runAskPipeline(ASK_Q, st().tonight, { recovery: false, llmTimeoutMs: 6000 }); useApp.setState({ askResult: r, askLoading: false, askStatus: "" }); } catch { useApp.setState({ askLoading: false, askStatus: "" }); }
+    await until(() => !!st().askResult && !st().askLoading, 12000, alive);
     await clickEl(q("button", "Show in kitchen"), alive);
     await until(() => st().viewportSource === "ask" && !!st().askNight, 8000, alive);
     st().setView("2d"); st().seekTime(17 * 60 + 56); st().setSpeed(240); st().play();
     const canvas2 = q("section svg") ?? q("section"); if (canvas2) elZoom(canvas2, 1.25);
-    await wait(2400, alive); st().pause();
+    await wait(1800, alive); st().pause();
     zoom(1, 0, 0);
     await at(74);
     // game plan
@@ -266,7 +272,7 @@ export default function DemoStage() {
     useApp.setState({ viewportSource: "tonight" }); st().setTab("Rehearse"); await wait(300, alive);
     const gp = q("aside:last-of-type *", "game plan");
     const asideEl = q("aside:last-of-type");
-    if (gp && asideEl) { const target = gp.offsetTop - 40; const startTop = asideEl.scrollTop; const t1 = Date.now(); while (Date.now() - t1 < 1800) { const u = Math.min(1, (Date.now() - t1) / 1800); const e = 1 - Math.pow(1 - u, 3); asideEl.scrollTop = startTop + (target + 500 - startTop) * e; await wait(16, alive); } }
+    if (gp && asideEl) { const target = gp.offsetTop - 40; const startTop = asideEl.scrollTop; const t1 = Date.now(); while (Date.now() - t1 < 1400) { const u = Math.min(1, (Date.now() - t1) / 1400); const e = 1 - Math.pow(1 - u, 3); asideEl.scrollTop = startTop + (target + 500 - startTop) * e; await wait(16, alive); } }
     await at(78);
     // end card
     say(null); setChapter(null); setView("end");

@@ -84,7 +84,7 @@ class SimClient {
       }
     }
     const summary = summarize(results, seeds);
-    if (this.mcCache.size > 200) this.mcCache.clear();
+    if (this.mcCache.size > 600) this.mcCache.clear();
     this.mcCache.set(key, summary);
     return summary;
   }
