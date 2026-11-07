@@ -1,9 +1,13 @@
 "use client";
 // "Set up your own" form: template + size + overrides -> buildScenario -> saveRestaurant -> /app?r=<id>.
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CUISINES, NEIGHBORHOODS, buildScenario, saveRestaurant, getCuisine, approxAov, type Size } from "@/data/templates";
+import { CUISINES, NEIGHBORHOODS, buildScenario, saveRestaurant, getCuisine, approxAov, SIZE_FACTOR, type Size } from "@/data/templates";
+import type { MenuItem } from "@/sim/types";
 import { keywordFields, type SetupFields } from "./describe";
+import MenuStep from "./MenuStep";
+import HistoryImport from "./HistoryImport";
+import { calibrationScale, baselineOrdersPerNight, type HistorySummary } from "@/lib/csv";
 
 const toMin = (hhmm: string) => { const [h, m] = hhmm.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
 const toHHMM = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
@@ -17,6 +21,16 @@ function defaultsFor(cuisine: string): Pick<FormState, "deliveryPct" | "hoursOpe
     hoursOpen: toHHMM(c.hours.open), hoursClose: toHHMM(c.hours.close),
     staffCount: c.staff.length, aov: Math.round(approxAov(c.menu)),
   };
+}
+
+/** Fresh copy of a cuisine template's menu (the editable "Menu" section starts from this). */
+const templateMenu = (cuisine: string): MenuItem[] => getCuisine(cuisine).menu.map(m => ({ ...m, stations: [...m.stations] }));
+/** Scale menu prices so the weighted average ticket matches `aov` (same rule buildScenario applies to a template). */
+function scaleMenuTo(menu: MenuItem[], aov: number): MenuItem[] {
+  const cur = approxAov(menu);
+  if (!(aov > 0) || !(cur > 0) || Math.abs(cur - aov) < 0.5) return menu;
+  const k = aov / cur;
+  return menu.map(m => ({ ...m, price: Math.round(m.price * k * 2) / 2, foodCost: Math.round(m.foodCost * k * 10) / 10 }));
 }
 
 const Field = ({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) => (
@@ -34,14 +48,27 @@ export default function SetupForm() {
   const [filling, setFilling] = useState(false);
   const [fillNote, setFillNote] = useState<string | null>(null);
   const [building, setBuilding] = useState(false);
+  // editable menu (pre-filled from the chosen template) and optional imported order history
+  const [menu, setMenu] = useState<MenuItem[]>(() => templateMenu("pizza"));
+  const [history, setHistory] = useState<HistorySummary | null>(null);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF(s => ({ ...s, [k]: v }));
-  const setCuisine = (cuisine: string) => setF(s => ({ ...s, cuisine, ...defaultsFor(cuisine) }));
+  const setCuisine = (cuisine: string) => { setF(s => ({ ...s, cuisine, ...defaultsFor(cuisine) })); setMenu(templateMenu(cuisine)); };
+  // AOV and menu prices stay consistent in both directions: editing prices updates AOV, editing AOV rescales prices.
+  const onMenuChange = (next: MenuItem[]) => { setMenu(next); if (next.length) setF(s => ({ ...s, aov: Math.round(approxAov(next)) })); };
+  const setAov = (aov: number) => { set("aov", aov); setMenu(m => scaleMenuTo(m, aov)); };
+
+  /** template baseline orders per night for the chosen cuisine and size (what history is compared against) */
+  const baselineNight = useMemo(() => baselineOrdersPerNight(getCuisine(f.cuisine).demand.map(v => Math.max(1, Math.round(v * SIZE_FACTOR[f.size])))), [f.cuisine, f.size]);
 
   const apply = (x: SetupFields, source: string) => {
+    const cuisineChanged = !!(x.cuisine && CUISINES.some(c => c.id === x.cuisine));
+    if (cuisineChanged || x.aov != null) {
+      setMenu(m => { const base = cuisineChanged ? templateMenu(x.cuisine!) : m; return x.aov != null ? scaleMenuTo(base, Math.round(x.aov)) : base; });
+    }
     setF(s => {
       const n = { ...s };
-      if (x.cuisine && CUISINES.some(c => c.id === x.cuisine)) Object.assign(n, { cuisine: x.cuisine, ...defaultsFor(x.cuisine) });
+      if (cuisineChanged) Object.assign(n, { cuisine: x.cuisine, ...defaultsFor(x.cuisine!) });
       if (x.name) n.name = x.name;
       if (x.neighborhood && NEIGHBORHOODS.some(nb => nb.name === x.neighborhood)) n.neighborhood = x.neighborhood;
       if (x.size) n.size = x.size;
@@ -75,7 +102,17 @@ export default function SetupForm() {
   const build = () => {
     setBuilding(true);
     const name = f.name.trim() || `${getCuisine(f.cuisine).name} in ${f.neighborhood}`;
-    const sc = buildScenario(f.cuisine, { size: f.size, name, neighborhood: f.neighborhood, deliveryPct: f.deliveryPct, staffCount: f.staffCount, aov: f.aov, hoursOpen: toMin(f.hoursOpen), hoursClose: toMin(f.hoursClose) });
+    // the edited menu replaces the template's (so no AOV rescaling here: prices are exactly what the table shows)
+    const sc = buildScenario(f.cuisine, { size: f.size, name, neighborhood: f.neighborhood, deliveryPct: f.deliveryPct, staffCount: f.staffCount, hoursOpen: toMin(f.hoursOpen), hoursClose: toMin(f.hoursClose) });
+    sc.menu = (menu.length ? menu : templateMenu(f.cuisine)).map(m => ({ ...m, stations: [...m.stations] }));
+    if (history) {
+      // calibrate demand to the owner's Fridays: scale the baseline curve, clamped 0.5..2
+      const k = calibrationScale(history, baselineOrdersPerNight(sc.baselineOrdersPerHour));
+      sc.baselineOrdersPerHour = sc.baselineOrdersPerHour.map(v => Math.max(1, Math.round(v * k)));
+      sc.notes = [...(sc.notes ?? []), `Demand calibrated ×${k.toFixed(2)} from ${history.orders} past orders (${history.from} to ${history.to}).`];
+      // Scenario.restaurant has no `history` field in sim/types (not touched here); stored as an extra property.
+      if (sc.restaurant) (sc.restaurant as typeof sc.restaurant & { history?: HistorySummary }).history = history;
+    }
     const id = saveRestaurant(name, sc);
     router.push(`/app?r=${encodeURIComponent(id)}`);
   };
@@ -117,8 +154,21 @@ export default function SetupForm() {
           </div>
         </Field>
         <Field label="Staff on a typical night"><input type="number" min={1} max={12} className={`${inputCls} num`} value={f.staffCount} onChange={e => set("staffCount", Math.max(1, Math.min(12, Number(e.target.value) || 1)))} /></Field>
-        <Field label="Average order value ($)"><input type="number" min={3} max={200} className={`${inputCls} num`} value={f.aov} onChange={e => set("aov", Math.max(3, Number(e.target.value) || 3))} /></Field>
+        <Field label="Average order value ($)"><input type="number" min={3} max={200} className={`${inputCls} num`} value={f.aov} onChange={e => setAov(Math.max(3, Number(e.target.value) || 3))} /></Field>
       </div>
+
+      <section className="flex flex-col gap-2 border-t border-line pt-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h3 className="panel-title">Menu</h3>
+          <span className="sub">Pre-filled from the {getCuisine(f.cuisine).name} template. Edit prices, prep times, routing and share of orders.</span>
+        </div>
+        <MenuStep menu={menu} stations={Object.entries(getCuisine(f.cuisine).stations).map(([id, slot]) => ({ id: id as MenuItem["stations"][number], name: slot.name }))} onChange={onMenuChange} template={templateMenu(f.cuisine)} />
+      </section>
+
+      <section className="flex flex-col gap-2 border-t border-line pt-3">
+        <h3 className="panel-title">Past orders <span className="sub font-normal">(optional)</span></h3>
+        <HistoryImport summary={history} onImported={setHistory} onClear={() => setHistory(null)} baselineOrdersPerNight={baselineNight} />
+      </section>
 
       <div className="flex items-center justify-between pt-1">
         <div className="sub">{getCuisine(f.cuisine).tagline}</div>

@@ -5,9 +5,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useApp } from "@/store/app";
 import { baseScenario } from "@/sim/scenario";
-import { CHANNELS, STATIONS, fmtClockShort, type Channel, type Scenario, type StationId, type StationKind } from "@/sim/types";
+import { CHANNELS, STATIONS, fmtClockShort, type Channel, type Scenario, type StationKind } from "@/sim/types";
 import { CHANNEL_LABEL } from "@/sim/layout";
 import { getRestaurantScenario, getRestaurantName, STATION_KINDS } from "@/data/templates";
+import MenuStep from "@/components/setup/MenuStep";
 
 const inp = "h-7 px-1.5 rounded border border-line bg-bg-2 text-[12px] text-fg focus:outline-none focus:border-fg min-w-0";
 const KIND_LABEL: Record<StationKind, string> = { grill: "Grill", fryer: "Fryer", flattop: "Flat-top / plancha", pizza_oven: "Pizza oven / tandoor", oven: "Oven", wok: "Wok / curry line", rice: "Boil / rice", espresso: "Espresso", cold: "Cold line", pack: "Pack / expo", counter: "Counter" };
@@ -34,6 +35,8 @@ export default function KitchenPanel() {
   const showToast = useApp(s => s.showToast);
   // what the panel edits: the restaurant base, or Maria's defaults when none is set
   const sc: Scenario = useMemo(() => base ?? baseScenario(tonightDate), [base, tonightDate]);
+  // the template's menu, for MenuStep's "Reset to template" (menu only; the header button resets everything)
+  const templateMenu = useMemo(() => (getRestaurantScenario(rid) ?? baseScenario(tonightDate)).menu, [rid, tonightDate]);
 
   // debounced updates for sliders (400 ms): keep a pending mutation list and flush once
   const pending = useRef<((b: Scenario) => void)[]>([]);
@@ -156,31 +159,8 @@ export default function KitchenPanel() {
       </Section>
 
       {/* MENU */}
-      <Section title="Menu" right={
-        <button className="btn !py-0.5 !px-2 text-xs" onClick={() => update(b => { b.menu.push({ id: `item${Date.now().toString(36)}`, name: "New item", price: 10, foodCost: 3, stations: ["grill"], prepMin: 5, prepSd: 0.7, holdMin: 12, popularity: 10 }); })}>+ Add item</button>
-      }>
-        <table className="data">
-          <thead><tr><th>Item</th><th className="r">$</th><th className="r">Prep</th><th>Stations</th><th /></tr></thead>
-          <tbody>
-            {sc.menu.map(m => (
-              <tr key={m.id}>
-                <td className="!p-1"><input className={`${inp} w-full`} value={m.name} onChange={e => update(b => { b.menu.find(x => x.id === m.id)!.name = e.target.value; })} /></td>
-                <td className="!p-1 w-[56px]"><input type="number" step={0.5} min={0} className={`${inp} num w-full text-right`} value={m.price} onChange={e => update(b => { b.menu.find(x => x.id === m.id)!.price = Math.max(0, Number(e.target.value) || 0); })} /></td>
-                <td className="!p-1 w-[52px]"><input type="number" step={0.5} min={0.3} className={`${inp} num w-full text-right`} value={m.prepMin} title="Prep minutes" onChange={e => update(b => { b.menu.find(x => x.id === m.id)!.prepMin = Math.max(0.3, Number(e.target.value) || 0.3); })} /></td>
-                <td className="!p-1">
-                  <div className="flex gap-0.5 flex-wrap">
-                    {(["grill", "fryer", "cold"] as StationId[]).map(sid => {
-                      const on = m.stations.includes(sid);
-                      const label = (sc.stations.find(s => s.id === sid)?.name ?? sid).split(/[ /]/)[0];
-                      return <button key={sid} className={`chip !px-1 ${on ? "!bg-fg !text-white !border-fg" : ""}`} title={`Route through ${label}`} onClick={() => update(b => { const x = b.menu.find(x => x.id === m.id)!; x.stations = on ? x.stations.filter(s => s !== sid) : [...x.stations, sid]; if (!x.stations.length) x.stations = ["cold"]; })}>{label}</button>;
-                    })}
-                  </div>
-                </td>
-                <td className="!p-1 w-[22px]"><button className="btn !p-0 h-7 w-[18px] justify-center" title="Remove item" onClick={() => update(b => { b.menu = b.menu.filter(x => x.id !== m.id); })}>×</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <Section title="Menu" right={<span className="sub">Edits re-simulate tonight</span>}>
+        <MenuStep compact menu={sc.menu} stations={sc.stations.map(st => ({ id: st.id, name: st.name }))} template={templateMenu} onChange={menu => update(b => { b.menu = menu; })} />
       </Section>
 
       {/* OPERATIONS */}
