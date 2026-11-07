@@ -18,7 +18,7 @@ Schema (all keys optional except summary):
  "quotedPrep":[{"start":int,"end":int,"minutes":int}],
  "layout":[{"station":...,"x":number,"y":number}],
  "bigOrders":[{"time":int,"channel":...,"items":[{"item":<id>,"qty":int}]}],
- "unsupported": string  // ONLY if the question cannot be modeled; say what can be modeled instead}
+ "unsupported": string  // ONLY if the question cannot be modeled: one friendly sentence (<= 40 words) saying what CAN be modeled; never mention minutes-since-midnight or field names}
 Menu item ids: burger, double, wings, fries, chicken, tenders, salad, shake, slaw, soda. Workers tonight: maria (4–10 PM, owner), sam (4–10 PM), jake (scheduled 6–10 PM but called out), ana (off, can be called in). Stations: grill (6 slots), fryer (4 baskets), cold, pack, counter.
 Rules: "game goes to overtime" => demand factor ~1.25 for all channels 1260..1320 plus doordash 1.3. "sudden rain" => doordash & ubereats factor 1.15 and counter 0.8 for the stated window (default 1080..1260). "catering/big order of N people" => bigOrders with roughly N wings portions/2 + N fries/2 + N burgers/3 on the phone channel. "cook calls out" with no name => staff sam absent. A fryer "breaks" => equipment fryer capacity 0 for ~40 min unless told otherwise. Keep windows inside 960..1320. Output JSON only.`;
 
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   if (!q) return NextResponse.json({ error: "empty question" }, { status: 400 });
   const t0 = Date.now();
   try {
-    const patch = await chatJSON(ScenarioPatchSchema, SYSTEM, `Question: ${q}`, { model: MODEL_FAST, timeoutMs: 9000, maxTokens: 500 });
+    const patch = await chatJSON(ScenarioPatchSchema, SYSTEM, `Question: ${q}`, { model: MODEL_FAST, timeoutMs: 9000, maxTokens: 800 });
     return NextResponse.json({ patch, ms: Date.now() - t0, source: "llm" });
   } catch (e) {
     return NextResponse.json({ patch: null, ms: Date.now() - t0, source: "fallback", error: String(e).slice(0, 160) });

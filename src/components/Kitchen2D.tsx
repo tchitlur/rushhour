@@ -105,7 +105,7 @@ export default function Kitchen2D({ snapshot, stations, highlightStation, classN
         </g>
       ))}
       {snapshot && snapshot.dashers.length >= 3 && (
-        <text x={DOOR.x * S - 60} y={H - 70} textAnchor="end" fill="#ff4d5e" fontSize={13} fontWeight={700}>{snapshot.dashers.length} Dashers waiting</text>
+        <text x={DOOR.x * S + 20} y={H - 100} textAnchor="end" fill="#ff4d5e" fontSize={13} fontWeight={700}>{snapshot.dashers.length} Dashers waiting</text>
       )}
     </svg>
   );

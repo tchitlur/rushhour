@@ -43,8 +43,11 @@ export default function App() {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const el = e.target as HTMLElement;
       const tag = el?.tagName;
-      if (/INPUT|TEXTAREA|SELECT/.test(tag) || el?.isContentEditable) return;
-      if (tag === "BUTTON" && e.key === " ") return;
+      const inputType = tag === "INPUT" ? ((el as HTMLInputElement).type || "text") : "";
+      const isTextField = tag === "TEXTAREA" || tag === "SELECT" || el?.isContentEditable || (tag === "INPUT" && !/checkbox|radio|button|range/.test(inputType));
+      if (isTextField) return;
+      // a judge who just clicked a button or checkbox still expects hotkeys to work
+      if (tag === "BUTTON" || tag === "INPUT" || tag === "LABEL") { e.preventDefault(); el.blur(); }
       const st = useApp.getState();
       switch (e.key.toLowerCase()) {
         case "p": st.togglePlay(); break;
@@ -112,7 +115,7 @@ export default function App() {
           </div>
         </section>
         <aside className="panel p-4 overflow-y-auto scroll-thin flex flex-col gap-5">
-          {(tab === "Tonight" || tab === "Watch") && (<div><div className="panel-title">Live · tonight as planned</div><div className="mt-3"><Counters live={snap?.live ?? null} compact /></div></div>)}
+          {(tab === "Tonight" || tab === "Watch") && (<div><div className="panel-title">{viewportSource === "ask" ? "Live · what-if scenario" : "Live · tonight as planned"}</div><div className="mt-3"><Counters live={snap?.live ?? null} compact /></div></div>)}
           {tab === "Rehearse" && <><RehearsePanel /><OutputsPanel /></>}
           {tab === "Why" && <WhyPanel />}
           {tab === "Ask" && <AskPanel />}

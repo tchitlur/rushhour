@@ -156,6 +156,7 @@ export const useApp = create<AppState>((set, get) => ({
     set(t);
     const { tonightData, jakeOut, rainWhatIf } = get();
     if (!tonightData) return;
+    get().showToast(`Re-simulating tonight${get().plan ? " · plan reset, run Rehearse again" : ""}`, "info");
     const tonight = buildTonightScenario(tonightData, { jakeOut, rainWhatIf });
     get().setTonight(tonight);
   },
@@ -260,12 +261,12 @@ export const useApp = create<AppState>((set, get) => ({
     if (get().viewportSource === "ask") { set({ viewportSource: "tonight", tIdx: 0, playing: false }); return; }
     const sc = applyPatch(tonight, askResult.patch);
     const askNight = await sim.runNight(sc, seed);
-    set({ askNight, askScenario: sc, viewportSource: "ask", tIdx: 0, playing: true, tab: "Watch" });
+    set({ askNight, askScenario: sc, viewportSource: "ask", tIdx: 0, playing: true });
   },
   highlightStation: null,
   toast: null,
 
-  setTab: (tab) => set({ tab }),
+  setTab: (tab) => set({ tab, highlightStation: null }),
   setView: (view) => set({ view }),
   toggleHotkeys: () => set(s => ({ showHotkeys: !s.showHotkeys })),
   setDemoMode: (demoMode) => set({ demoMode }),

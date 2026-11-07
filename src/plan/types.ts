@@ -87,7 +87,7 @@ export const ScenarioPatchSchema = z.object({
   quotedPrep: z.array(z.object({ ...win, minutes: z.number().int().min(8).max(60) })).max(4).optional(),
   layout: z.array(z.object({ station: z.enum(["grill", "fryer", "cold", "pack", "counter"]), x: z.number().min(0.5).max(11.5), y: z.number().min(0.5).max(7.5) })).max(5).optional(),
   bigOrders: z.array(z.object({ time: z.number().int().min(960).max(1320), channel: z.enum(["doordash", "ubereats", "phone", "counter"]), items: z.array(z.object({ item: z.string(), qty: z.number().int().min(1).max(100) })).max(8) })).max(3).optional(),
-  unsupported: z.string().transform(s => s.slice(0, 200)).optional().describe("set when the question cannot be modeled; explain what can be"),
+  unsupported: z.string().transform(s => s.slice(0, 420)).optional().describe("set when the question cannot be modeled; explain what can be"),
 });
 export type ScenarioPatch = z.infer<typeof ScenarioPatchSchema>;
 

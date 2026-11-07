@@ -55,7 +55,7 @@ function AskPanel() {
               <div className="text-sm leading-relaxed">{r.answer}</div>
               {r.recovery && r.recovery.length > 0 && (
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider text-fg-3 font-semibold mb-1">Recovery plan (tested)</div>
+                  <div className="text-[10px] uppercase tracking-wider text-fg-3 font-semibold mb-1">Recovery plan · quick test on 60 nights</div>
                   {r.recovery.map(c => (
                     <div key={c.id} className="rounded-md border border-ok/30 bg-ok/5 p-2 mb-1.5">
                       <div className="text-sm font-semibold">{c.title}</div>
