@@ -1,0 +1,180 @@
+{
+  "date": "2026-11-13",
+  "reason": "No Steelers home game falls in the 2026-11-07..18 window (Ticketmaster Discovery, 3-mile radius). The most dramatic real night is Friday 2026-11-13: Pitt Panthers vs Florida State kicks off at 7:00 PM at Acrisure Stadium (68,400 capacity, ~0.3 mi from the restaurant), so the 4-7 PM pre-game arrival and tailgate window lands squarely in the restaurant evening, and Gym Class Heroes w/ Lupe Fiasco plays Stage AE (5,500, next door) at 8 PM plus The Notebook at the Benedum. Forecast (Open-Meteo, fetched 2026-11-07): fog through kickoff and a chance of light snow 8-11 PM at ~37F; no measurable rain. Runner-up: Saturday 2026-11-14, Penguins vs Senators 7 PM at PPG Paints Arena (18,387, ~1.5 mi) plus Heinz Hall / Benedum / Roxian shows.",
+  "candidates": [
+    {
+      "date": "2026-11-07",
+      "name": "Bingo Loco (21 and Over)",
+      "venue": "Stage AE",
+      "start": "2026-11-07T19:00:00"
+    },
+    {
+      "date": "2026-11-07",
+      "name": "Jim Gaffigan: Everything is Wonderful!",
+      "venue": "PPG Paints Arena",
+      "start": "2026-11-07T19:00:00"
+    },
+    {
+      "date": "2026-11-07",
+      "name": "Buffalo Rose",
+      "venue": "The Sanctuary at Mr. Smalls",
+      "start": "2026-11-07T19:00:00"
+    },
+    {
+      "date": "2026-11-07",
+      "name": "STING 3.0 Tour",
+      "venue": "Citizens Live at The Wylie",
+      "start": "2026-11-07T20:00:00"
+    },
+    {
+      "date": "2026-11-08",
+      "name": "Twin Peaks: A Conversation With The Stars",
+      "venue": "Roxian Theatre Presented By Citizens",
+      "start": "2026-11-08T18:30:00"
+    },
+    {
+      "date": "2026-11-09",
+      "name": "Chief Keef",
+      "venue": "Roxian Theatre Presented By Citizens",
+      "start": "2026-11-09T19:00:00"
+    },
+    {
+      "date": "2026-11-10",
+      "name": "The Notebook (Touring)",
+      "venue": "Benedum Center",
+      "start": "2026-11-10T19:30:00"
+    },
+    {
+      "date": "2026-11-11",
+      "name": "The Notebook (Touring)",
+      "venue": "Benedum Center",
+      "start": "2026-11-11T19:30:00"
+    },
+    {
+      "date": "2026-11-11",
+      "name": "WAMO Fall Fest Featuring Jodeci",
+      "venue": "Citizens Live at The Wylie",
+      "start": "2026-11-11T20:00:00"
+    },
+    {
+      "date": "2026-11-12",
+      "name": "SOMBR - You Are The Reason Tour",
+      "venue": "PPG Paints Arena",
+      "start": "2026-11-12T19:00:00"
+    },
+    {
+      "date": "2026-11-12",
+      "name": "The Notebook (Touring)",
+      "venue": "Benedum Center",
+      "start": "2026-11-12T19:30:00"
+    },
+    {
+      "date": "2026-11-12",
+      "name": "JACK WHITE LIVE 2026",
+      "venue": "Citizens Live at The Wylie",
+      "start": "2026-11-12T20:00:00"
+    },
+    {
+      "date": "2026-11-13",
+      "name": "Pittsburgh Panthers Football vs. Florida State Seminoles Football",
+      "venue": "Acrisure Stadium",
+      "start": "2026-11-13T19:00:00"
+    },
+    {
+      "date": "2026-11-13",
+      "name": "The Notebook (Touring)",
+      "venue": "Benedum Center",
+      "start": "2026-11-13T19:30:00"
+    },
+    {
+      "date": "2026-11-13",
+      "name": "Gym Class Heroes w/ Lupe Fiasco",
+      "venue": "Stage AE",
+      "start": "2026-11-13T20:00:00"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "Duquesne Dukes Football vs. Mercyhurst Lakers Football",
+      "venue": "Rooney Athletic Field",
+      "start": "2026-11-14T12:00:00"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "The Notebook (Touring)",
+      "venue": "Benedum Center",
+      "start": "2026-11-14T14:00:00"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "Pouya",
+      "venue": "Roxian Theatre Presented By Citizens",
+      "start": "2026-11-14T18:00:00"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "Pittsburgh Penguins vs. Ottawa Senators",
+      "venue": "PPG Paints Arena",
+      "start": "2026-11-14T19:00:00"
+    },
+    {
+      "date": "2026-11-14",
+      "name": "Natural Woman: The Music of Aretha Franklin with The Pittsburgh Symphony Orchestra",
+      "venue": "Heinz Hall",
+      "start": "2026-11-14T19:30:00"
+    },
+    {
+      "date": "2026-11-15",
+      "name": "The Notebook (Touring)",
+      "venue": "Benedum Center",
+      "start": "2026-11-15T13:00:00"
+    },
+    {
+      "date": "2026-11-15",
+      "name": "The Menzingers: Everything I Ever Saw North American Tour",
+      "venue": "Roxian Theatre Presented By Citizens",
+      "start": "2026-11-15T18:00:00"
+    },
+    {
+      "date": "2026-11-15",
+      "name": "RUSH: Fifty Something",
+      "venue": "PPG Paints Arena",
+      "start": "2026-11-15T19:30:00"
+    },
+    {
+      "date": "2026-11-15",
+      "name": "The Rock Orchestra: Arena of Fire",
+      "venue": "Petersen Events Center",
+      "start": "2026-11-15T19:30:00"
+    },
+    {
+      "date": "2026-11-15",
+      "name": "Wyatt Flores",
+      "venue": "Citizens Live at The Wylie",
+      "start": "2026-11-15T20:00:00"
+    },
+    {
+      "date": "2026-11-17",
+      "name": "Whitechapel - 20th Anniversary Tour",
+      "venue": "Roxian Theatre Presented By Citizens",
+      "start": "2026-11-17T18:00:00"
+    },
+    {
+      "date": "2026-11-17",
+      "name": "Pittsburgh Panthers Mens Basketball vs. Villanova Wildcats Mens Basketball",
+      "venue": "Petersen Events Center",
+      "start": "2026-11-17T19:00:00"
+    },
+    {
+      "date": "2026-11-18",
+      "name": "Imminence - Axis Mundi Tour: North America 2026",
+      "venue": "Roxian Theatre Presented By Citizens",
+      "start": "2026-11-18T18:30:00"
+    },
+    {
+      "date": "2026-11-18",
+      "name": "Beartooth w/ Don Broco",
+      "venue": "Stage AE",
+      "start": "2026-11-18T20:00:00"
+    }
+  ]
+}
