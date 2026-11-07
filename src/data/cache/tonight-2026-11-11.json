@@ -1,0 +1,269 @@
+{
+  "date": "2026-11-11",
+  "location": {
+    "lat": 40.4468,
+    "lon": -80.01,
+    "label": "North Shore, Pittsburgh, PA"
+  },
+  "events": [
+    {
+      "id": "tm-Z7r9jZ1A70M36",
+      "name": "Pittsburgh Panthers Womens Volleyball vs. Notre Dame Fighting Irish Womens Volleyball",
+      "type": "College miscellaneous game",
+      "start": "2026-11-11T19:00:00",
+      "end": "2026-11-11T22:15:00",
+      "venue": "Victory Heights Arena",
+      "distanceMiles": 2.85,
+      "attendance": 2000,
+      "impact": "both",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/event/Z7r9jZ1A70M36",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-Z7r9jZ1AAv6Qk",
+      "name": "The Notebook (Touring)",
+      "type": "Theater show",
+      "start": "2026-11-11T19:30:00",
+      "end": "2026-11-11T22:00:00",
+      "venue": "Benedum Center",
+      "distanceMiles": 1.01,
+      "attendance": 2800,
+      "impact": "neutral",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/event/Z7r9jZ1AAv6Qk",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-17AOv0G62hhgGFI",
+      "name": "WAMO Fall Fest Featuring Jodeci",
+      "type": "Concert",
+      "start": "2026-11-11T20:00:00",
+      "end": "2026-11-11T22:30:00",
+      "venue": "Citizens Live at The Wylie",
+      "distanceMiles": 1.1,
+      "attendance": 2000,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/wamo-fall-fest-featuring-jodeci-pittsburgh-pennsylvania-11-11-2026/event/160064F6DBD4C228",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-rZ7HnEZ1AfFMC7",
+      "name": "JACKIE EVANS W/ ELLI ROWE",
+      "type": "Concert",
+      "start": "2026-11-11T20:00:00",
+      "end": "2026-11-11T22:30:00",
+      "venue": "Club Cafe",
+      "distanceMiles": 1.74,
+      "attendance": 2000,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketweb.com/event/jackie-evans-w-elli-rowe-club-cafe-tickets/14237384",
+      "source": "ticketmaster"
+    }
+  ],
+  "weather": {
+    "date": "2026-11-11",
+    "hourly": [
+      {
+        "time": "2026-11-11T00:00",
+        "tempF": 54.8,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 3.9,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T01:00",
+        "tempF": 54.3,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 3.7,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T02:00",
+        "tempF": 52.7,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 3,
+        "code": 2
+      },
+      {
+        "time": "2026-11-11T03:00",
+        "tempF": 51.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 2.5,
+        "code": 2
+      },
+      {
+        "time": "2026-11-11T04:00",
+        "tempF": 50.6,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 2.1,
+        "code": 0
+      },
+      {
+        "time": "2026-11-11T05:00",
+        "tempF": 50,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 1.9,
+        "code": 1
+      },
+      {
+        "time": "2026-11-11T06:00",
+        "tempF": 49.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 1.4,
+        "code": 0
+      },
+      {
+        "time": "2026-11-11T07:00",
+        "tempF": 48.9,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 1.6,
+        "code": 0
+      },
+      {
+        "time": "2026-11-11T08:00",
+        "tempF": 49.7,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 1.7,
+        "code": 2
+      },
+      {
+        "time": "2026-11-11T09:00",
+        "tempF": 52,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 2.7,
+        "code": 2
+      },
+      {
+        "time": "2026-11-11T10:00",
+        "tempF": 54.6,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 3.5,
+        "code": 2
+      },
+      {
+        "time": "2026-11-11T11:00",
+        "tempF": 57.3,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 3.7,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T12:00",
+        "tempF": 59.4,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 3.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T13:00",
+        "tempF": 61.2,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 3.7,
+        "code": 2
+      },
+      {
+        "time": "2026-11-11T14:00",
+        "tempF": 62.2,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 4,
+        "code": 2
+      },
+      {
+        "time": "2026-11-11T15:00",
+        "tempF": 61.9,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 4.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T16:00",
+        "tempF": 61,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 3.5,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T17:00",
+        "tempF": 58.8,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 2.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T18:00",
+        "tempF": 57.6,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 3,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T19:00",
+        "tempF": 56.8,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 2.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T20:00",
+        "tempF": 56.8,
+        "precipIn": 0,
+        "precipProb": 7,
+        "windMph": 3,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T21:00",
+        "tempF": 57,
+        "precipIn": 0,
+        "precipProb": 7,
+        "windMph": 2.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T22:00",
+        "tempF": 56.7,
+        "precipIn": 0,
+        "precipProb": 7,
+        "windMph": 2.7,
+        "code": 3
+      },
+      {
+        "time": "2026-11-11T23:00",
+        "tempF": 56.4,
+        "precipIn": 0,
+        "precipProb": 7,
+        "windMph": 3.4,
+        "code": 3
+      }
+    ],
+    "summary": "Cloudy, 57°F",
+    "rainEvening": false,
+    "source": "open-meteo",
+    "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=40.4468&longitude=-80.01&hourly=temperature_2m%2Cprecipitation%2Cprecipitation_probability%2Cwind_speed_10m%2Cweather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&start_date=2026-11-11&end_date=2026-11-11"
+  },
+  "fetchedAt": "2026-11-07T20:26:25.216Z",
+  "cached": false
+}

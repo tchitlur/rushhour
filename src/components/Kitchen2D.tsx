@@ -33,6 +33,11 @@ function warmthColor(base: string, warmth: number) {
 export default function Kitchen2D({ snapshot, stations, highlightStation, className }: Kitchen2DProps) {
   const W = FLOOR_W * S, H = FLOOR_H * S;
   const stSnap = new Map(snapshot?.stations.map(s => [s.id, s]) ?? []);
+  // "catering" label near the stack of big-order tokens once enough of them are visible
+  const bigTokens = snapshot?.tokens.filter(t => t.big) ?? [];
+  const bigLabel = bigTokens.length >= 6
+    ? { n: bigTokens.length, x: (bigTokens.reduce((a, t) => a + t.x, 0) / bigTokens.length) * S, y: Math.min(...bigTokens.map(t => t.y)) * S - 16 }
+    : null;
   return (
     <svg viewBox={`-20 -20 ${W + 40} ${H + 70}`} preserveAspectRatio="xMidYMin meet" className={className ?? "w-full h-full"} style={{ display: "block", fontFamily: "var(--font-sans)" }}>
       <defs>
@@ -56,18 +61,35 @@ export default function Kitchen2D({ snapshot, stations, highlightStation, classN
         const [w, h] = STATION_SIZE[st.id];
         const x = (st.x - w / 2) * S, y = (st.y - h / 2) * S;
         const load = ss?.load ?? 0;
-        const sat = ss?.saturated ?? false;
+        const out = !!ss && ss.capacity === 0; // broken equipment (what-if outage)
+        const added = ss && st.capacity < 99 && ss.capacity > st.capacity ? ss.capacity - st.capacity : 0; // added equipment
+        const sat = !out && (ss?.saturated ?? false);
         const hl = highlightStation === st.id;
+        let tagX = x + 12 + st.name.length * 9 + 8;
+        const outX = tagX; if (out) tagX += 34;
+        const addX = tagX; if (added) tagX += 30;
         return (
           <g key={st.id}>
             <clipPath id={`clip-${st.id}`}><rect x={x} y={y} width={w * S - 26} height={h * S} /></clipPath>
-            {(sat || hl) && <rect x={x - 4} y={y - 4} width={w * S + 8} height={h * S + 8} rx={6} fill="none" stroke={hl ? PALETTE.plan : PALETTE.bad} strokeWidth={2} />}
-            <rect x={x} y={y} width={w * S} height={h * S} rx={4} fill="#FFFFFF" stroke={PALETTE.border} strokeWidth={1} />
-            <rect x={x} y={y} width={w * S} height={4} rx={1} fill={STATION_STRIPE[st.id]} />
-            <text x={x + 12} y={y + 26} fill={PALETTE.ink} fontSize={15} fontWeight={600}>{st.name}</text>
-            {sat && <text x={x + 12 + st.name.length * 9 + 8} y={y + 26} fill={PALETTE.bad} fontSize={11} fontWeight={600}>saturated</text>}
+            {(sat || hl || out) && <rect x={x - 4} y={y - 4} width={w * S + 8} height={h * S + 8} rx={6} fill="none" stroke={hl ? PALETTE.plan : PALETTE.bad} strokeWidth={2} />}
+            <rect x={x} y={y} width={w * S} height={h * S} rx={4} fill={out ? "#F5E6E0" : "#FFFFFF"} stroke={out ? PALETTE.bad : PALETTE.border} strokeWidth={out ? 1.5 : 1} />
+            <rect x={x} y={y} width={w * S} height={4} rx={1} fill={out ? PALETTE.bad : STATION_STRIPE[st.id]} opacity={out ? 0.6 : 1} />
+            <text x={x + 12} y={y + 26} fill={out ? PALETTE.text2 : PALETTE.ink} fontSize={15} fontWeight={600}>{st.name}</text>
+            {out && (
+              <g>
+                <rect x={outX - 4} y={y + 14} width={32} height={16} rx={3} fill={PALETTE.bad} />
+                <text x={outX + 12} y={y + 26} textAnchor="middle" fill="#FFFFFF" fontSize={10.5} fontWeight={700} letterSpacing={0.6}>OUT</text>
+              </g>
+            )}
+            {added > 0 && (
+              <g>
+                <rect x={addX - 4} y={y + 14} width={26} height={16} rx={3} fill="#E3EDF8" stroke={PALETTE.plan} strokeWidth={1} />
+                <text x={addX + 9} y={y + 26} textAnchor="middle" fill={PALETTE.plan} fontSize={10.5} fontWeight={700} className="num">+{added}</text>
+              </g>
+            )}
+            {sat && <text x={tagX} y={y + 26} fill={PALETTE.bad} fontSize={11} fontWeight={600}>saturated</text>}
             {ss && st.id !== "pack" && st.id !== "counter" && (
-              <text x={x + 12} y={y + 46} fill={PALETTE.text2} fontSize={11} className="num" clipPath={`url(#clip-${st.id})`}>{ss.busy % 1 ? ss.busy.toFixed(1) : ss.busy}/{ss.capacity} busy{ss.queue > 0 ? ` · ${ss.queue} queued` : ""}</text>
+              <text x={x + 12} y={y + 46} fill={out ? PALETTE.bad : PALETTE.text2} fontSize={11} className="num" clipPath={`url(#clip-${st.id})`}>{out ? `out of service${ss.queue > 0 ? ` · ${ss.queue} queued` : ""}` : `${ss.busy % 1 ? ss.busy.toFixed(1) : ss.busy}/${ss.capacity} busy${ss.queue > 0 ? ` · ${ss.queue} queued` : ""}`}</text>
             )}
             {ss && (st.id === "pack" || st.id === "counter") && (
               <text x={x + 12} y={y + 46} fill={PALETTE.text2} fontSize={11} className="num" clipPath={`url(#clip-${st.id})`}>{st.id === "pack" ? `${ss.busy} packing${ss.queue > 0 ? ` · ${ss.queue} waiting` : ""}` : "walk-in & phone pickup"}</text>
@@ -83,18 +105,30 @@ export default function Kitchen2D({ snapshot, stations, highlightStation, classN
         );
       })}
 
-      {/* tokens: small ticket slips in channel colors */}
-      {snapshot?.tokens.map((tk, i) => (
-        <rect key={`${tk.orderId}-${i}`} x={tk.x * S - 7} y={tk.y * S - 7} width={14} height={14} rx={3}
-          fill={warmthColor(CHANNEL_COLOR[tk.channel], tk.warmth)} opacity={tk.stage === "queue" ? 0.7 : 1}
-          stroke={tk.warmth > 1 ? "#5A6370" : "#FFFFFF"} strokeWidth={1.5} />
-      ))}
+      {/* tokens: small ticket slips in channel colors; catering (big) orders are larger with a dark outline */}
+      {snapshot?.tokens.map((tk, i) => {
+        const r = tk.big ? 9 : 7;
+        return (
+          <rect key={`${tk.orderId}-${i}`} x={tk.x * S - r} y={tk.y * S - r} width={r * 2} height={r * 2} rx={3}
+            fill={warmthColor(CHANNEL_COLOR[tk.channel], tk.warmth)} opacity={tk.stage === "queue" ? 0.7 : 1}
+            stroke={tk.big ? PALETTE.ink : tk.warmth > 1 ? "#5A6370" : "#FFFFFF"} strokeWidth={1.5} />
+        );
+      })}
+      {bigLabel && (
+        <text x={bigLabel.x} y={bigLabel.y} textAnchor="middle" fill={PALETTE.ink} fontSize={11} fontWeight={600} style={{ paintOrder: "stroke", stroke: "#E9EBEF", strokeWidth: 3 }}>catering · <tspan className="num">{bigLabel.n}</tspan></text>
+      )}
 
-      {/* workers */}
+      {/* workers (extra what-if staff get a "+" badge) */}
       {snapshot?.workers.filter(w => w.onShift).map(w => (
         <g key={w.id} transform={`translate(${w.x * S}, ${(w.y + 0.95) * S})`}>
           <circle r={14} fill={w.color} stroke="#FFFFFF" strokeWidth={2.5} />
           {w.busy && <circle r={18} fill="none" stroke={w.color} strokeWidth={1.5} opacity={0.6} />}
+          {w.extra && (
+            <g transform="translate(12, -12)">
+              <circle r={8} fill={PALETTE.plan} stroke="#FFFFFF" strokeWidth={1.5} />
+              <text y={3.5} textAnchor="middle" fill="#FFFFFF" fontSize={11} fontWeight={700}>+</text>
+            </g>
+          )}
           <text y={31} textAnchor="middle" fill={PALETTE.ink} fontSize={12} fontWeight={600} style={{ paintOrder: "stroke", stroke: "#E9EBEF", strokeWidth: 3 }}>{w.name}</text>
         </g>
       ))}

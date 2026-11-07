@@ -1,0 +1,227 @@
+{
+  "date": "2026-11-09",
+  "location": {
+    "lat": 40.4468,
+    "lon": -80.01,
+    "label": "North Shore, Pittsburgh, PA"
+  },
+  "events": [
+    {
+      "id": "tm-1AvbZ_oGkRo2cp1",
+      "name": "Chief Keef",
+      "type": "Concert",
+      "start": "2026-11-09T19:00:00",
+      "end": "2026-11-09T21:30:00",
+      "venue": "Roxian Theatre Presented By Citizens",
+      "distanceMiles": 2.86,
+      "attendance": 1400,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/chief-keef-mckees-rocks-pennsylvania-11-09-2026/event/1600651BD13ED58A",
+      "source": "ticketmaster"
+    }
+  ],
+  "weather": {
+    "date": "2026-11-09",
+    "hourly": [
+      {
+        "time": "2026-11-09T00:00",
+        "tempF": 45.6,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 10.9,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T01:00",
+        "tempF": 46.5,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 11.5,
+        "code": 3
+      },
+      {
+        "time": "2026-11-09T02:00",
+        "tempF": 46.7,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 11,
+        "code": 3
+      },
+      {
+        "time": "2026-11-09T03:00",
+        "tempF": 47,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 11,
+        "code": 3
+      },
+      {
+        "time": "2026-11-09T04:00",
+        "tempF": 46.6,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 9.4,
+        "code": 2
+      },
+      {
+        "time": "2026-11-09T05:00",
+        "tempF": 45.5,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 8.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-09T06:00",
+        "tempF": 44.1,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 8.2,
+        "code": 1
+      },
+      {
+        "time": "2026-11-09T07:00",
+        "tempF": 43.3,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 8.2,
+        "code": 3
+      },
+      {
+        "time": "2026-11-09T08:00",
+        "tempF": 43.6,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 8.3,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T09:00",
+        "tempF": 46.2,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 9.5,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T10:00",
+        "tempF": 49.5,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 10.5,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T11:00",
+        "tempF": 51.9,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 10.4,
+        "code": 1
+      },
+      {
+        "time": "2026-11-09T12:00",
+        "tempF": 53.7,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 10,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T13:00",
+        "tempF": 55.1,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 9.2,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T14:00",
+        "tempF": 56.1,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 9.3,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T15:00",
+        "tempF": 56.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 8.7,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T16:00",
+        "tempF": 55.7,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 7.4,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T17:00",
+        "tempF": 53.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 6,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T18:00",
+        "tempF": 51.6,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 4.5,
+        "code": 0
+      },
+      {
+        "time": "2026-11-09T19:00",
+        "tempF": 50.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 4.5,
+        "code": 3
+      },
+      {
+        "time": "2026-11-09T20:00",
+        "tempF": 49.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 3.8,
+        "code": 2
+      },
+      {
+        "time": "2026-11-09T21:00",
+        "tempF": 48.6,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 3.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-09T22:00",
+        "tempF": 48.1,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 4.1,
+        "code": 3
+      },
+      {
+        "time": "2026-11-09T23:00",
+        "tempF": 47.7,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 4.5,
+        "code": 3
+      }
+    ],
+    "summary": "Clear, 50°F",
+    "rainEvening": false,
+    "source": "open-meteo",
+    "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=40.4468&longitude=-80.01&hourly=temperature_2m%2Cprecipitation%2Cprecipitation_probability%2Cwind_speed_10m%2Cweather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&start_date=2026-11-09&end_date=2026-11-09"
+  },
+  "fetchedAt": "2026-11-07T20:26:23.985Z",
+  "cached": false
+}

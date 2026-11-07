@@ -17,11 +17,16 @@ function WhyPanel() {
   const shares = a ? a.shares.map(s => ({ ...s, pos: Math.max(0, s.value) })) : [];
   const posTotal = shares.reduce((x, s) => x + s.pos, 0) || 1;
   const fmt = (v: number) => a?.metric === "dasherWait" ? `${v.toFixed(1)} min` : fmtMoney(v);
+  const top = shares.length ? shares.reduce((b, s) => (s.pos > b.pos ? s : b), shares[0]) : null;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <div>
         <div className="panel-title">Why did it break?</div>
-        <div className="sub mt-0.5">Proven by re-running tonight without each cause, in every combination (exact Shapley values).</div>
+        {a ? (
+          <div className="text-sm mt-1 leading-snug">Biggest cause: <b className="font-semibold">{top?.label ?? "—"}</b>{top ? <> (<span className="num font-semibold">{Math.round(top.pos / posTotal * 100)}%</span>)</> : null}. Bottleneck: <b className="font-semibold">{STATION_NAME[a.bottleneck.station]?.toLowerCase() ?? a.bottleneck.station}</b> <span className="num">{fmtClockShort(a.bottleneck.start)}–{fmtClockShort(a.bottleneck.end)}</span>.</div>
+        ) : (
+          <div className="sub mt-0.5">Re-runs tonight without each cause, in every combination (exact Shapley values).</div>
+        )}
       </div>
       {tonightMC && normalMC && (
         <div className="grid grid-cols-2 gap-2">
@@ -66,10 +71,10 @@ function WhyPanel() {
           </table>
           <div className="rounded border border-line border-l-[3px] border-l-bad p-2.5 text-sm">
             <div className="text-xs font-semibold text-bad">Bottleneck</div>
-            <div className="mt-0.5"><b className="font-semibold">{STATION_NAME[a.bottleneck.station]}</b> saturates <b className="num font-semibold">{fmtClockShort(a.bottleneck.start)}–{fmtClockShort(a.bottleneck.end)}</b>; the queue behind it is what makes Dashers wait and food go cold.</div>
+            <div className="mt-0.5"><b className="font-semibold">{STATION_NAME[a.bottleneck.station]}</b> saturates <b className="num font-semibold">{fmtClockShort(a.bottleneck.start)}–{fmtClockShort(a.bottleneck.end)}</b>; its queue is what makes Dashers wait and food go cold.</div>
             <button className="text-xs text-fg-2 underline underline-offset-2 mt-1 hover:text-fg" onClick={() => setHighlight(highlightStation === a.bottleneck.station ? null : a.bottleneck.station)}>Highlight in kitchen</button>
           </div>
-          <div className="text-xs text-fg-3">{a.method === "shapley" ? `Exact Shapley attribution over ${a.shares.length} causes (${2 ** a.shares.length} re-simulated combinations × ${a.nights} nights). Shares add up to the total.` : "One-cause-at-a-time removal."} Click a cause to highlight its station.</div>
+          <div className="text-xs text-fg-3">{a.method === "shapley" ? `Exact Shapley: ${2 ** a.shares.length} combinations × ${a.nights} nights; shares add to the total.` : "One-cause-at-a-time removal."} Click a cause to highlight its station.</div>
         </div>
       )}
     </div>

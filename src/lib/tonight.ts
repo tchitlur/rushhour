@@ -3,7 +3,7 @@
 import "server-only";
 import { RESTAURANT, type EventFact, type TonightData, type WeatherFacts } from "./intake-types";
 import { fetchTicketmasterEvents } from "./ticketmaster";
-import { fetchWeather } from "./weather";
+import { fetchWeather, seasonalWeather } from "./weather";
 import { searchLocalHappenings } from "./websearch";
 import { CACHED_TONIGHT } from "../data/cache";
 
@@ -61,6 +61,11 @@ export async function getTonight(date: string, opts: TonightOptions = {}): Promi
   if (wx.status === "rejected") errors.push(`weather: ${String((wx.reason as Error)?.message ?? wx.reason)}`);
   if (!weather && cache?.weather) {
     weather = { ...cache.weather, source: "cache" };
+    cached = true;
+  }
+  if (!weather) {
+    // fetch failed and nothing cached: seasonal climatology so the night still simulates
+    weather = seasonalWeather(date);
     cached = true;
   }
 

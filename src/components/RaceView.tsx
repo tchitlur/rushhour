@@ -13,30 +13,40 @@ const KEYS: { key: keyof LiveCounters; label: string; fmt: (v: number) => string
   { key: "dollarsAtRisk", label: "At risk", fmt: fmtMoney, bad: v => v >= 150 },
 ];
 
-function RaceView() {
-  const { night, planNight, tIdx, tonight, planScenario, plan, playing } = useApp(useShallow(s => ({ night: s.night, planNight: s.planNight, tIdx: s.tIdx, tonight: s.tonight, planScenario: s.planScenario, plan: s.plan, playing: s.playing })));
+export interface RaceViewProps {
+  /** "plan" (default): tonight vs. the Rehearse plan. "ask": tonight vs. the Ask what-if night. */
+  mode?: "plan" | "ask";
+}
+
+function RaceView({ mode = "plan" }: RaceViewProps) {
+  const { night, planNight, askNight, tIdx, tonight, planScenario, askScenario, askResult, plan, playing } = useApp(useShallow(s => ({ night: s.night, planNight: s.planNight, askNight: s.askNight, tIdx: s.tIdx, tonight: s.tonight, planScenario: s.planScenario, askScenario: s.askScenario, askResult: s.askResult, plan: s.plan, playing: s.playing })));
+  const ask = mode === "ask";
+  const otherNight = ask ? askNight : planNight;
+  const otherScenario = ask ? askScenario : planScenario;
   const a = useMemo(() => snapshotAt(night, tIdx), [night, tIdx]);
-  const b = useMemo(() => snapshotAt(planNight, tIdx), [planNight, tIdx]);
+  const b = useMemo(() => snapshotAt(otherNight, tIdx), [otherNight, tIdx]);
   const ended = !!night && tIdx >= (night.snapshots?.length ?? 1) - 1.01 && !playing;
-  if (!plan || !planScenario) {
+  if (ask ? !askResult : (!plan || !planScenario)) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center gap-2 p-6">
-        <div className="text-lg font-semibold">Run Rehearse first</div>
-        <div className="text-sm text-fg-2 max-w-sm">The race plays tonight twice with the same customers and the same luck: once as planned, once with the plan.</div>
+        <div className="text-lg font-semibold">{ask ? "Ask a what-if first" : "Run Rehearse first"}</div>
+        <div className="text-sm text-fg-2 max-w-sm">{ask ? "Side-by-side plays tonight twice with the same customers and the same luck: once as planned, once with your what-if." : "The race plays tonight twice with the same customers and the same luck: once as planned, once with the plan."}</div>
       </div>
     );
   }
+  const otherTitle = ask ? `What-if: ${askResult?.patch.summary ?? ""}` : "With the plan";
+  const otherShort = ask ? "What-if" : "With the plan";
   return (
     <div className="h-full grid grid-cols-2 gap-2 p-2 relative">
       <Side title="Tonight as planned" snap={a} stations={tonight.stations} tone="bad" />
-      <Side title="With the plan" snap={b} stations={planScenario.stations} tone="ok" loading={!planNight} />
+      <Side title={otherTitle} snap={b} stations={otherScenario?.stations ?? tonight.stations} tone="ok" loading={!otherNight} />
       {ended && a && b && (
         <div className="absolute inset-x-0 bottom-6 flex justify-center pointer-events-none">
           <div className="panel p-4 shadow-lg pointer-events-auto min-w-[560px]">
             <div className="panel-title">End of night</div>
-            <div className="sub">Same customers, same luck. As planned → with the plan.</div>
+            <div className="sub">Same customers, same luck. As planned → {otherShort.toLowerCase()}.</div>
             <table className="data mt-2">
-              <thead><tr><th>Metric</th><th className="r">As planned</th><th className="r">With the plan</th></tr></thead>
+              <thead><tr><th>Metric</th><th className="r">As planned</th><th className="r">{otherShort}</th></tr></thead>
               <tbody>
                 {KEYS.map(k => (
                   <tr key={k.key}>
@@ -58,7 +68,7 @@ function Side({ title, snap, stations, tone, loading }: { title: string; snap: R
   return (
     <div className={`rounded border border-line flex flex-col min-h-0 border-t-[3px] ${tone === "bad" ? "border-t-bad" : "border-t-plan"}`}>
       <div className="flex items-center justify-between px-3 pt-2">
-        <div className={`text-sm font-semibold ${tone === "bad" ? "text-bad" : "text-plan"}`}>{title}</div>
+        <div className={`text-sm font-semibold truncate ${tone === "bad" ? "text-bad" : "text-plan"}`} title={title}>{title}</div>
         {loading && <span className="chip">simulating…</span>}
       </div>
       <div className="grid grid-cols-4 gap-2 px-3 pt-2">

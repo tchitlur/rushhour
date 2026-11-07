@@ -46,23 +46,23 @@ function OutputsPanel() {
       <div className="prep-sheet border border-line rounded p-3 bg-bg-2">
         <div className="sheet-head">
           <div>
-            <div className="font-semibold text-[13px]">Maria&apos;s Burgers &amp; Wings</div>
-            <div className="text-xs text-fg-2">Prep sheet · tonight&apos;s game plan</div>
+            <div className="font-semibold text-[13px]">{tonight.restaurant?.name ?? "Maria's Burgers & Wings"}</div>
+            <div className="text-xs text-fg-2">Tonight&apos;s game plan · do in this order</div>
           </div>
           <div className="num text-xs text-fg-2">{tonight.date}</div>
         </div>
-        <Section title="Prep list">
-          {gp.prepList.length ? gp.prepList.map((p, i) => <div key={i} className="flex justify-between gap-3"><span><b className="num font-semibold">{p.qty}×</b> {p.item}</span><span className="num text-fg-2">ready by {fmtClockShort(p.time)}</span></div>) : <div className="text-xs text-fg-3">No extra prep needed.</div>}
-        </Section>
-        <Section title="Staff message" action={gp.staffText ? <button className="btn !py-0.5 !px-2 text-[11px] no-print" onClick={() => copy(gp.staffText!)}>{copied ? "Copied" : "Copy"}</button> : null}>
+        <Section title="1. Staff message" action={gp.staffText ? <button className="btn !py-0.5 !px-2 text-[11px] no-print" onClick={() => copy(gp.staffText!)}>{copied ? "Copied" : "Copy"}</button> : null}>
           {gp.staffText ? <div className="whitespace-pre-wrap border-l-2 border-line pl-2.5 text-fg">{gp.staffText}</div> : <div className="text-xs text-fg-3">No extra shift in the plan.</div>}
         </Section>
-        <Section title="DoorDash quoted prep time">
+        <Section title="2. Prep list">
+          {gp.prepList.length ? gp.prepList.map((p, i) => <div key={i} className="flex justify-between gap-3"><span><b className="num font-semibold">{p.qty}×</b> {p.item}</span><span className="num text-fg-2">ready by {fmtClockShort(p.time)}</span></div>) : <div className="text-xs text-fg-3">No extra prep needed.</div>}
+        </Section>
+        <Section title="3. DoorDash quoted prep time">
           <div className="text-xs text-fg-3 mb-1">Merchant Portal → Adjust prep time</div>
           {mergeWindows(gp.quoteSchedule).map((q, i) => <div key={i} className="num flex justify-between"><span>{fmtClockShort(q.start)}–{fmtClockShort(q.end)}</span><b className="font-semibold">{q.minutes} min</b></div>)}
         </Section>
-        {gp.channelPauses.length > 0 && <Section title="Channel pauses">{gp.channelPauses.map((c, i) => <div key={i} className="flex justify-between"><span>Pause <b className="font-semibold">{c.channel}</b></span><span className="num">{fmtClockShort(c.start)}–{fmtClockShort(c.end)}</span></div>)}</Section>}
-        {gp.layout.length > 0 && <Section title="Layout">{gp.layout.map((l, i) => <div key={i}>Move <b className="font-semibold">{l.station}</b> to <span className="num">({l.x} m, {l.y} m)</span></div>)}</Section>}
+        {gp.channelPauses.length > 0 && <Section title="4. Channel pauses">{gp.channelPauses.map((c, i) => <div key={i} className="flex justify-between"><span>Pause <b className="font-semibold">{c.channel}</b></span><span className="num">{fmtClockShort(c.start)}–{fmtClockShort(c.end)}</span></div>)}</Section>}
+        {gp.layout.length > 0 && <Section title="5. Layout">{gp.layout.map((l, i) => <div key={i}>Move <b className="font-semibold">{l.station}</b> to <span className="num">({l.x} m, {l.y} m)</span></div>)}</Section>}
       </div>
     </div>
   );

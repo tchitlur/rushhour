@@ -117,7 +117,8 @@ export function summarizeWeather(hourly: HourlyWeather[]): { summary: string; ra
   return { summary: `${skyWord(evening.map((h) => h.code))}, ${temp}`, rainEvening: false };
 }
 
-export async function fetchWeather(date: string, lat: number, lon: number): Promise<WeatherFacts> {
+export async function fetchWeather(date: string, lat: number, lon: number, onFail: "throw" | "seasonal" = "throw"): Promise<WeatherFacts> {
+  if (beyondForecastHorizon(date)) return seasonalWeather(date);
   const isPast = date < todayLocalDate();
   const hosts = isPast ? ARCHIVE_HOSTS : FORECAST_HOSTS;
   const deadline = Date.now() + TIMEOUT_MS;
@@ -139,5 +140,50 @@ export async function fetchWeather(date: string, lat: number, lon: number): Prom
       lastError = err;
     }
   }
+  // every host failed: the caller (getTonight) prefers the committed cache; otherwise fall back to climatology
+  if (onFail === "seasonal") return seasonalWeather(date);
   throw lastError instanceof Error ? lastError : new Error("Open-Meteo request failed");
+}
+
+// ---------- Seasonal fallback (beyond the ~15-day forecast horizon, or when every host fails and nothing is cached) ----------
+/** Pittsburgh monthly climate normals (NOAA 1991–2020, approx.): evening temp °F, daily precip inches, chance of a wet hour. */
+const PITTSBURGH_SEASONAL: Array<{ tempF: number; precipIn: number; wetChance: number; sky: string; code: number }> = [
+  { tempF: 30, precipIn: 0.09, wetChance: 0.45, sky: "Cloudy", code: 3 },    // Jan
+  { tempF: 32, precipIn: 0.09, wetChance: 0.42, sky: "Cloudy", code: 3 },    // Feb
+  { tempF: 41, precipIn: 0.10, wetChance: 0.42, sky: "Cloudy", code: 3 },    // Mar
+  { tempF: 52, precipIn: 0.11, wetChance: 0.40, sky: "Partly cloudy", code: 2 }, // Apr
+  { tempF: 62, precipIn: 0.13, wetChance: 0.40, sky: "Partly cloudy", code: 2 }, // May
+  { tempF: 70, precipIn: 0.14, wetChance: 0.38, sky: "Partly cloudy", code: 2 }, // Jun
+  { tempF: 74, precipIn: 0.14, wetChance: 0.35, sky: "Mostly clear", code: 1 }, // Jul
+  { tempF: 73, precipIn: 0.11, wetChance: 0.32, sky: "Mostly clear", code: 1 }, // Aug
+  { tempF: 66, precipIn: 0.11, wetChance: 0.30, sky: "Mostly clear", code: 1 }, // Sep
+  { tempF: 54, precipIn: 0.09, wetChance: 0.32, sky: "Partly cloudy", code: 2 }, // Oct
+  { tempF: 43, precipIn: 0.10, wetChance: 0.40, sky: "Cloudy", code: 3 },    // Nov
+  { tempF: 34, precipIn: 0.10, wetChance: 0.45, sky: "Cloudy", code: 3 },    // Dec
+];
+
+export const FORECAST_HORIZON_DAYS = 15;
+
+export function daysFromToday(date: string): number {
+  const [y, m, d] = date.split("-").map(Number);
+  const [ty, tm, td] = todayLocalDate().split("-").map(Number);
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(ty, tm - 1, td)) / 86_400_000);
+}
+
+export function beyondForecastHorizon(date: string): boolean {
+  return daysFromToday(date) > FORECAST_HORIZON_DAYS;
+}
+
+/** Climatological "typical evening" for the date: a dry seasonal average (no rain modeled), flagged as cache-sourced. */
+export function seasonalWeather(date: string): WeatherFacts {
+  const month = Number(date.slice(5, 7)) - 1;
+  const s = PITTSBURGH_SEASONAL[month] ?? PITTSBURGH_SEASONAL[10];
+  const hourly: HourlyWeather[] = [];
+  for (let h = 0; h < 24; h++) {
+    // simple diurnal curve: coolest ~6 AM, warmest ~3 PM, evening sits near the monthly mean
+    const diurnal = 6 * Math.cos(((h - 15) / 24) * 2 * Math.PI);
+    hourly.push({ time: `${date}T${String(h).padStart(2, "0")}:00`, tempF: Math.round((s.tempF + diurnal) * 10) / 10, precipIn: 0, precipProb: Math.round(s.wetChance * 100), windMph: 8, code: s.code });
+  }
+  const summary = `Seasonal average: ${s.sky.toLowerCase()}, ${s.tempF}°F, ${Math.round(s.wetChance * 100)}% chance of a wet hour (${s.precipIn.toFixed(2)} in/day typical)`;
+  return { date, hourly, summary, rainEvening: false, source: "cache", sourceUrl: "https://open-meteo.com/" };
 }

@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { Billboard } from "@react-three/drei";
 import type { WorkerSnapshot } from "@/sim/types";
 import Label from "./Label";
 import { PALETTE, damp, toWorldX, toWorldZ } from "./util";
@@ -107,6 +108,20 @@ function WorkerFigure({ w, anim, index, all }: { w: WorkerSnapshot; anim: Map<st
       <Label position={[0, 1.6, 0]} size={0.2} color={PALETTE.fg2}>
         {w.name}
       </Label>
+      {w.extra && (
+        <>
+          {/* "+" badge: extra what-if staff */}
+          <Billboard position={[0, 1.9, 0]} follow>
+            <mesh>
+              <circleGeometry args={[0.15, 24]} />
+              <meshBasicMaterial color={PALETTE.accent} />
+            </mesh>
+          </Billboard>
+          <Label position={[0, 1.9, 0.01]} size={0.24} color="#FFFFFF" outline={PALETTE.accent}>
+            +
+          </Label>
+        </>
+      )}
     </group>
   );
 }

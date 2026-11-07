@@ -1,0 +1,241 @@
+{
+  "date": "2026-11-18",
+  "location": {
+    "lat": 40.4468,
+    "lon": -80.01,
+    "label": "North Shore, Pittsburgh, PA"
+  },
+  "events": [
+    {
+      "id": "tm-17AOv0G6GwWXBdr",
+      "name": "Imminence - Axis Mundi Tour: North America 2026",
+      "type": "Concert",
+      "start": "2026-11-18T18:30:00",
+      "end": "2026-11-18T21:00:00",
+      "venue": "Roxian Theatre Presented By Citizens",
+      "distanceMiles": 2.86,
+      "attendance": 1400,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/imminence-axis-mundi-tour-north-america-mckees-rocks-pennsylvania-11-18-2026/event/160064CCBDFBA0DE",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-Z7r9jZ1A70t36",
+      "name": "Beartooth w/ Don Broco",
+      "type": "Concert",
+      "start": "2026-11-18T20:00:00",
+      "end": "2026-11-18T22:30:00",
+      "venue": "Stage AE",
+      "distanceMiles": 0.06,
+      "attendance": 5500,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/event/Z7r9jZ1A70t36",
+      "source": "ticketmaster"
+    }
+  ],
+  "weather": {
+    "date": "2026-11-18",
+    "hourly": [
+      {
+        "time": "2026-11-18T00:00",
+        "tempF": 47.2,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 2.6,
+        "code": 0
+      },
+      {
+        "time": "2026-11-18T01:00",
+        "tempF": 46.8,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 2.7,
+        "code": 0
+      },
+      {
+        "time": "2026-11-18T02:00",
+        "tempF": 46.2,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 2.7,
+        "code": 1
+      },
+      {
+        "time": "2026-11-18T03:00",
+        "tempF": 45.8,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 2.9,
+        "code": 2
+      },
+      {
+        "time": "2026-11-18T04:00",
+        "tempF": 45.3,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 2.9,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T05:00",
+        "tempF": 44.8,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 3,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T06:00",
+        "tempF": 44.2,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 3.2,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T07:00",
+        "tempF": 44.4,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 3.4,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T08:00",
+        "tempF": 45.5,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 3.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T09:00",
+        "tempF": 47.1,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 3.9,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T10:00",
+        "tempF": 49.3,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 4,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T11:00",
+        "tempF": 52.2,
+        "precipIn": 0,
+        "precipProb": 3,
+        "windMph": 4.3,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T12:00",
+        "tempF": 55.7,
+        "precipIn": 0,
+        "precipProb": 4,
+        "windMph": 4.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T13:00",
+        "tempF": 58.2,
+        "precipIn": 0,
+        "precipProb": 5,
+        "windMph": 5.1,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T14:00",
+        "tempF": 59.2,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 4.9,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T15:00",
+        "tempF": 59.3,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 4.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T16:00",
+        "tempF": 58.6,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 4.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T17:00",
+        "tempF": 57,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 5.2,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T18:00",
+        "tempF": 54.7,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 5.5,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T19:00",
+        "tempF": 52.8,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 5.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T20:00",
+        "tempF": 51.6,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 5.7,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T21:00",
+        "tempF": 50.9,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 5.1,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T22:00",
+        "tempF": 50.4,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 4.9,
+        "code": 3
+      },
+      {
+        "time": "2026-11-18T23:00",
+        "tempF": 50.1,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 4.7,
+        "code": 3
+      }
+    ],
+    "summary": "Cloudy, 53°F",
+    "rainEvening": false,
+    "source": "open-meteo",
+    "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=40.4468&longitude=-80.01&hourly=temperature_2m%2Cprecipitation%2Cprecipitation_probability%2Cwind_speed_10m%2Cweather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&start_date=2026-11-18&end_date=2026-11-18"
+  },
+  "fetchedAt": "2026-11-07T20:27:04.258Z",
+  "cached": false
+}

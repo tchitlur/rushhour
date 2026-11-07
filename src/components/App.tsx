@@ -1,6 +1,10 @@
 "use client";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import KitchenPanel from "@/components/KitchenPanel";
+import { getRestaurantScenario } from "@/data/templates";
 import { useApp, snapshotAt, TABS } from "@/store/app";
 import Kitchen2D from "@/components/Kitchen2D";
 import Counters from "@/components/Counters";
@@ -16,12 +20,28 @@ import { SERVICE_START } from "@/sim/types";
 const Kitchen3D = dynamic(() => import("@/components/Kitchen3D"), { ssr: false, loading: () => <div className="h-full w-full flex items-center justify-center text-fg-3 text-sm">Loading 3D kitchen…</div> });
 
 export default function App() {
-  const s = useApp();
-  const { tab, setTab, view, setView, night, tIdx, loadTonight, advance, playing, highlightStation, askNight, viewportSource } = s;
-  const viewStations = viewportSource === "ask" && s.askScenario ? s.askScenario.stations : s.tonight.stations;
-  const [intro, setIntro] = useState<"on" | "out" | "off">("on");
+  return (
+    <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-fg-3 text-sm">Loading Rush Rehearsal…</div>}>
+      <AppInner />
+    </Suspense>
+  );
+}
 
-  useEffect(() => { void loadTonight(); }, [loadTonight]);
+function AppInner() {
+  const s = useApp();
+  const { tab, setTab, view, setView, night, tIdx, loadTonight, advance, playing, highlightStation, askNight, viewportSource, askView, setAskView } = s;
+  const restaurantId = useSearchParams().get("r");
+  const viewStations = viewportSource === "ask" && askView === "after" && s.askScenario ? s.askScenario.stations : s.tonight.stations;
+  const [intro, setIntro] = useState<"on" | "out" | "off">("on");
+  const restaurantName = s.tonight.restaurant?.name ?? "Maria's Burgers & Wings";
+  const neighborhood = s.tonight.restaurant?.neighborhood ?? "North Shore, Pittsburgh";
+
+  useEffect(() => {
+    // pick the restaurant from ?r= before the first intake so the scenario builds on the right base (null / "maria" = Maria's)
+    s.setRestaurant(getRestaurantScenario(restaurantId));
+    void loadTonight();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restaurantId, loadTonight]);
   useEffect(() => {
     const a = setTimeout(() => setIntro("out"), 1200);
     const b = setTimeout(() => setIntro("off"), 1350);
@@ -71,7 +91,8 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const shownNight = viewportSource === "ask" && askNight ? askNight : night;
+  const shownNight = viewportSource === "ask" && askNight && askView !== "before" ? askNight : night;
+  const showAskRace = viewportSource === "ask" && askView === "race" && tab !== "Race";
   const snap = useMemo(() => snapshotAt(shownNight, tIdx), [shownNight, tIdx]);
   const t = snap?.t ?? SERVICE_START;
 
@@ -96,7 +117,8 @@ export default function App() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-3 text-xs text-fg-2">
-          <span className="hidden xl:inline">Maria&apos;s Burgers &amp; Wings · North Shore, Pittsburgh · <span className="num">{s.tonight.date}</span></span>
+          <span className="hidden lg:inline truncate max-w-[360px]"><span className="text-fg font-medium">{restaurantName}</span> · {neighborhood} · <span className="num">{s.tonight.date}</span></span>
+          <Link href="/" className="btn !py-1 !px-2 text-xs">Switch restaurant</Link>
           <div className="flex rounded border border-line overflow-hidden text-xs">
             <button onClick={() => setView("2d")} className={`px-2.5 py-1 ${view === "2d" ? "bg-fg text-white" : "text-fg-2 hover:bg-bg-3"}`}>2D</button>
             <button onClick={() => setView("3d")} className={`px-2.5 py-1 border-l border-line ${view === "3d" ? "bg-fg text-white" : "text-fg-2 hover:bg-bg-3"}`}>3D</button>
@@ -111,17 +133,29 @@ export default function App() {
           </aside>
         )}
         <section className="panel relative overflow-hidden flex flex-col no-print">
-          <div className="absolute top-3 left-3 z-10 flex items-center gap-2 text-xs">
-            {tab !== "Race" && <span className={`chip ${viewportSource === "ask" ? "!text-plan !border-plan" : ""}`}>{viewportSource === "ask" ? `What-if: ${s.askResult?.patch.summary ?? ""}` : s.tonight.label}</span>}
+          {viewportSource === "ask" && tab !== "Race" && (
+            <div className="shrink-0 flex items-center gap-3 px-3 py-1.5 border-b border-line bg-bg-2 text-xs">
+              <span className="text-plan font-semibold truncate min-w-0">What-if: <span className="font-normal text-fg">{s.askResult?.patch.summary ?? ""}</span></span>
+              <div className="ml-auto flex rounded border border-line overflow-hidden shrink-0">
+                {(["before", "after", "race"] as const).map((v, i) => (
+                  <button key={v} onClick={() => setAskView(v)} className={`px-2.5 py-0.5 ${i > 0 ? "border-l border-line" : ""} ${askView === v ? "bg-fg text-white" : "text-fg-2 hover:bg-bg-3"}`}>{v === "before" ? "Before" : v === "after" ? "After" : "Side-by-side"}</button>
+                ))}
+              </div>
+              <button className="btn !py-0.5 !px-2 text-xs shrink-0" onClick={() => void s.playAskNight()} title="Back to tonight as planned">× Back to tonight</button>
+            </div>
+          )}
+          <div className={`absolute ${viewportSource === "ask" && tab !== "Race" ? "top-12" : "top-3"} left-3 z-10 flex items-center gap-2 text-xs`}>
+            {tab !== "Race" && <span className={`chip ${viewportSource === "ask" ? "!text-plan !border-plan" : ""}`}>{viewportSource === "ask" ? (askView === "before" ? "Before: tonight as planned" : askView === "after" ? "After: what-if" : "Side-by-side") : s.tonight.label}</span>}
             {s.loadingNight && <span className="chip">Simulating tonight…</span>}
             {playing && tab !== "Race" && <span className="chip"><span className="text-bad font-semibold">Live</span> <span className="num">{s.speed}×</span></span>}
           </div>
           <div className="flex-1 min-h-0 p-3">
-            {tab === "Race" ? <RaceView /> : view === "3d" ? <Kitchen3D snapshot={snap} stations={viewStations} highlightStation={highlightStation} onMoveStation={(id, x, y) => void s.moveStation(id, x, y)} className="w-full h-full" /> : <Kitchen2D snapshot={snap} stations={viewStations} highlightStation={highlightStation} />}
+            {tab === "Race" ? <RaceView /> : showAskRace ? <RaceView /> : /* TODO: pass mode="ask" once RaceView accepts it */ view === "3d" ? <Kitchen3D snapshot={snap} stations={viewStations} highlightStation={highlightStation} onMoveStation={(id, x, y) => void s.moveStation(id, x, y)} className="w-full h-full" /> : <Kitchen2D snapshot={snap} stations={viewStations} highlightStation={highlightStation} />}
           </div>
         </section>
         <aside className="panel p-4 overflow-y-auto scroll-thin flex flex-col gap-5 print-only-grow">
-          {(tab === "Tonight" || tab === "Watch") && (<div><div className="panel-title">{viewportSource === "ask" ? "Live: what-if scenario" : "Live: tonight as planned"}</div><div className="sub mt-0.5">Updates as the night plays.</div><div className="mt-3"><Counters live={snap?.live ?? null} compact /></div></div>)}
+          {(tab === "Tonight" || tab === "Watch") && (<div><div className="panel-title">{viewportSource === "ask" ? (askView === "before" ? "Live: tonight as planned" : "Live: what-if scenario") : "Live: tonight as planned"}</div><div className="mt-3"><Counters live={snap?.live ?? null} compact /></div></div>)}
+          {tab === "Kitchen" && <KitchenPanel />}
           {tab === "Rehearse" && <><div className="no-print"><RehearsePanel /></div><OutputsPanel /></>}
           {tab === "Why" && <WhyPanel />}
           {tab === "Ask" && <AskPanel />}

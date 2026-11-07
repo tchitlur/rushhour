@@ -1,9 +1,12 @@
 // Apply interventions and Ask-anything patches to a Scenario. Pure; never mutates the input.
-import type { Channel, Scenario, Shift, StationId } from "@/sim/types";
+import type { Channel, Scenario, Shift, StationId, Worker } from "@/sim/types";
 import { CHANNELS, SERVICE_END, SERVICE_START, fmtClockShort } from "@/sim/types";
 import { CHANNEL_LABEL } from "@/sim/layout";
 import { applyDemandWindow, cloneScenario } from "@/sim/scenario";
 import type { Intervention, ScenarioPatch } from "./types";
+
+/** Color for synthetic "extra" workers added by a what-if (plan blue). */
+export const EXTRA_COLOR = "#1D5FA8";
 
 const clampT = (t: number) => Math.max(SERVICE_START, Math.min(SERVICE_END, t));
 
@@ -140,15 +143,45 @@ export function applyPatch(sc: Scenario, patch: ScenarioPatch): Scenario {
     } else if (s.action === "late") {
       const start = s.start ?? SERVICE_START + 60;
       w.shifts = mergeShifts(w.shifts.map(sh => ({ start: Math.max(sh.start, start), end: sh.end })));
+    } else if (s.action === "leave") {
+      const at = s.start ?? s.end ?? SERVICE_START + 240;
+      w.shifts = cutShifts(w.shifts, at, SERVICE_END);
+    }
+  }
+  for (const x of patch.extraStaff ?? []) {
+    if (x.end <= x.start || x.count === 0) continue;
+    if (x.count > 0) {
+      let n = out.workers.filter(w => w.id.startsWith("extra")).length;
+      for (let i = 0; i < x.count; i++) {
+        n++;
+        const skills: Partial<Record<StationId, number>> = { grill: 1, fryer: 1, cold: 1, pack: 1, counter: 1 };
+        if (x.station) skills[x.station] = 1.15;
+        out.workers.push({ id: `extra${n}`, name: `Extra cook ${n}`, wage: 18, skills, shifts: [{ start: x.start, end: x.end }], color: EXTRA_COLOR });
+      }
+    } else {
+      // short-staffed: drop the |count| lowest-skilled workers who are on shift in that window
+      const avg = (w: Worker) => { const v = Object.values(w.skills); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0; };
+      const onShift = out.workers.filter(w => w.id !== "maria" && w.shifts.some(sh => sh.start < x.end && sh.end > x.start)).sort((a, b) => avg(a) - avg(b));
+      for (const w of onShift.slice(0, -x.count)) w.shifts = cutShifts(w.shifts, x.start, x.end);
     }
   }
   for (const e of patch.equipment ?? []) {
     if (e.end > e.start) out.outages.push({ station: e.station, start: e.start, end: e.end, capacity: e.capacity });
   }
+  for (const a of patch.addEquipment ?? []) {
+    const base = out.stations.find(s => s.id === a.station);
+    if (!base) continue;
+    const start = a.time ?? SERVICE_START;
+    if (start >= SERVICE_END) continue;
+    out.outages.push({ station: a.station, start, end: SERVICE_END, capacity: base.capacity + a.capacity });
+  }
   for (const m of patch.menu ?? []) {
     const id = resolveItemId(out, m.item);
     if (m.action === "remove") { if (!out.removedItems.includes(id)) out.removedItems.push(id); }
-    else {
+    else if (m.action === "slower") {
+      const item = out.menu.find(x => x.id === id);
+      if (item) item.prepMin = item.prepMin * (m.factor ?? 1.5);
+    } else {
       const f = m.factor ?? (m.action === "boost" ? 1.5 : 0.5);
       out.mixShift[id] = (out.mixShift[id] ?? 1) * f;
     }
@@ -186,15 +219,29 @@ export function patchChips(patch: ScenarioPatch, sc?: Scenario): string[] {
     const name = workerName(sc, s.worker);
     if (s.action === "absent") chips.push(s.start != null || s.end != null ? `${name} out ${fmtRange(s.start ?? SERVICE_START, s.end ?? SERVICE_END)}` : `${name} out`);
     else if (s.action === "add") chips.push(`${name} in ${fmtRange(s.start ?? SERVICE_START, s.end ?? SERVICE_END)}`);
+    else if (s.action === "leave") chips.push(`${name} leaves at ${fmtClockShort(s.start ?? s.end ?? SERVICE_START + 240)}`);
     else chips.push(`${name} late until ${fmtClockShort(s.start ?? SERVICE_START + 60)}`);
+  }
+  for (const x of patch.extraStaff ?? []) {
+    if (x.count === 0) continue;
+    const n = Math.abs(x.count);
+    const who = x.station ? `${n} on the ${STATION_LABEL[x.station].toLowerCase()}` : `${n} ${n === 1 ? "cook" : "cooks"}`;
+    const allNight = x.start <= SERVICE_START && x.end >= SERVICE_END;
+    chips.push(x.count > 0 ? `+${who} ${fmtRange(x.start, x.end)}` : `Short ${n} ${n === 1 ? "person" : "people"} ${allNight ? "all night" : fmtRange(x.start, x.end)}`);
   }
   for (const e of patch.equipment ?? []) {
     const st = STATION_LABEL[e.station];
     chips.push(e.capacity === 0 ? `${st} down ${fmtRange(e.start, e.end)}` : `${st} at capacity ${e.capacity} ${fmtRange(e.start, e.end)}`);
   }
+  for (const a of patch.addEquipment ?? []) {
+    const base = sc?.stations.find(s => s.id === a.station)?.capacity;
+    const what = base != null && a.capacity >= base ? `Second ${STATION_LABEL[a.station].toLowerCase()}` : `${STATION_LABEL[a.station]} +${a.capacity}`;
+    chips.push(a.time != null && a.time > SERVICE_START ? `${what} from ${fmtClockShort(a.time)}` : `${what} all night`);
+  }
   for (const m of patch.menu ?? []) {
     const name = sc ? (sc.menu.find(x => x.id === resolveItemId(sc, m.item))?.name ?? m.item) : m.item;
     if (m.action === "remove") chips.push(`86 ${name}`);
+    else if (m.action === "slower") chips.push(`${name} cook ${trim(m.factor ?? 1.5)}× slower`);
     else chips.push(`${name} ×${trim(m.factor ?? (m.action === "boost" ? 1.5 : 0.5))}`);
   }
   for (const p of patch.channelPauses ?? []) {

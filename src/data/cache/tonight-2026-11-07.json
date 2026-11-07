@@ -1,0 +1,297 @@
+{
+  "date": "2026-11-07",
+  "location": {
+    "lat": 40.4468,
+    "lon": -80.01,
+    "label": "North Shore, Pittsburgh, PA"
+  },
+  "events": [
+    {
+      "id": "tm-1AvbZ_4Gkwzekws",
+      "name": "WPIAL Soccer Finals",
+      "type": "Soccer game",
+      "start": "2026-11-07T12:00:00",
+      "end": "2026-11-07T15:15:00",
+      "venue": "F.N.B. Stadium",
+      "distanceMiles": 0.75,
+      "attendance": 2000,
+      "impact": "both",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/wpial-soccer-finals-pittsburgh-pennsylvania-11-07-2026/event/1600655CB8086CB1",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-Z7r9jZ1AAe34M",
+      "name": "Bingo Loco (21 and Over)",
+      "type": "Concert",
+      "start": "2026-11-07T19:00:00",
+      "end": "2026-11-07T21:30:00",
+      "venue": "Stage AE",
+      "distanceMiles": 0.06,
+      "attendance": 5500,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/event/Z7r9jZ1AAe34M",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1AvbZ_FGkXMBa_6",
+      "name": "Jim Gaffigan: Everything is Wonderful!",
+      "type": "Comedy show",
+      "start": "2026-11-07T19:00:00",
+      "end": "2026-11-07T21:30:00",
+      "venue": "PPG Paints Arena",
+      "distanceMiles": 1.19,
+      "attendance": 18387,
+      "impact": "both",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-pittsburgh-pennsylvania-11-07-2026/event/1600648FB7E89647",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1ApZkf4GkeTMug4",
+      "name": "Buffalo Rose",
+      "type": "Concert",
+      "start": "2026-11-07T19:00:00",
+      "end": "2026-11-07T21:30:00",
+      "venue": "The Sanctuary at Mr. Smalls",
+      "distanceMiles": 2.97,
+      "attendance": 2000,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/buffalo-rose-millvale-pennsylvania-11-07-2026/event/16006515BFDCDD55",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1AvbZ_kGkWSCsDv",
+      "name": "STING 3.0 Tour",
+      "type": "Concert",
+      "start": "2026-11-07T20:00:00",
+      "end": "2026-11-07T22:30:00",
+      "venue": "Citizens Live at The Wylie",
+      "distanceMiles": 1.1,
+      "attendance": 2000,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/sting-30-tour-pittsburgh-pennsylvania-11-07-2026/event/1600646F733B1EC1",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-rZ7HnEZ1Af19u7",
+      "name": "Seven Teller",
+      "type": "Concert",
+      "start": "2026-11-07T20:00:00",
+      "end": "2026-11-07T22:30:00",
+      "venue": "Club Cafe",
+      "distanceMiles": 1.74,
+      "attendance": 2000,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketweb.com/event/seven-teller-club-cafe-tickets/14297344",
+      "source": "ticketmaster"
+    }
+  ],
+  "weather": {
+    "date": "2026-11-07",
+    "hourly": [
+      {
+        "time": "2026-11-07T00:00",
+        "tempF": 42.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 3.3,
+        "code": 0
+      },
+      {
+        "time": "2026-11-07T01:00",
+        "tempF": 42.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 4,
+        "code": 0
+      },
+      {
+        "time": "2026-11-07T02:00",
+        "tempF": 42.1,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 4.6,
+        "code": 0
+      },
+      {
+        "time": "2026-11-07T03:00",
+        "tempF": 42,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 3.2,
+        "code": 0
+      },
+      {
+        "time": "2026-11-07T04:00",
+        "tempF": 41.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 4.2,
+        "code": 1
+      },
+      {
+        "time": "2026-11-07T05:00",
+        "tempF": 41.1,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 3.3,
+        "code": 0
+      },
+      {
+        "time": "2026-11-07T06:00",
+        "tempF": 41.4,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 5.4,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T07:00",
+        "tempF": 43.3,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 7,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T08:00",
+        "tempF": 43.5,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 6.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T09:00",
+        "tempF": 44.7,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 9.1,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T10:00",
+        "tempF": 45.9,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 9.7,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T11:00",
+        "tempF": 45.9,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 12,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T12:00",
+        "tempF": 46.8,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 11.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T13:00",
+        "tempF": 47.4,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 12.1,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T14:00",
+        "tempF": 46.6,
+        "precipIn": 0,
+        "precipProb": 6,
+        "windMph": 10.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T15:00",
+        "tempF": 45.6,
+        "precipIn": 0,
+        "precipProb": 14,
+        "windMph": 10.3,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T16:00",
+        "tempF": 46.6,
+        "precipIn": 0,
+        "precipProb": 4,
+        "windMph": 9.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T17:00",
+        "tempF": 45.2,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 7.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T18:00",
+        "tempF": 45,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 6.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T19:00",
+        "tempF": 45,
+        "precipIn": 0,
+        "precipProb": 1,
+        "windMph": 7.2,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T20:00",
+        "tempF": 44.8,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T21:00",
+        "tempF": 44.7,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 5.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-07T22:00",
+        "tempF": 43.6,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 6.9,
+        "code": 1
+      },
+      {
+        "time": "2026-11-07T23:00",
+        "tempF": 41.1,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 5,
+        "code": 0
+      }
+    ],
+    "summary": "Cloudy, 45°F",
+    "rainEvening": false,
+    "source": "open-meteo",
+    "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=40.4468&longitude=-80.01&hourly=temperature_2m%2Cprecipitation%2Cprecipitation_probability%2Cwind_speed_10m%2Cweather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&start_date=2026-11-07&end_date=2026-11-07"
+  },
+  "fetchedAt": "2026-11-07T20:26:22.674Z",
+  "cached": false
+}

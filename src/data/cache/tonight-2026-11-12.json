@@ -1,0 +1,283 @@
+{
+  "date": "2026-11-12",
+  "location": {
+    "lat": 40.4468,
+    "lon": -80.01,
+    "label": "North Shore, Pittsburgh, PA"
+  },
+  "events": [
+    {
+      "id": "tm-16pZk49JAZAG6aA6",
+      "name": "USCAA National Championships -AHN MONTOUR",
+      "type": "Soccer game",
+      "start": "2026-11-12T10:00:00",
+      "end": "2026-11-12T13:15:00",
+      "venue": "F.N.B. Stadium",
+      "distanceMiles": 0.75,
+      "attendance": 2000,
+      "impact": "both",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/uscaa-national-championships-ahn-montour-pittsburgh-pennsylvania-11-12-2026/event/16006557985B6846",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1ApZk49GkdvWDM3",
+      "name": "USCAA National Championships All Tournament Pass",
+      "type": "Soccer game",
+      "start": "2026-11-12T18:00:00",
+      "end": "2026-11-12T21:15:00",
+      "venue": "F.N.B. Stadium",
+      "distanceMiles": 0.75,
+      "attendance": 2000,
+      "impact": "both",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/uscaa-national-championships-all-tournament-pass-pittsburgh-pennsylvania-11-12-2026/event/16006557C1F7BDD2",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1kAOv0xFGA560gt",
+      "name": "SOMBR - You Are The Reason Tour",
+      "type": "Concert",
+      "start": "2026-11-12T19:00:00",
+      "end": "2026-11-12T21:30:00",
+      "venue": "PPG Paints Arena",
+      "distanceMiles": 1.19,
+      "attendance": 18387,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/sombr-you-are-the-reason-tour-pittsburgh-pennsylvania-11-12-2026/event/160064888B1E4D69",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-Z7r9jZ1A7-gvA",
+      "name": "The Notebook (Touring)",
+      "type": "Theater show",
+      "start": "2026-11-12T19:30:00",
+      "end": "2026-11-12T22:00:00",
+      "venue": "Benedum Center",
+      "distanceMiles": 1.01,
+      "attendance": 2800,
+      "impact": "neutral",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/event/Z7r9jZ1A7-gvA",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-16pZk36ayZA885eC",
+      "name": "JACK WHITE LIVE 2026",
+      "type": "Concert",
+      "start": "2026-11-12T20:00:00",
+      "end": "2026-11-12T22:30:00",
+      "venue": "Citizens Live at The Wylie",
+      "distanceMiles": 1.1,
+      "attendance": 2000,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/jack-white-live-2026-pittsburgh-pennsylvania-11-12-2026/event/16006487279FFA1D",
+      "source": "ticketmaster"
+    }
+  ],
+  "weather": {
+    "date": "2026-11-12",
+    "hourly": [
+      {
+        "time": "2026-11-12T00:00",
+        "tempF": 56.1,
+        "precipIn": 0,
+        "precipProb": 7,
+        "windMph": 3.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T01:00",
+        "tempF": 55.8,
+        "precipIn": 0,
+        "precipProb": 7,
+        "windMph": 3.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T02:00",
+        "tempF": 55.5,
+        "precipIn": 0,
+        "precipProb": 25,
+        "windMph": 3.5,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T03:00",
+        "tempF": 55.1,
+        "precipIn": 0,
+        "precipProb": 25,
+        "windMph": 3.2,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T04:00",
+        "tempF": 54.9,
+        "precipIn": 0,
+        "precipProb": 25,
+        "windMph": 3.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T05:00",
+        "tempF": 54.7,
+        "precipIn": 0,
+        "precipProb": 25,
+        "windMph": 3.4,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T06:00",
+        "tempF": 54.2,
+        "precipIn": 0,
+        "precipProb": 25,
+        "windMph": 4.7,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T07:00",
+        "tempF": 52.9,
+        "precipIn": 0.004,
+        "precipProb": 25,
+        "windMph": 4.5,
+        "code": 51
+      },
+      {
+        "time": "2026-11-12T08:00",
+        "tempF": 51.3,
+        "precipIn": 0.02,
+        "precipProb": 35,
+        "windMph": 4.5,
+        "code": 53
+      },
+      {
+        "time": "2026-11-12T09:00",
+        "tempF": 49.4,
+        "precipIn": 0.02,
+        "precipProb": 35,
+        "windMph": 6.3,
+        "code": 53
+      },
+      {
+        "time": "2026-11-12T10:00",
+        "tempF": 48,
+        "precipIn": 0.02,
+        "precipProb": 35,
+        "windMph": 8.4,
+        "code": 53
+      },
+      {
+        "time": "2026-11-12T11:00",
+        "tempF": 47.7,
+        "precipIn": 0.016,
+        "precipProb": 35,
+        "windMph": 8.8,
+        "code": 51
+      },
+      {
+        "time": "2026-11-12T12:00",
+        "tempF": 48.1,
+        "precipIn": 0.016,
+        "precipProb": 35,
+        "windMph": 8,
+        "code": 51
+      },
+      {
+        "time": "2026-11-12T13:00",
+        "tempF": 48.4,
+        "precipIn": 0.016,
+        "precipProb": 35,
+        "windMph": 7.4,
+        "code": 51
+      },
+      {
+        "time": "2026-11-12T14:00",
+        "tempF": 48.6,
+        "precipIn": 0,
+        "precipProb": 41,
+        "windMph": 7.1,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T15:00",
+        "tempF": 48.8,
+        "precipIn": 0,
+        "precipProb": 41,
+        "windMph": 7.2,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T16:00",
+        "tempF": 48.6,
+        "precipIn": 0,
+        "precipProb": 41,
+        "windMph": 7.8,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T17:00",
+        "tempF": 47.7,
+        "precipIn": 0,
+        "precipProb": 41,
+        "windMph": 9,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T18:00",
+        "tempF": 46.3,
+        "precipIn": 0,
+        "precipProb": 41,
+        "windMph": 10.1,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T19:00",
+        "tempF": 44.8,
+        "precipIn": 0,
+        "precipProb": 41,
+        "windMph": 11,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T20:00",
+        "tempF": 43.1,
+        "precipIn": 0,
+        "precipProb": 39,
+        "windMph": 11.3,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T21:00",
+        "tempF": 41.3,
+        "precipIn": 0,
+        "precipProb": 39,
+        "windMph": 11.5,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T22:00",
+        "tempF": 39.9,
+        "precipIn": 0,
+        "precipProb": 39,
+        "windMph": 11.5,
+        "code": 3
+      },
+      {
+        "time": "2026-11-12T23:00",
+        "tempF": 39.5,
+        "precipIn": 0,
+        "precipProb": 39,
+        "windMph": 11.3,
+        "code": 3
+      }
+    ],
+    "summary": "Cloudy, 45°F",
+    "rainEvening": false,
+    "source": "open-meteo",
+    "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=40.4468&longitude=-80.01&hourly=temperature_2m%2Cprecipitation%2Cprecipitation_probability%2Cwind_speed_10m%2Cweather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&start_date=2026-11-12&end_date=2026-11-12"
+  },
+  "fetchedAt": "2026-11-07T20:26:25.847Z",
+  "cached": false
+}

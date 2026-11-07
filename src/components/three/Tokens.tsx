@@ -26,6 +26,7 @@ function surfaceHeight(x: number, y: number, stations: Station[]): number {
 
 export default function Tokens({ tokens, stations }: { tokens: TokenSnapshot[]; stations: Station[] }) {
   const ref = useRef<THREE.InstancedMesh>(null);
+  const rim = useRef<THREE.InstancedMesh>(null); // dark outline shells under catering (big) tokens
   const steam = useRef<THREE.InstancedMesh>(null);
   // Anchors for steam wisps (world coords), filled from hot ready tokens.
   const steamAnchors = useRef<Float32Array>(new Float32Array(MAX_STEAM * 3));
@@ -36,6 +37,8 @@ export default function Tokens({ tokens, stations }: { tokens: TokenSnapshot[]; 
     if (!mesh) return;
     const n = Math.min(tokens.length, MAX_TOKENS);
     let sc = 0;
+    let rc = 0;
+    const rimMesh = rim.current;
     const anchors = steamAnchors.current;
     for (let i = 0; i < n; i++) {
       const t = tokens[i];
@@ -53,9 +56,16 @@ export default function Tokens({ tokens, stations }: { tokens: TokenSnapshot[]; 
       _obj.rotation.set(0, (h1 - 0.5) * 0.6, 0);
       // ready = packed bag (taller), cooking = tray, queue = ticket (flat)
       const sy = t.stage === "ready" ? 1.8 : t.stage === "cooking" ? 1 : 0.5;
-      _obj.scale.set(1, sy, 1);
+      const big = t.big ? 1.3 : 1;
+      _obj.scale.set(big, sy, big);
       _obj.updateMatrix();
       mesh.setMatrixAt(i, _obj.matrix);
+      if (t.big && rimMesh && rc < MAX_TOKENS) {
+        _obj.scale.set(big * 1.18, sy * 0.96, big * 1.18);
+        _obj.position.y = wy - 0.004;
+        _obj.updateMatrix();
+        rimMesh.setMatrixAt(rc++, _obj.matrix);
+      }
       _col.copy(CHANNEL_THREE_COLOR[t.channel]);
       const chill = Math.max(0, Math.min(1, (t.warmth - 0.6) / 0.6));
       if (chill > 0) _col.lerp(COOL, chill * 0.85);
@@ -71,6 +81,10 @@ export default function Tokens({ tokens, stations }: { tokens: TokenSnapshot[]; 
     mesh.count = n;
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    if (rimMesh) {
+      rimMesh.count = rc;
+      rimMesh.instanceMatrix.needsUpdate = true;
+    }
   }, [tokens, stations]);
 
   useFrame((state) => {
@@ -97,6 +111,10 @@ export default function Tokens({ tokens, stations }: { tokens: TokenSnapshot[]; 
       <instancedMesh ref={ref} args={[undefined, undefined, MAX_TOKENS]} castShadow receiveShadow frustumCulled={false}>
         <boxGeometry args={[TOKEN_W, TOKEN_H, TOKEN_W * 0.8]} />
         <meshStandardMaterial color="#ffffff" roughness={0.8} metalness={0.02} />
+      </instancedMesh>
+      <instancedMesh ref={rim} args={[undefined, undefined, MAX_TOKENS]} frustumCulled={false}>
+        <boxGeometry args={[TOKEN_W, TOKEN_H, TOKEN_W * 0.8]} />
+        <meshStandardMaterial color={PALETTE.ink} roughness={0.9} />
       </instancedMesh>
       <instancedMesh ref={steam} args={[undefined, undefined, MAX_STEAM]} frustumCulled={false}>
         <sphereGeometry args={[1, 8, 6]} />

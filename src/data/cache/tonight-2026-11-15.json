@@ -1,0 +1,353 @@
+{
+  "date": "2026-11-15",
+  "location": {
+    "lat": 40.4468,
+    "lon": -80.01,
+    "label": "North Shore, Pittsburgh, PA"
+  },
+  "events": [
+    {
+      "id": "tm-1ApZk49GkenkIXc",
+      "name": "USCAA National Championships -AHN MONTOUR",
+      "type": "Soccer game",
+      "start": "2026-11-15T12:00:00",
+      "end": "2026-11-15T15:15:00",
+      "venue": "F.N.B. Stadium",
+      "distanceMiles": 0.75,
+      "attendance": 2000,
+      "impact": "both",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/uscaa-national-championships-ahn-montour-pittsburgh-pennsylvania-11-15-2026/event/16006557AA1A8FAD",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-Z7r9jZ1AAv6QF",
+      "name": "The Notebook (Touring)",
+      "type": "Theater show",
+      "start": "2026-11-15T13:00:00",
+      "end": "2026-11-15T15:30:00",
+      "venue": "Benedum Center",
+      "distanceMiles": 1.01,
+      "attendance": 2800,
+      "impact": "neutral",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/event/Z7r9jZ1AAv6QF",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1ApZk49Gkecia_y",
+      "name": "USCAA National Championships F.N.B. Stadium",
+      "type": "Soccer game",
+      "start": "2026-11-15T14:00:00",
+      "end": "2026-11-15T17:15:00",
+      "venue": "F.N.B. Stadium",
+      "distanceMiles": 0.75,
+      "attendance": 2000,
+      "impact": "both",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/uscaa-national-championships-fnb-stadium-pittsburgh-pennsylvania-11-15-2026/event/16006557ADB09679",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1AvbZ_aGklJIiVV",
+      "name": "The Menzingers: Everything I Ever Saw North American Tour",
+      "type": "Concert",
+      "start": "2026-11-15T18:00:00",
+      "end": "2026-11-15T20:30:00",
+      "venue": "Roxian Theatre Presented By Citizens",
+      "distanceMiles": 2.86,
+      "attendance": 1400,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/the-menzingers-everything-i-ever-saw-mckees-rocks-pennsylvania-11-15-2026/event/1600649AE6A2CD34",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-Z7r9jZ1AAv6Q6",
+      "name": "The Notebook (Touring)",
+      "type": "Theater show",
+      "start": "2026-11-15T18:30:00",
+      "end": "2026-11-15T21:00:00",
+      "venue": "Benedum Center",
+      "distanceMiles": 1.01,
+      "attendance": 2800,
+      "impact": "neutral",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/event/Z7r9jZ1AAv6Q6",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-rZ7HnEZ1A4vv7S",
+      "name": "Chloe Kimes The Daredevil Tour",
+      "type": "Concert",
+      "start": "2026-11-15T19:00:00",
+      "end": "2026-11-15T21:30:00",
+      "venue": "Club Cafe",
+      "distanceMiles": 1.74,
+      "attendance": 2000,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketweb.com/event/chloe-kimes-the-daredevil-tour-club-cafe-tickets/15041133",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1AvbZ_oGkR42unA",
+      "name": "RUSH: Fifty Something",
+      "type": "Concert",
+      "start": "2026-11-15T19:30:00",
+      "end": "2026-11-15T22:00:00",
+      "venue": "PPG Paints Arena",
+      "distanceMiles": 1.19,
+      "attendance": 18387,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/rush-fifty-something-pittsburgh-pennsylvania-11-15-2026/event/1600651BD53CDA85",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1ApZk3aGkeMlQ3x",
+      "name": "The Rock Orchestra: Arena of Fire",
+      "type": "Concert",
+      "start": "2026-11-15T19:30:00",
+      "end": "2026-11-15T22:00:00",
+      "venue": "Petersen Events Center",
+      "distanceMiles": 2.52,
+      "attendance": 12508,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/the-rock-orchestra-arena-of-fire-pittsburgh-pennsylvania-11-15-2026/event/16006489B7ADA4A2",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-1AvbZ_kGkw797Pc",
+      "name": "Wyatt Flores",
+      "type": "Concert",
+      "start": "2026-11-15T20:00:00",
+      "end": "2026-11-15T22:30:00",
+      "venue": "Citizens Live at The Wylie",
+      "distanceMiles": 1.1,
+      "attendance": 2000,
+      "impact": "delivery_up",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/wyatt-flores-pittsburgh-pennsylvania-11-15-2026/event/1600646C845C496D",
+      "source": "ticketmaster"
+    },
+    {
+      "id": "tm-Z7r9jZ1A70M3F",
+      "name": "Pittsburgh Panthers Womens Volleyball vs. Louisville Cardinals Womens Volleyball",
+      "type": "College miscellaneous game",
+      "start": "2026-11-15T20:30:00",
+      "end": "2026-11-15T23:45:00",
+      "venue": "Victory Heights Arena",
+      "distanceMiles": 2.85,
+      "attendance": 2000,
+      "impact": "both",
+      "confidence": 0.9,
+      "sourceUrl": "https://www.ticketmaster.com/event/Z7r9jZ1A70M3F",
+      "source": "ticketmaster"
+    }
+  ],
+  "weather": {
+    "date": "2026-11-15",
+    "hourly": [
+      {
+        "time": "2026-11-15T00:00",
+        "tempF": 41.1,
+        "precipIn": 0,
+        "precipProb": 5,
+        "windMph": 9.6,
+        "code": 3
+      },
+      {
+        "time": "2026-11-15T01:00",
+        "tempF": 40.3,
+        "precipIn": 0,
+        "precipProb": 5,
+        "windMph": 9,
+        "code": 3
+      },
+      {
+        "time": "2026-11-15T02:00",
+        "tempF": 38.7,
+        "precipIn": 0,
+        "precipProb": 4,
+        "windMph": 8.5,
+        "code": 2
+      },
+      {
+        "time": "2026-11-15T03:00",
+        "tempF": 36.9,
+        "precipIn": 0,
+        "precipProb": 4,
+        "windMph": 8.3,
+        "code": 1
+      },
+      {
+        "time": "2026-11-15T04:00",
+        "tempF": 35.4,
+        "precipIn": 0,
+        "precipProb": 4,
+        "windMph": 7.9,
+        "code": 1
+      },
+      {
+        "time": "2026-11-15T05:00",
+        "tempF": 34.6,
+        "precipIn": 0,
+        "precipProb": 4,
+        "windMph": 7.6,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T06:00",
+        "tempF": 34.2,
+        "precipIn": 0,
+        "precipProb": 4,
+        "windMph": 7.1,
+        "code": 1
+      },
+      {
+        "time": "2026-11-15T07:00",
+        "tempF": 34.5,
+        "precipIn": 0,
+        "precipProb": 4,
+        "windMph": 7,
+        "code": 1
+      },
+      {
+        "time": "2026-11-15T08:00",
+        "tempF": 35.8,
+        "precipIn": 0,
+        "precipProb": 3,
+        "windMph": 7.4,
+        "code": 1
+      },
+      {
+        "time": "2026-11-15T09:00",
+        "tempF": 37.7,
+        "precipIn": 0,
+        "precipProb": 3,
+        "windMph": 8.1,
+        "code": 1
+      },
+      {
+        "time": "2026-11-15T10:00",
+        "tempF": 40,
+        "precipIn": 0,
+        "precipProb": 3,
+        "windMph": 8.8,
+        "code": 1
+      },
+      {
+        "time": "2026-11-15T11:00",
+        "tempF": 43,
+        "precipIn": 0,
+        "precipProb": 3,
+        "windMph": 9.4,
+        "code": 1
+      },
+      {
+        "time": "2026-11-15T12:00",
+        "tempF": 46.3,
+        "precipIn": 0,
+        "precipProb": 3,
+        "windMph": 10.1,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T13:00",
+        "tempF": 48.7,
+        "precipIn": 0,
+        "precipProb": 3,
+        "windMph": 10.5,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T14:00",
+        "tempF": 49.9,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 10.2,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T15:00",
+        "tempF": 50.2,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 9.5,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T16:00",
+        "tempF": 49.8,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 8.8,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T17:00",
+        "tempF": 48.5,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 8.3,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T18:00",
+        "tempF": 46.3,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 8,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T19:00",
+        "tempF": 44.6,
+        "precipIn": 0,
+        "precipProb": 2,
+        "windMph": 7.8,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T20:00",
+        "tempF": 43.7,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 7.4,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T21:00",
+        "tempF": 43.1,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 7.1,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T22:00",
+        "tempF": 42.5,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 6.7,
+        "code": 0
+      },
+      {
+        "time": "2026-11-15T23:00",
+        "tempF": 41.9,
+        "precipIn": 0,
+        "precipProb": 0,
+        "windMph": 6.3,
+        "code": 0
+      }
+    ],
+    "summary": "Clear, 45°F",
+    "rainEvening": false,
+    "source": "open-meteo",
+    "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=40.4468&longitude=-80.01&hourly=temperature_2m%2Cprecipitation%2Cprecipitation_probability%2Cwind_speed_10m%2Cweather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&start_date=2026-11-15&end_date=2026-11-15"
+  },
+  "fetchedAt": "2026-11-07T20:26:27.710Z",
+  "cached": false
+}

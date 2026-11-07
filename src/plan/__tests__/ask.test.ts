@@ -17,6 +17,14 @@ describe("ask pipeline", () => {
     }
     expect(cachedPatch("A 30-PERSON catering order comes in at 6:30!")).not.toBeNull();
   });
+  it("keeps the four curveballs and caches the likely questions (plus aliases)", () => {
+    expect(CURVEBALLS.map(c => c.label)).toEqual(["Cook calls out", "Game goes to overtime", "Sudden rain", "30-person catering at 6:30"]);
+    for (const q of ["2 extra employees come at 6", "2 extra cooks come at 6", "the fryer breaks at 7", "Ana leaves at 8", "add a second fryer", "we're short one person all night", "snow keeps people home", "wings take longer to cook tonight", "pause Uber Eats 7 to 7:30", "quote 20 minutes after 6:45"]) {
+      expect(cachedPatch(q), q).not.toBeNull();
+    }
+    expect(cachedPatch("2 extra employees come at 6")?.extraStaff?.[0]).toMatchObject({ count: 2, start: 1080 });
+    expect(cachedPatch("tell me a joke")).toBeNull();
+  });
   it("keyword translator handles common phrasings", () => {
     const f = keywordPatch("the fryer breaks at 7");
     expect(f?.equipment?.[0]).toMatchObject({ station: "fryer", start: 1140, capacity: 0 });
@@ -31,8 +39,76 @@ describe("ask pipeline", () => {
       expect(ScenarioPatchSchema.safeParse(keywordPatch(q)).success).toBe(true);
     }
   });
+  it("keyword translator handles the new what-if shapes", () => {
+    expect(keywordPatch("2 extra cooks come at 6")?.extraStaff?.[0]).toMatchObject({ count: 2, start: 1080, end: 1320 });
+    expect(keywordPatch("three more people from 7")?.extraStaff?.[0]).toMatchObject({ count: 3, start: 1140 });
+    expect(keywordPatch("we're short one person all night")?.extraStaff?.[0]).toMatchObject({ count: -1, start: 960, end: 1320 });
+    expect(keywordPatch("we are short-staffed tonight")?.extraStaff?.[0]).toMatchObject({ count: -1 });
+    expect(keywordPatch("Ana leaves at 8")?.staff?.[0]).toMatchObject({ worker: "ana", action: "leave", start: 1200 });
+    expect(keywordPatch("Jake is late until 7")?.staff?.[0]).toMatchObject({ worker: "jake", action: "late", start: 1140 });
+    expect(keywordPatch("add a second fryer")?.addEquipment?.[0]).toMatchObject({ station: "fryer", capacity: 4 });
+    expect(keywordPatch("a second fryer from 6:30")?.addEquipment?.[0]).toMatchObject({ station: "fryer", time: 1110 });
+    expect(keywordPatch("the oven runs at half capacity")?.equipment?.[0]).toMatchObject({ station: "grill", capacity: 3 });
+    expect(keywordPatch("the fryer goes down at 7 for 40 minutes")?.equipment?.[0]).toMatchObject({ station: "fryer", start: 1140, end: 1180, capacity: 0 });
+    const d = keywordPatch("+30% delivery")?.demand;
+    expect(d?.map(x => x.channel).sort()).toEqual(["doordash", "ubereats"]);
+    expect(d?.[0].factor).toBeCloseTo(1.3);
+    const snow = keywordPatch("snow keeps people home")?.demand;
+    expect(snow?.find(x => x.channel === "counter")?.factor).toBeCloseTo(0.6);
+    expect(keywordPatch("take wings off the menu")?.menu?.[0]).toMatchObject({ item: "wings", action: "remove" });
+    expect(keywordPatch("86 the tenders")?.menu?.[0]).toMatchObject({ item: "tenders", action: "remove" });
+    expect(keywordPatch("wings take longer to cook tonight")?.menu?.[0]).toMatchObject({ item: "wings", action: "slower", factor: 1.5 });
+    expect(keywordPatch("pause Uber Eats 7 to 7:30")?.channelPauses?.[0]).toMatchObject({ channel: "ubereats", start: 1140, end: 1170 });
+    expect(keywordPatch("quote 20 minutes after 6:45")?.quotedPrep?.[0]).toMatchObject({ start: 1125, end: 1320, minutes: 20 });
+    const mv = keywordPatch("move the pack station next to the fryer", baseScenario())?.layout?.[0];
+    expect(mv?.station).toBe("pack");
+    expect(Math.hypot((mv?.x ?? 0) - 6, (mv?.y ?? 0) - 1.5)).toBeLessThan(3);
+    const combo = keywordPatch("the fryer breaks at 7 for 40 min and 2 extra cooks arrive at 6");
+    expect(combo?.equipment?.[0]).toMatchObject({ station: "fryer", start: 1140, end: 1180 });
+    expect(combo?.extraStaff?.[0]).toMatchObject({ count: 2, start: 1080 });
+    for (const q of ["2 extra cooks come at 6", "we're short one person all night", "Ana leaves at 8", "add a second fryer", "the oven runs at half capacity", "+30% delivery", "snow keeps people home", "wings take longer to cook tonight", "pause Uber Eats 7 to 7:30", "quote 20 minutes after 6:45", "move the pack station next to the fryer", "the fryer breaks at 7 for 40 min and 2 extra cooks arrive at 6"]) {
+      expect(ScenarioPatchSchema.safeParse(keywordPatch(q)).success, q).toBe(true);
+    }
+  });
+  it("applyPatch adds extra workers, cuts shifts and overrides capacity", () => {
+    const base = baseScenario();
+    const extra = applyPatch(base, { summary: "x", extraStaff: [{ count: 2, start: 1080, end: 1320 }] });
+    const added = extra.workers.filter(w => w.id.startsWith("extra"));
+    expect(added).toHaveLength(2);
+    expect(added[0]).toMatchObject({ id: "extra1", name: "Extra cook 1", wage: 18, shifts: [{ start: 1080, end: 1320 }] });
+    expect(Object.keys(added[0].skills).sort()).toEqual(["cold", "counter", "fryer", "grill", "pack"]);
+    expect(base.workers.some(w => w.id.startsWith("extra"))).toBe(false); // pure
+    const night = simulateNight(extra, { seed: 3, snapshots: true });
+    const snap = night.snapshots?.find(s => s.t >= 1140);
+    if (snap) expect(snap.workers.filter(w => w.extra && w.onShift).length).toBe(2);
+
+    const short = applyPatch(base, { summary: "x", extraStaff: [{ count: -1, start: 960, end: 1320 }] });
+    const onShiftBefore = base.workers.filter(w => w.shifts.length).length;
+    const onShiftAfter = short.workers.filter(w => w.shifts.length).length;
+    expect(onShiftAfter).toBe(onShiftBefore - 1);
+    expect(short.workers.find(w => w.id === "maria")?.shifts.length).toBeGreaterThan(0);
+
+    const leave = applyPatch(base, { summary: "x", staff: [{ worker: "sam", action: "leave", start: 1200 }] });
+    expect(leave.workers.find(w => w.id === "sam")?.shifts).toEqual([{ start: 960, end: 1200 }]);
+
+    const fryer2 = applyPatch(base, { summary: "x", addEquipment: [{ station: "fryer", capacity: 4, time: 1110 }] });
+    expect(fryer2.outages).toContainEqual({ station: "fryer", start: 1110, end: 1320, capacity: 8 });
+    const n2 = simulateNight(fryer2, { seed: 3, snapshots: true });
+    const s2 = n2.snapshots?.find(s => s.t >= 1140)?.stations.find(s => s.id === "fryer");
+    if (s2) expect(s2.capacity).toBe(8);
+
+    const slow = applyPatch(base, { summary: "x", menu: [{ item: "wings", action: "slower" }] });
+    expect(slow.menu.find(m => m.id === "wings")?.prepMin).toBeCloseTo(11 * 1.5);
+    expect(base.menu.find(m => m.id === "wings")?.prepMin).toBe(11);
+  });
+  it("patchChips describes the new fields", () => {
+    const sc = baseScenario();
+    const chips = patchChips({ summary: "x", extraStaff: [{ count: 2, start: 1080, end: 1320 }, { count: -1, start: 960, end: 1320 }], addEquipment: [{ station: "fryer", capacity: 4, time: 1110 }], staff: [{ worker: "ana", action: "leave", start: 1200 }], menu: [{ item: "wings", action: "slower", factor: 1.5 }] }, sc);
+    expect(chips).toEqual(["Ana leaves at 8pm", "+2 cooks 6pm–10pm", "Short 1 person all night", "Second fryer from 6:30", "Wings (10) cook 1.5× slower"]);
+  });
   it("rejects out-of-range patches", () => {
     expect(ScenarioPatchSchema.safeParse({ summary: "x", equipment: [{ station: "fryer", start: 100, end: 200, capacity: 0 }] }).success).toBe(false);
     expect(ScenarioPatchSchema.safeParse({ summary: "x", staff: [{ worker: "bob", action: "fired" }] }).success).toBe(false);
+    expect(ScenarioPatchSchema.safeParse({ summary: "x", extraStaff: [{ count: 9, start: 960, end: 1320 }] }).success).toBe(false);
   });
 });

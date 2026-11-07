@@ -1,5 +1,6 @@
 "use client";
-import { memo } from "react";
+import { memo, useState } from "react";
+import DatePicker from "@/components/tonight/DatePicker";
 import { useApp } from "@/store/app";
 import { useShallow } from "zustand/react/shallow";
 import { eventMagnitude, isoToMin, fmtT } from "@/lib/demand";
@@ -15,42 +16,69 @@ function templateLine(e: EventFact): string {
 }
 
 function TonightPanel() {
-  const { tonightData, tonightLoading, tonightSource, demand, explanations, jakeOut, rainWhatIf, setToggles, tonight, normal } = useApp(useShallow(s => ({ tonightData: s.tonightData, tonightLoading: s.tonightLoading, tonightSource: s.tonightSource, demand: s.demand, explanations: s.explanations, jakeOut: s.jakeOut, rainWhatIf: s.rainWhatIf, setToggles: s.setToggles, tonight: s.tonight, normal: s.normal })));
+  const { tonightData, tonightLoading, tonightSource, demand, explanations, jakeOut, rainWhatIf, setToggles, tonight, normal, tonightMC, normalMC } = useApp(useShallow(s => ({ tonightData: s.tonightData, tonightLoading: s.tonightLoading, tonightSource: s.tonightSource, demand: s.demand, explanations: s.explanations, jakeOut: s.jakeOut, rainWhatIf: s.rainWhatIf, setToggles: s.setToggles, tonight: s.tonight, normal: s.normal, tonightMC: s.tonightMC, normalMC: s.normalMC })));
+  const [open, setOpen] = useState<string | null>(null);
   const events = [...(tonightData?.events ?? [])].sort((a, b) => eventMagnitude(b) - eventMagnitude(a));
   const w = tonightData?.weather;
-  const evening = w?.hourly.filter(h => { const hh = parseInt(h.time.slice(11, 13)); return hh >= 16 && hh <= 22; }) ?? [];
+  const name = tonight.restaurant?.name ?? "Maria's Burgers & Wings";
+  const hood = tonight.restaurant?.neighborhood ?? "North Shore, Pittsburgh";
+  // expected orders: Monte Carlo means when ready, else the deterministic demand multiplier on the baseline
+  const baseOrders = normal.baselineOrdersPerHour.reduce((a, b) => a + b, 0) / 4; // 15-min bins of an hourly rate
+  const mult = demand ? demand.bins.reduce((a, b) => a + b.total, 0) / demand.bins.length : 1;
+  const expOrders = tonightMC && normalMC ? tonightMC.mean.orders : Math.round(baseOrders * mult);
+  const normOrders = tonightMC && normalMC ? normalMC.mean.orders : Math.round(baseOrders);
+  const pct = normOrders > 0 ? Math.round((expOrders / normOrders - 1) * 100) : 0;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <div>
         <div className="flex items-center justify-between">
           <div className="panel-title">Tonight</div>
           {tonightSource && <span className={`chip ${tonightSource === "live" ? "!text-ok !border-ok" : ""}`} title={tonightSource === "live" ? "Fetched live just now" : "Served from committed cache of real data"}>{tonightSource === "live" ? "live data" : tonightSource === "mixed" ? "live + cached" : "cached"}</span>}
         </div>
         <div className="mt-1 text-xl font-semibold leading-tight">{tonightData ? fmtDate(tonightData.date) : "Loading…"}</div>
-        <div className="sub mt-0.5">Maria&apos;s Burgers &amp; Wings · North Shore, Pittsburgh</div>
-        <div className="text-xs text-fg-3 mt-1">Demo restaurant. Synthetic history, real events and weather.</div>
+        <div className="sub mt-0.5">{name} · {hood}</div>
+        <div className="mt-2"><DatePicker /></div>
       </div>
 
       {tonightLoading && !tonightData && <div className="text-sm text-fg-2">Pulling real events (Ticketmaster), weather (Open-Meteo) and local happenings (web search)…</div>}
 
-      {w && (
+      {tonightData && (
         <div className="border-t border-line pt-3">
-          <div className="flex items-baseline justify-between">
-            <div className="panel-title">Weather</div>
-            <a href={w.sourceUrl} target="_blank" rel="noreferrer" className="text-xs text-fg-2 underline underline-offset-2 hover:text-fg">Open-Meteo</a>
+          <div className="flex items-baseline gap-2">
+            <span className="num text-[28px] font-medium leading-none text-fg">{Math.round(expOrders)}</span>
+            <span className="text-xs text-fg-2">orders expected · a normal night is <span className="num">{Math.round(normOrders)}</span> <span className={`num font-semibold ${pct > 0 ? "text-bad" : "text-fg"}`}>({pct >= 0 ? "+" : "−"}{Math.abs(pct)}%)</span></span>
           </div>
-          <div className="text-sm mt-1">{w.summary}</div>
-          <div className="mt-2 grid gap-px" style={{ gridTemplateColumns: `repeat(${evening.length || 1}, minmax(0, 1fr))` }}>
-            {evening.map(h => {
-              const wet = h.precipIn >= 0.02 || (h.precipProb ?? 0) >= 60;
-              const snowish = h.code >= 71 && h.code <= 77;
-              const fog = h.code >= 45 && h.code <= 48;
-              const cond = snowish ? "snow" : wet ? "rain" : fog ? "fog" : "";
+          {demand && <div className="text-sm font-medium mt-1.5">{demand.peakLabel}</div>}
+          {demand && <div className="text-xs text-fg-2"><span className="num">{Math.round(demand.deliveryShare * 100)}%</span> delivery (normally <span className="num">{Math.round((tonight.channelMix.doordash + tonight.channelMix.ubereats) * 100)}%</span>)</div>}
+          {w && <div className="text-xs text-fg-2 mt-1 flex items-baseline justify-between gap-2"><span>{w.summary}</span><a href={w.sourceUrl} target="_blank" rel="noreferrer" className="shrink-0 underline underline-offset-2 hover:text-fg">{w.source === "cache" ? "cached" : "Open-Meteo"}</a></div>}
+          <DemandCurve />
+        </div>
+      )}
+
+      {tonightData && (
+        <div className="border-t border-line pt-3">
+          <div className="panel-title mb-1.5">Events nearby <span className="num text-fg-2 font-normal">({events.length})</span></div>
+          {events.length === 0 && <div className="text-xs text-fg-3">Nothing within range. Baseline night.</div>}
+          <div className="flex flex-col divide-y divide-line border-y border-line">
+            {events.slice(0, 8).map(e => {
+              const m = eventMagnitude(e);
+              const tag = m > 0.5 ? "major" : m > 0.05 ? "minor" : "tiny";
+              const isOpen = open === e.id;
               return (
-                <div key={h.time} className="text-center border border-line rounded-sm py-1 bg-bg-2">
-                  <div className="text-[11px] text-fg-3 num">{fmtClockShort(parseInt(h.time.slice(11, 13)) * 60)}</div>
-                  <div className="text-[13px] text-fg num font-medium">{Math.round(h.tempF)}°</div>
-                  <div className={`text-[10px] h-3 leading-3 ${wet || snowish ? "text-phone font-medium" : "text-fg-3"}`}>{cond}</div>
+                <div key={e.id} className={`pl-2 border-l-[3px] ${m > 0.5 ? "border-l-bad" : "border-l-transparent"}`}>
+                  <button className="w-full text-left py-1.5 flex items-center gap-2 text-xs hover:bg-bg-3" onClick={() => setOpen(isOpen ? null : e.id)} aria-expanded={isOpen}>
+                    <span className="num text-fg-2 shrink-0 w-[60px] whitespace-nowrap">{fmtT(isoToMin(e.start))}</span>
+                    <span className="font-medium text-fg truncate flex-1 min-w-0">{e.name}</span>
+                    <span className="num text-fg-2 shrink-0">{e.distanceMiles.toFixed(1)} mi</span>
+                    <span className={`tag shrink-0 ${m > 0.5 ? "text-bad" : "text-fg-3"}`}>{tag}</span>
+                  </button>
+                  {isOpen && (
+                    <div className="pb-2 pr-1 text-xs">
+                      <div className="text-fg-2">{e.type} · {e.venue.split(",")[0]} · ~<span className="num">{e.attendance.toLocaleString()}</span> people · {e.impact === "both" ? "delivery up, walk-in down" : e.impact === "delivery_up" ? "delivery up" : e.impact === "dine_in_down" ? "walk-in down" : "neutral"} · confidence <span className="num">{Math.round(e.confidence * 100)}%</span></div>
+                      <div className="text-fg mt-1">{explanations[e.id] ?? templateLine(e)}</div>
+                      <a href={e.sourceUrl} target="_blank" rel="noreferrer" className="text-fg-2 underline underline-offset-2 hover:text-fg">{e.source === "web_search" ? "web source" : e.source === "cache" ? "cached source" : "Ticketmaster"}</a>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -58,52 +86,17 @@ function TonightPanel() {
         </div>
       )}
 
-      <div className="border-t border-line pt-3">
-        <div className="panel-title mb-2">Events nearby <span className="num text-fg-2 font-normal">({events.length})</span></div>
-        <div className="flex flex-col divide-y divide-line border-y border-line">
-          {events.slice(0, 6).map(e => {
-            const m = eventMagnitude(e);
-            const size = m > 0.5 ? "major" : m > 0.05 ? "minor" : "tiny";
-            return (
-              <div key={e.id} className={`py-2 pl-2.5 border-l-[3px] ${m > 0.5 ? "border-l-bad" : "border-l-transparent"}`}>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="text-sm font-semibold leading-snug">{e.name}</div>
-                  <span className={`tag shrink-0 ${m > 0.5 ? "text-bad" : "text-fg-3"}`}>{size}</span>
-                </div>
-                <div className="text-xs text-fg-2 mt-0.5">{e.type} · <span className="num">{fmtT(isoToMin(e.start))}</span> · {e.venue.split(",")[0]} · <span className="num">{e.distanceMiles.toFixed(1)}</span> mi · ~<span className="num">{e.attendance.toLocaleString()}</span> people</div>
-                <div className="text-xs text-fg mt-1">{explanations[e.id] ?? templateLine(e)}</div>
-                <div className="flex items-center justify-between mt-1 text-xs text-fg-2">
-                  <span>{e.impact === "both" ? "delivery up, walk-in down" : e.impact === "delivery_up" ? "delivery up" : e.impact === "dine_in_down" ? "walk-in down" : "neutral"} · confidence <span className="num">{Math.round(e.confidence * 100)}%</span></span>
-                  <a href={e.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-fg">{e.source === "web_search" ? "web" : e.source === "cache" ? "cached" : "Ticketmaster"}</a>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="border-t border-line pt-3">
-        <div className="panel-title mb-2">Staffing tonight</div>
+      <div className="border-t border-line pt-3 flex flex-col gap-1.5">
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input type="checkbox" checked={jakeOut} onChange={e => setToggles({ jakeOut: e.target.checked })} className="accent-[#16191D]" />
           <span>Jake called out <span className="text-fg-2 text-xs">(6–10 PM shift)</span></span>
         </label>
-        <label className="flex items-center gap-2 text-sm cursor-pointer mt-1.5">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input type="checkbox" checked={rainWhatIf} onChange={e => setToggles({ rainWhatIf: e.target.checked })} className="accent-[#16191D]" />
-          <span>What-if: rain 6–9 PM <span className="text-fg-2 text-xs">(not in the real forecast)</span></span>
+          <span>What-if: rain 6–9 PM <span className="text-fg-2 text-xs">(not in the forecast)</span></span>
         </label>
+        <div className="text-[11px] text-fg-3">Demo restaurant: synthetic history ({normal.label.toLowerCase()}), real events and weather. Demand = event size × proximity × timing + weather, capped 0.7×–1.8×.</div>
       </div>
-
-      {demand && (
-        <div className="border-t border-line pt-3">
-          <div className="panel-title">Demand tonight</div>
-          <div className="text-sm font-medium mt-1">{demand.peakLabel}</div>
-          <div className="text-xs text-fg-2"><span className="num">{Math.round(demand.deliveryShare * 100)}%</span> of orders by delivery (normally <span className="num">{Math.round((tonight.channelMix.doordash + tonight.channelMix.ubereats) * 100)}%</span>)</div>
-          <DemandCurve />
-          <div className="text-xs text-fg-3 mt-1">Deterministic formula: event size × proximity × timing, plus weather. Capped 0.7×–1.8×.</div>
-        </div>
-      )}
-      <div className="text-xs text-fg-3">Baseline from {normal.label.toLowerCase()} history (synthetic).</div>
     </div>
   );
 }

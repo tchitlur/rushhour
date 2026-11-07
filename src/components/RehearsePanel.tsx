@@ -1,5 +1,5 @@
 "use client";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useApp } from "@/store/app";
 import { useShallow } from "zustand/react/shallow";
 import type { PlanCard } from "@/plan/types";
@@ -15,11 +15,17 @@ function RehearsePanel() {
   const accepted = plan?.cards.filter(c => c.accepted) ?? [];
   const rejected = plan?.cards.filter(c => !c.accepted) ?? [];
   const ev = plan?.combinedEvidence;
+  const [showRejected, setShowRejected] = useState(false);
+  const riskCut = ev && ev.before.dollarsAtRisk > 0 ? Math.max(0, Math.round((1 - ev.after.dollarsAtRisk / ev.before.dollarsAtRisk) * 100)) : 0;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <div>
         <div className="panel-title">Rehearse</div>
-        <div className="sub mt-0.5">AI proposes. The simulator proves. Only fixes that pay for themselves survive.</div>
+        {plan && ev ? (
+          <div className="text-sm font-semibold mt-1 leading-snug num">Dasher wait {ev.before.avgDasherWait.toFixed(1)} → <span className="text-plan">{ev.after.avgDasherWait.toFixed(1)} min</span> · at risk −{riskCut}% · costs {fmtMoney(ev.cost)}, protects <span className="text-ok">{fmtMoney(ev.protectedDollars)}</span></div>
+        ) : (
+          <div className="sub mt-0.5">AI proposes. The simulator proves. Only fixes that pay for themselves survive.</div>
+        )}
       </div>
       {!plan && (
         <button className="btn btn-primary w-full justify-center py-3 flex-col !items-start !gap-0.5" onClick={runRehearse} disabled={planLoading || !tonightMC}>
@@ -39,7 +45,7 @@ function RehearsePanel() {
             <Delta label="Cold orders" before={ev.before.coldOrders} after={ev.after.coldOrders} fmt={v => v.toFixed(0)} />
             <Delta label="At risk" before={ev.before.dollarsAtRisk} after={ev.after.dollarsAtRisk} fmt={fmtMoney} />
           </div>
-          <div className="text-xs text-fg-2 mt-3 num">Costs <b className="text-fg font-semibold">{fmtMoney(ev.cost)}</b>, protects <b className="text-fg font-semibold">{fmtMoney(ev.protectedDollars)}</b> · helped on <b className="text-fg font-semibold">{ev.nightsHelped}/{ev.nights}</b> nights · risk cut <b className="text-fg font-semibold">{ev.before.dollarsAtRisk > 0 ? Math.max(0, Math.round((1 - ev.after.dollarsAtRisk / ev.before.dollarsAtRisk) * 100)) : 0}%</b></div>
+          <div className="text-xs text-fg-2 mt-3 num">Helped on <b className="text-fg font-semibold">{ev.nightsHelped}/{ev.nights}</b> nights · risk cut <b className="text-fg font-semibold">{riskCut}%</b></div>
           <div className="flex gap-2 mt-3">
             <button className="btn btn-primary text-xs" onClick={() => setTab("Race")}>Watch the race →</button>
             <button className="btn text-xs" onClick={runRehearse} disabled={planLoading}>Re-run</button>
@@ -63,8 +69,8 @@ function RehearsePanel() {
       )}
       {rejected.length > 0 && (
         <div className="flex flex-col gap-1 border-t border-line pt-3">
-          <div className="panel-title">Rejected by the simulator <span className="num text-fg-2 font-normal">· {rejected.length}</span></div>
-          <div className="divide-y divide-line">
+          <button className="text-left text-xs text-fg-2 underline underline-offset-2 hover:text-fg" onClick={() => setShowRejected(v => !v)} aria-expanded={showRejected}>{showRejected ? "Hide" : "Show"} <span className="num">{rejected.length}</span> rejected by the simulator</button>
+          {showRejected && <div className="divide-y divide-line">
             {rejected.map(c => (
               <div key={c.id} className="py-2">
                 <div className="flex items-baseline gap-2">
@@ -74,10 +80,10 @@ function RehearsePanel() {
                 <div className="text-xs text-fg-3 mt-0.5">{c.rejectReason}</div>
               </div>
             ))}
-          </div>
+          </div>}
         </div>
       )}
-      {plan && <div className="text-xs text-fg-3">Each fix was simulated against the same <span className="num">{plan.cards[0]?.evidence.nights ?? 120}</span> nights as the baseline (common random numbers), then combined greedily and re-tested on <span className="num">{plan.combined.nights}</span>.</div>}
+      {plan && <div className="text-xs text-fg-3">Each fix simulated on the same <span className="num">{plan.cards[0]?.evidence.nights ?? 120}</span> nights as the baseline (common random numbers), combined greedily, re-tested on <span className="num">{plan.combined.nights}</span>.</div>}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
@@ -142,10 +142,13 @@ function PassShelf({ w, h }: { w: number; h: number }) {
 
 export function StationBox({ station, snap, highlighted, dragging, dragTarget, onPointerDown }: StationProps) {
   const st = STATION_STYLE[station.id];
-  const load = snap?.load ?? 0;
+  const out = !!snap && snap.capacity === 0; // broken equipment (what-if outage)
+  const added = snap && station.capacity < 99 && snap.capacity > station.capacity ? snap.capacity - station.capacity : 0; // added equipment
+  const load = out ? 0 : (snap?.load ?? 0);
   const queue = snap?.queue ?? 0;
-  const busy = snap?.busy ?? 0;
+  const busy = out ? 0 : (snap?.busy ?? 0);
   const [hover, setHover] = useState(false);
+  const baseColor = useMemo(() => new THREE.Color(st.color), [st.color]);
 
   const group = useRef<THREE.Group>(null);
   const bodyMat = useRef<THREE.MeshStandardMaterial>(null);
@@ -175,11 +178,16 @@ export function StationBox({ station, snap, highlighted, dragging, dragTarget, o
     _c.copy(WHITE).lerp(tint, amount);
     m.emissive.copy(tint);
     m.emissiveIntensity = damp(m.emissiveIntensity, amount, 14, dt);
+    // out of service: dim, red-tinted body (no glow)
+    _c.copy(baseColor).lerp(BAD, out ? 0.45 : 0);
+    m.color.lerp(_c, Math.min(1, dt * 10));
   });
 
   const showDetail = hover || highlighted || queue > 0 || busy > 0;
   const detail =
-    snap && showDetail
+    snap && out
+      ? `out of service${queue ? ` · ${queue} waiting` : ""}`
+      : snap && showDetail
       ? station.capacity >= 99
         ? `${busy} in hand${queue ? ` · ${queue} waiting` : ""}`
         : `${busy}/${station.capacity} busy${queue ? ` · ${queue} waiting` : ""}`
@@ -201,10 +209,10 @@ export function StationBox({ station, snap, highlighted, dragging, dragTarget, o
         </group>
       )}
       <group ref={group}>
-        {highlighted && (
+        {(highlighted || out) && (
           <mesh rotation-x={-Math.PI / 2} position-y={0.012}>
             <ringGeometry args={[Math.max(st.w, st.d) / 2 + 0.18, Math.max(st.w, st.d) / 2 + 0.26, 48]} />
-            <meshBasicMaterial color={PALETTE.accent} transparent opacity={0.6} side={THREE.DoubleSide} />
+            <meshBasicMaterial color={out && !highlighted ? PALETTE.bad : PALETTE.accent} transparent opacity={0.6} side={THREE.DoubleSide} />
           </mesh>
         )}
         {/* body */}
@@ -276,11 +284,21 @@ export function StationBox({ station, snap, highlighted, dragging, dragTarget, o
         )}
         {station.id === "pack" && <PassShelf w={st.w} h={st.h} />}
         <LoadBar load={load} w={st.w} y={st.h + (station.id === "pack" ? 1.2 : 0.75)} />
-        <Label position={[0, st.h + (station.id === "pack" ? 1.55 : 1.1), 0]} size={0.4}>
+        <Label position={[0, st.h + (station.id === "pack" ? 1.55 : 1.1), 0]} size={0.4} color={out ? PALETTE.fg2 : PALETTE.ink}>
           {station.name}
         </Label>
+        {out && (
+          <Label position={[0, st.h + (station.id === "pack" ? 2.45 : 2.0), 0]} size={0.34} color={PALETTE.bad}>
+            OUT
+          </Label>
+        )}
+        {added > 0 && (
+          <Label position={[st.w / 2 + 0.45, st.h + (station.id === "pack" ? 1.55 : 1.1), 0]} size={0.3} color={PALETTE.accent}>
+            {`+${added}`}
+          </Label>
+        )}
         {detail && (
-          <Label position={[0, st.h + (station.id === "pack" ? 2.0 : 1.55), 0]} size={0.26} color={PALETTE.fg2}>
+          <Label position={[0, st.h + (station.id === "pack" ? 2.0 : 1.55), 0]} size={0.26} color={out ? PALETTE.bad : PALETTE.fg2}>
             {detail}
           </Label>
         )}
