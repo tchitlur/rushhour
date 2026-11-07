@@ -95,7 +95,16 @@ export function computeDemand(events: EventFact[], weather: WeatherFacts | null,
   return { bins, peakLabel, deliveryShare };
 }
 
-export interface TonightOptions { jakeOut?: boolean; rainWhatIf?: boolean }
+export interface TonightOptions { /** worker id who calls out tonight (null = nobody). Legacy `jakeOut` maps to "jake". */ absentWorker?: string | null; rainWhatIf?: boolean; jakeOut?: boolean }
+export function resolveAbsent(opts: TonightOptions): string | null {
+  if (opts.absentWorker !== undefined) return opts.absentWorker;
+  return opts.jakeOut === false ? null : "jake";
+}
+function fmtShift(w: { shifts: { start: number; end: number }[] }): string {
+  const s = w.shifts[0]; if (!s) return "";
+  const h = (m: number) => `${((Math.floor(m / 60) + 11) % 12) + 1}${m % 60 ? ":" + String(m % 60).padStart(2, "0") : ""}`;
+  return `${h(s.start)}–${h(s.end)} PM shift`;
+}
 
 /** Build tonight's scenario from real facts (+ the synthetic staffing story). */
 export function buildTonightScenario(data: TonightData, opts: TonightOptions = {}, base?: Scenario): Scenario {
@@ -109,7 +118,9 @@ export function buildTonightScenario(data: TonightData, opts: TonightOptions = {
   for (const e of top.slice(0, 3)) notes.push(`${e.name.length > 48 ? e.name.slice(0, 46) + "…" : e.name} · ${fmtT(isoToMin(e.start))}`);
   if (data.weather) notes.push(data.weather.summary);
   if (opts.rainWhatIf) notes.push("What-if: rain 6–9 PM");
-  if (opts.jakeOut !== false && sc.workers.some(w => w.id === "jake" && w.shifts.length)) { removeWorker(sc, "jake"); notes.push("Jake called out (6–10 PM shift)"); }
+  const absentId = resolveAbsent(opts);
+  const absentW = absentId ? sc.workers.find(w => w.id === absentId && w.shifts.length) : undefined;
+  if (absentW) { notes.push(`${absentW.name} called out (${fmtShift(absentW)})`); removeWorker(sc, absentW.id); }
   sc.notes = notes;
   return sc;
 }
@@ -133,7 +144,9 @@ export function tonightFactors(data: TonightData, opts: TonightOptions = {}, res
   if (rest.length) factors.push(mkEventFactor("events_other", `${rest.length} smaller events`, rest));
   if (data.weather) factors.push({ id: "weather", label: weatherLabel(data.weather), station: "pack", apply: (sc) => { const c = cloneScenario(sc); const d = computeDemand([], data.weather, c.channelMix); for (let i = 0; i < c.demand.length; i++) for (const ch of CHANNELS) c.demand[i].mult[ch] = Math.min(MULT_MAX, Math.max(MULT_MIN, c.demand[i].mult[ch] * d.bins[i].mult[ch])); return c; } });
   if (opts.rainWhatIf) factors.push({ id: "rain", label: "Rain (what-if)", station: "pack", apply: (sc) => { const c = cloneScenario(sc); for (const b of c.demand) if (b.start >= 18 * 60 && b.start < 21 * 60) { b.mult.doordash = Math.min(MULT_MAX, b.mult.doordash * 1.12); b.mult.ubereats = Math.min(MULT_MAX, b.mult.ubereats * 1.12); b.mult.counter = Math.max(MULT_MIN, b.mult.counter * 0.85); } return c; } });
-  if (opts.jakeOut !== false && base.workers.some(w => w.id === "jake" && w.shifts.length)) factors.push({ id: "jake_absent", label: "Jake called out", station: "grill", apply: (sc) => { const c = cloneScenario(sc); removeWorker(c, "jake"); return c; } });
+  const absentId2 = resolveAbsent(opts);
+  const absentW2 = absentId2 ? base.workers.find(w => w.id === absentId2 && w.shifts.length) : undefined;
+  if (absentW2) factors.push({ id: "jake_absent", label: `${absentW2.name} called out`, station: "grill", apply: (sc) => { const c = cloneScenario(sc); removeWorker(c, absentW2.id); return c; } });
   return { base, factors: factors.slice(0, 5) };
 }
 

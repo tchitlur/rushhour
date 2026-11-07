@@ -46,11 +46,15 @@ interface AppState {
   tonightLoading: boolean;
   tonightSource: "live" | "cache" | "mixed" | null;
   demand: DemandBreakdown | null;
+  /** worker id who calls out tonight (null = nobody); "jake" for Maria by default */
+  absentWorker: string | null;
+  setAbsentWorker: (id: string | null) => void;
+  /** legacy mirror of absentWorker === "jake" (kept for older panels) */
   jakeOut: boolean;
   rainWhatIf: boolean;
   explanations: Record<string, string>;
   loadTonight: (date?: string) => Promise<void>;
-  setToggles: (t: { jakeOut?: boolean; rainWhatIf?: boolean }) => void;
+  setToggles: (t: { jakeOut?: boolean; rainWhatIf?: boolean; absentWorker?: string | null }) => void;
   // scenarios
   tonight: Scenario;
   normal: Scenario;
@@ -120,7 +124,9 @@ export const useApp = create<AppState>((set, get) => ({
   setRestaurant: (base) => {
     set({ restaurantBase: base, normal: base ? { ...cloneScenario(base), label: "Normal night" } : baseScenario(get().date) });
     const d = get().tonightData;
-    if (d) { const { jakeOut, rainWhatIf } = get(); get().setTonight(buildTonightScenario(d, { jakeOut, rainWhatIf }, base ?? undefined)); }
+    const absentWorker = base ? (base.restaurant?.demoAbsent ?? null) : "jake";
+    set({ absentWorker, jakeOut: absentWorker === "jake" });
+    if (d) { const { rainWhatIf } = get(); get().setTonight(buildTonightScenario(d, { absentWorker, rainWhatIf }, base ?? undefined)); }
   },
   updateRestaurant: (mutate) => {
     const base = cloneScenario(get().restaurantBase ?? baseScenario(get().date));
@@ -133,6 +139,8 @@ export const useApp = create<AppState>((set, get) => ({
   tonightLoading: false,
   tonightSource: null,
   demand: null,
+  absentWorker: "jake",
+  setAbsentWorker: (id) => get().setToggles({ absentWorker: id }),
   jakeOut: true,
   rainWhatIf: false,
   explanations: {},
@@ -142,8 +150,8 @@ export const useApp = create<AppState>((set, get) => ({
     const cached = CACHED_TONIGHT[date] ?? null;
     const rb = get().restaurantBase ?? undefined;
     if (cached) {
-      const { jakeOut, rainWhatIf } = get();
-      const tonight = buildTonightScenario(cached, { jakeOut, rainWhatIf }, rb);
+      const { absentWorker, rainWhatIf } = get();
+      const tonight = buildTonightScenario(cached, { absentWorker, rainWhatIf }, rb);
       set({ tonightData: cached, tonightSource: "cache", demand: computeDemand(cached.events, cached.weather, tonight.channelMix), normal: rb ? { ...cloneScenario(rb), label: "Normal night" } : baseScenario(date) });
       get().setTonight(tonight);
     }
@@ -159,8 +167,8 @@ export const useApp = create<AppState>((set, get) => ({
     } catch { /* fall back below */ }
     if (!data || (!data.events.length && !data.weather)) { data = CACHED_TONIGHT[date] ?? null; source = "cache"; }
     if (!data) { set({ tonightLoading: false }); return; }
-    const { jakeOut, rainWhatIf } = get();
-    const tonight = buildTonightScenario(data, { jakeOut, rainWhatIf }, rb);
+    const { absentWorker, rainWhatIf } = get();
+    const tonight = buildTonightScenario(data, { absentWorker, rainWhatIf }, rb);
     const demand = computeDemand(data.events, data.weather, tonight.channelMix);
     const same = JSON.stringify({ d: tonight.demand, n: tonight.notes }) === JSON.stringify({ d: get().tonight.demand, n: get().tonight.notes });
     set({ tonightData: data, tonightSource: source, demand, tonightLoading: false, normal: rb ? { ...cloneScenario(rb), label: "Normal night" } : baseScenario(date) });
@@ -177,11 +185,15 @@ export const useApp = create<AppState>((set, get) => ({
     } catch { /* keep template lines */ }
   },
   setToggles: (t) => {
-    set(t);
-    const { tonightData, jakeOut, rainWhatIf } = get();
+    const next: Partial<{ absentWorker: string | null; rainWhatIf: boolean; jakeOut: boolean }> = {};
+    if (t.absentWorker !== undefined) { next.absentWorker = t.absentWorker; next.jakeOut = t.absentWorker === "jake"; }
+    else if (t.jakeOut !== undefined) { next.absentWorker = t.jakeOut ? "jake" : null; next.jakeOut = t.jakeOut; }
+    if (t.rainWhatIf !== undefined) next.rainWhatIf = t.rainWhatIf;
+    set(next);
+    const { tonightData, absentWorker, rainWhatIf } = get();
     if (!tonightData) return;
     get().showToast(`Re-simulating tonight${get().plan ? " · plan reset, run Rehearse again" : ""}`, "info");
-    const tonight = buildTonightScenario(tonightData, { jakeOut, rainWhatIf }, get().restaurantBase ?? undefined);
+    const tonight = buildTonightScenario(tonightData, { absentWorker, rainWhatIf }, get().restaurantBase ?? undefined);
     get().setTonight(tonight);
   },
   tonight: demoScenario(DEFAULT_DATE),
@@ -253,11 +265,11 @@ export const useApp = create<AppState>((set, get) => ({
   whyLoading: false,
   whyMetric: "dasherWait",
   runWhy: async (metric) => {
-    const { tonightData, jakeOut, rainWhatIf, tonight } = get();
+    const { tonightData, absentWorker, rainWhatIf, tonight } = get();
     if (!tonightData) return;
     set({ whyLoading: true, whyMetric: metric });
     try {
-      const { base, factors } = tonightFactors(tonightData, { jakeOut, rainWhatIf }, get().restaurantBase ?? undefined);
+      const { base, factors } = tonightFactors(tonightData, { absentWorker, rainWhatIf }, get().restaurantBase ?? undefined);
       const attribution = await attribute(base, factors, metric, evaluator, 60);
       if (get().tonight !== tonight) { set({ whyLoading: false }); return; }
       if (get().whyMetric !== metric) return;
