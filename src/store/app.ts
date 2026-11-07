@@ -284,7 +284,7 @@ export const useApp = create<AppState>((set, get) => ({
   viewportSource: "tonight",
   runAsk: async (q) => {
     const base = get().tonight;
-    set({ askLoading: true, askStatus: "Starting…", askResult: null, askNight: null, viewportSource: "tonight" });
+    set({ askLoading: true, askStatus: "Starting…", askResult: null, askNight: null, viewportSource: "tonight", playing: false });
     try {
       const r = await runAsk(q, base, { onStatus: (m) => { if (get().tonight === base) set({ askStatus: m }); } });
       if (get().tonight !== base) { set({ askLoading: false, askStatus: "" }); return; }
