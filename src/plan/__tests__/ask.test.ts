@@ -33,6 +33,6 @@ describe("ask pipeline", () => {
   });
   it("rejects out-of-range patches", () => {
     expect(ScenarioPatchSchema.safeParse({ summary: "x", equipment: [{ station: "fryer", start: 100, end: 200, capacity: 0 }] }).success).toBe(false);
-    expect(ScenarioPatchSchema.safeParse({ summary: "x", staff: [{ worker: "bob", action: "absent" }] }).success).toBe(false);
+    expect(ScenarioPatchSchema.safeParse({ summary: "x", staff: [{ worker: "bob", action: "fired" }] }).success).toBe(false);
   });
 });
